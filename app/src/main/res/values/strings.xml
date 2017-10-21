@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">SampleTransactionProcessor</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">APN Settings Test</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_configuration_test">ConfigurationTestActivity</string>
+    <string name="apn_settings_activity">APN Settings Activity</string>
+    <string name="add_new_apn">Add New APN</string>
+    <string name="apn_numeric_hint">enter apn numeric code</string>
+    <string name="get_apn">Get APN</string>
+    <string name="new_apn">New APN</string>
+    <string name="pdp_config">PDP Config</string>
+    <string name="delete_apn">Delete APN</string>
+    <string name="title_activity_apn_test">APN Settings Test</string>
+    <string name="factory_reset">Factory Reset</string>
+    <string name="load_live_config">Load Live Config</string>
+    <string name="set_rtc">Set RTC</string>
+    <string name="set_aids">Set AIDs</string>
+    <string name="title_activity_payment_type_selector">PaymentTypeSelectorActivity</string>
+</resources>
