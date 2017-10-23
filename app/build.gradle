@@ -48,4 +48,10 @@ dependencies {
     compile 'com.nimbusds:nimbus-jose-jwt:2.26@jar'
     compile 'net.minidev:json-smart:1.2@jar'
     compile 'com.android.support:design:23.4.0'
+
+    compile('org.simpleframework:simple-xml:2.7.+'){
+        exclude module: 'stax'
+        exclude module: 'stax-api'
+        exclude module: 'xpp3'
+    }
 }
