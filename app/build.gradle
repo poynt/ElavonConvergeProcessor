@@ -54,4 +54,7 @@ dependencies {
         exclude module: 'stax-api'
         exclude module: 'xpp3'
     }
+
+    // Unit testing dependencies
+    testCompile 'junit:junit:4.12'
 }
