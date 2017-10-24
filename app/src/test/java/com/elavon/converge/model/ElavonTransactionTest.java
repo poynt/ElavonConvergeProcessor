@@ -11,6 +11,7 @@ import org.simpleframework.xml.transform.Transform;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.math.BigDecimal;
 
 
 /**
@@ -27,10 +28,13 @@ public class ElavonTransactionTest {
             public Transform match(Class type) throws Exception {
                 if (type.isEnum()){
                     return new EnumTransform(type);
+                }else if (type.getSimpleName().equalsIgnoreCase("Boolean")){
+                    return new BooleanTransform(type);
                 }
                 return null;
             }
         });
+
     }
     @Test
     public void testEnumMapping(){
@@ -76,6 +80,75 @@ public class ElavonTransactionTest {
             e.printStackTrace();
             assertNull(e);
         }
+    }
 
+    @Test
+    public void testBooleanSerializationn(){
+        ElavonTransaction txn = new ElavonTransaction();
+        txn.setUserId("user");
+        txn.setPin("pin");
+        txn.setMerchantId("merchant");
+        txn.setTransactionType(ElavonTransactionType.SALE);
+        txn.setCardPresent(false);
+
+        try {
+            StringWriter w = new StringWriter();
+            serializer.write(txn, w);
+            System.out.println(w.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+            assertNull(e);
+        }
+    }
+
+    @Test
+    public void testBigDecimalSerialization(){
+        ElavonTransaction t = generateTransaction();
+        t.setSalesTax(new BigDecimal(10.00).setScale(2, BigDecimal.ROUND_HALF_UP));
+        println(t.getSalesTax());
+        try {
+            StringWriter w = new StringWriter();
+            serializer.write(t, w);
+            System.out.println(w.toString());
+
+            Reader r = new StringReader(w.toString());
+            ElavonTransaction transaction = serializer.read(ElavonTransaction.class, r, false);
+            println(transaction.getSalesTax());
+            assertEquals(t.getSalesTax(), transaction.getSalesTax());
+        } catch (Exception e) {
+            e.printStackTrace();
+            assertNull(e);
+        }
+    }
+
+    @Test
+    public void testPartialAuthIndicator(){
+        ElavonTransaction t = generateTransaction();
+        //t.setPartialAuthIndicator(PartialAuthIndicator.SUPPORTED);
+        try {
+            StringWriter w = new StringWriter();
+            serializer.write(t, w);
+            System.out.println(w.toString());
+
+            Reader r = new StringReader(w.toString());
+            ElavonTransaction transaction = serializer.read(ElavonTransaction.class, r, false);
+            println(transaction.getPartialAuthIndicator());
+        } catch (Exception e) {
+            e.printStackTrace();
+            assertNull(e);
+        }
+
+    }
+
+    private ElavonTransaction generateTransaction(){
+        ElavonTransaction txn = new ElavonTransaction();
+        txn.setUserId("user");
+        txn.setPin("pin");
+        txn.setMerchantId("merchant");
+        txn.setTransactionType(ElavonTransactionType.SALE);
+        return txn;
+    }
+    private void println(Object o){
+        System.out.println(o);
     }
 }
