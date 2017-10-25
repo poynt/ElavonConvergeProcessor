@@ -37,12 +37,10 @@ import co.poynt.os.model.EMVApplication;
 import co.poynt.os.model.Intents;
 import co.poynt.os.model.Payment;
 
-public class PaymentTypeSelectorActivity extends AppCompatActivity
-        implements MerchantAppSelectionFragment.OnAppSelectionListener {
+public class PaymentTypeSelectorActivity extends AppCompatActivity implements MerchantAppSelectionFragment.OnAppSelectionListener {
 
     private static final int COLLECT_PAYMENT_REQUEST = 13132;
-    private static final String PERMISSION_PREPAYMENT_CARD_SESSION_EVENT
-            = "poynt.permission.PREPAYMENT_SESSION_EVENT";
+    private static final String PERMISSION_PREPAYMENT_CARD_SESSION_EVENT = "poynt.permission.PREPAYMENT_SESSION_EVENT";
     private static final String TAG = PaymentTypeSelectorActivity.class.getSimpleName();
 
     private TextView mDumpTextView;
@@ -57,7 +55,7 @@ public class PaymentTypeSelectorActivity extends AppCompatActivity
     PAYMENT_TYPE detectedPaymentType;
 
     enum PAYMENT_TYPE {
-        CREDIT, DEBIT, VOUCHER;
+        CREDIT, DEBIT, VOUCHER
     }
 
     private static Set<String> CREDIT_BIN_RANGES = new HashSet<>();

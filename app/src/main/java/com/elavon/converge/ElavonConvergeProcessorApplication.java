@@ -4,9 +4,6 @@ import android.app.Application;
 
 import com.elavon.converge.core.TransactionManager;
 
-/**
- * Created by palavilli on 1/25/16.
- */
 public class ElavonConvergeProcessorApplication extends Application {
     public static ElavonConvergeProcessorApplication instance;
 

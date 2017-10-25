@@ -2,10 +2,6 @@ package com.elavon.converge.model;
 
 import org.simpleframework.xml.Element;
 
-/**
- * Created by dennis on 10/23/17.
- */
-
 public enum ElavonTransactionType {
     SALE("ccsale"),
     AUTH_ONLY("ccauthonly"),
@@ -74,14 +70,15 @@ public enum ElavonTransactionType {
     SETTLE("settle"),
     CREDIT_BATCH_IMPORT("ccimport");
 
-    @Element(name="ssl_transaction_type")
+    @Element(name = "ssl_transaction_type")
     private final String value;
 
-    ElavonTransactionType (final String value){
+    ElavonTransactionType(final String value) {
         this.value = value;
     }
 
-    public String toString(){
+    @Override
+    public String toString() {
         return value;
     }
 }

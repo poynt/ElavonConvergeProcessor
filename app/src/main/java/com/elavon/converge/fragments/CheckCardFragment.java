@@ -14,7 +14,6 @@ import com.elavon.converge.R;
 
 import co.poynt.os.model.Payment;
 
-
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
@@ -172,7 +171,6 @@ public class CheckCardFragment extends DialogFragment {
         mListener = null;
     }
 
-
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -189,5 +187,4 @@ public class CheckCardFragment extends DialogFragment {
 
         void onCancel();
     }
-
 }

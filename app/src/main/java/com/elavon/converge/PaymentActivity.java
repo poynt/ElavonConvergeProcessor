@@ -13,8 +13,7 @@ import co.poynt.os.model.Intents;
 import co.poynt.os.model.Payment;
 import co.poynt.os.model.PoyntError;
 
-public class PaymentActivity extends Activity implements
-        ZipCodeFragment.OnFragmentInteractionListener, CheckCardFragment.OnFragmentInteractionListener {
+public class PaymentActivity extends Activity implements ZipCodeFragment.OnFragmentInteractionListener, CheckCardFragment.OnFragmentInteractionListener {
 
     private static final String TAG = "PaymentActivity";
 
@@ -32,9 +31,7 @@ public class PaymentActivity extends Activity implements
             setResult(Activity.RESULT_CANCELED);
             finish();
         }
-
     }
-
 
     @Override
     public void onFragmentInteraction(Transaction transaction, PoyntError error) {

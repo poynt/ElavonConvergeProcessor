@@ -41,9 +41,6 @@ import co.poynt.os.services.v1.IPoyntSecurityService;
 import co.poynt.os.services.v1.IPoyntTransactionServiceListener;
 import fr.devnied.bitlib.BytesUtils;
 
-/**
- * Created by palavilli on 11/29/15.
- */
 public class TransactionManager {
 
     private static final String TAG = "TransactionManager";

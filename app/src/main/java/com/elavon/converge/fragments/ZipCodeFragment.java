@@ -123,5 +123,4 @@ public class ZipCodeFragment extends DialogFragment {
         // TODO: Update argument type and name
         void onFragmentInteraction(Transaction transaction, PoyntError error);
     }
-
 }
