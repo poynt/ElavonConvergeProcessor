@@ -37,27 +37,22 @@ public class ElavonTransactionTest {
 
     }
     @Test
-    public void testEnumMapping(){
+    public void testWriteEnumMapping() throws Exception{
+        ElavonTransactionRequest txn = new ElavonTransactionRequest();
+        txn.setTransactionType(ElavonTransactionType.SALE);
+        txn.setUserId("user");
+        txn.setPin("pin");
+        txn.setMerchantId("merchant");
 
+        StringWriter writer = new StringWriter();
+        serializer.write(txn, writer);
+        assertNotNull(writer.toString());
+        System.out.println(writer.toString());
 
-        try {
-            ElavonTransaction txn = new ElavonTransaction();
-            txn.setTransactionType(ElavonTransactionType.SALE);
-            txn.setUserId("user");
-            txn.setPin("pin");
-            txn.setMerchantId("merchant");
-
-            StringWriter writer = new StringWriter();
-            serializer.write(txn, writer);
-            assertNotNull(writer.toString());
-            System.out.println(writer.toString());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     @Test
-    public void testDeserialization(){
+    public void testRead() throws Exception {
         String xml =
                 "<txn>\n" +
                         "    <ssl_merchant_id>my_virtualmerchant_id</ssl_merchant_id>\n" +
@@ -73,75 +68,55 @@ public class ElavonTransactionTest {
 //            "    <ssl_first_name>Test</ssl_first_name>\n" +
                         "</txn>";
         Reader reader = new StringReader(xml);
-        try {
-            ElavonTransaction transaction = serializer.read(ElavonTransaction.class, reader, false);
-            assertEquals(transaction.getTransactionType(), ElavonTransactionType.SALE);
-        } catch (Exception e) {
-            e.printStackTrace();
-            assertNull(e);
-        }
+        ElavonTransactionRequest transaction = serializer.read(ElavonTransactionRequest.class, reader, false);
+        assertEquals(transaction.getTransactionType(), ElavonTransactionType.SALE);
     }
 
     @Test
-    public void testBooleanSerializationn(){
-        ElavonTransaction txn = new ElavonTransaction();
+    public void testWriteBoolean() throws Exception{
+        ElavonTransactionRequest txn = new ElavonTransactionRequest();
         txn.setUserId("user");
         txn.setPin("pin");
         txn.setMerchantId("merchant");
         txn.setTransactionType(ElavonTransactionType.SALE);
         txn.setCardPresent(false);
 
-        try {
-            StringWriter w = new StringWriter();
-            serializer.write(txn, w);
-            System.out.println(w.toString());
-        } catch (Exception e) {
-            e.printStackTrace();
-            assertNull(e);
-        }
+        StringWriter w = new StringWriter();
+        serializer.write(txn, w);
+        println(w.toString());
     }
 
     @Test
-    public void testBigDecimalSerialization(){
-        ElavonTransaction t = generateTransaction();
+    public void testWriteBigDecimal() throws Exception {
+        ElavonTransactionRequest t = generateTransaction();
         t.setSalesTax(new BigDecimal(10.00).setScale(2, BigDecimal.ROUND_HALF_UP));
         println(t.getSalesTax());
-        try {
-            StringWriter w = new StringWriter();
-            serializer.write(t, w);
-            System.out.println(w.toString());
+        StringWriter w = new StringWriter();
+        serializer.write(t, w);
+        System.out.println(w.toString());
 
-            Reader r = new StringReader(w.toString());
-            ElavonTransaction transaction = serializer.read(ElavonTransaction.class, r, false);
-            println(transaction.getSalesTax());
-            assertEquals(t.getSalesTax(), transaction.getSalesTax());
-        } catch (Exception e) {
-            e.printStackTrace();
-            assertNull(e);
-        }
+        Reader r = new StringReader(w.toString());
+        ElavonTransactionRequest transaction = serializer.read(ElavonTransactionRequest.class, r, false);
+        println(transaction.getSalesTax());
+        assertEquals(t.getSalesTax(), transaction.getSalesTax());
+
     }
 
     @Test
-    public void testPartialAuthIndicator(){
-        ElavonTransaction t = generateTransaction();
-        //t.setPartialAuthIndicator(PartialAuthIndicator.SUPPORTED);
-        try {
-            StringWriter w = new StringWriter();
-            serializer.write(t, w);
-            System.out.println(w.toString());
+    public void testWritePartialAuthIndicator() throws Exception{
+        // SETUP
+        ElavonTransactionRequest t = generateTransaction();
+        StringWriter w = new StringWriter();
+        serializer.write(t, w);
+        println(w.toString());
 
-            Reader r = new StringReader(w.toString());
-            ElavonTransaction transaction = serializer.read(ElavonTransaction.class, r, false);
-            println(transaction.getPartialAuthIndicator());
-        } catch (Exception e) {
-            e.printStackTrace();
-            assertNull(e);
-        }
-
+        Reader r = new StringReader(w.toString());
+        ElavonTransactionRequest transaction = serializer.read(ElavonTransactionRequest.class, r, false);
+        println(transaction.getPartialAuthIndicator());
     }
 
-    private ElavonTransaction generateTransaction(){
-        ElavonTransaction txn = new ElavonTransaction();
+    private ElavonTransactionRequest generateTransaction(){
+        ElavonTransactionRequest txn = new ElavonTransactionRequest();
         txn.setUserId("user");
         txn.setPin("pin");
         txn.setMerchantId("merchant");
