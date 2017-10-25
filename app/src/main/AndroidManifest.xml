@@ -6,7 +6,6 @@
     <uses-permission android:name="poynt.permission.CONFIGURATION_SERVICE" />
     <uses-permission android:name="co.poynt.business.ACCESS_BUSINESS" />
     <uses-permission android:name="poynt.permission.SECOND_SCREEN_SERVICE" />
-    <uses-permission android:name="poynt.permission.PREPAYMENT_CARD_SESSION" />
 
     <application
         android:name="com.elavon.converge.ElavonConvergeProcessorApplication"
@@ -14,19 +13,6 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
-        <activity
-            android:name="com.elavon.converge.PaymentActivity"
-            android:label="@string/app_name"
-            android:noHistory="false"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.Transparent">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-
         <service
             android:name="com.elavon.converge.TransactionService"
             android:exported="true">
@@ -38,17 +24,6 @@
                 android:name="co.poynt.os.service.capability"
                 android:resource="@xml/transaction_capabilities" />
         </service>
-        <activity
-            android:name="com.elavon.converge.PaymentTypeSelectorActivity"
-            android:label="@string/title_activity_payment_type_selector">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <action android:name="android.intent.action.CARD_SESSION" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
     </application>
 
 </manifest>

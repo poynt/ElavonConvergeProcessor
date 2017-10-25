@@ -1,22 +1,16 @@
 package com.elavon.converge.model;
 
+import com.elavon.converge.xml.XmlMapper;
+
 import org.junit.Before;
 import org.junit.Test;
-import org.simpleframework.xml.Serializer;
-import org.simpleframework.xml.core.Persister;
-import org.simpleframework.xml.transform.Matcher;
-import org.simpleframework.xml.transform.Transform;
 
-import java.io.Reader;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
-import java.util.UUID;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -30,22 +24,12 @@ import static org.junit.Assert.assertEquals;
  * Created by dennis on 10/23/17.
  */
 public class ElavonTransactionResponseTest {
-    Serializer serializer;
+
+    XmlMapper xmlMapper;
 
     @Before
     public void initialize(){
-        serializer = new Persister(new Matcher() {
-            @Override
-            public Transform match(Class type) throws Exception {
-                if (type.isEnum()){
-                    return new EnumTransform(type);
-                }else if (type.getSimpleName().equalsIgnoreCase("Boolean")){
-                    return new BooleanTransform(type);
-                }
-                return null;
-            }
-        });
-
+        xmlMapper = new XmlMapper();
     }
 
     @Test
@@ -59,8 +43,8 @@ public class ElavonTransactionResponseTest {
         isoFormat.setTimeZone(TimeZone.getTimeZone("America/New_York"));
         Date date = isoFormat.parse("10/23/2017 01:38:45 PM");
 
-        Reader r = new StringReader("<txn><ssl_txn_time>" + dateString + "</ssl_txn_time></txn>");
-        ElavonTransactionResponse transaction = serializer.read(ElavonTransactionResponse.class, r, false);
+        String xml = "<txn><ssl_txn_time>" + dateString + "</ssl_txn_time></txn>";
+        ElavonTransactionResponse transaction = xmlMapper.read(xml, ElavonTransactionResponse.class);
         assertEquals(date, transaction.getTxnTimeAsDate());
         println(transaction.getTxnTimeAsDate());
     }
@@ -68,8 +52,8 @@ public class ElavonTransactionResponseTest {
     @Test
     public void testDCCRate() throws Exception{
         float dcc = .7546f;
-        Reader r = new StringReader("<txn><ssl_conversion_rate>" + dcc + "</ssl_conversion_rate></txn>");
-        ElavonTransactionResponse transaction = serializer.read(ElavonTransactionResponse.class, r, false);
+        String xml = "<txn><ssl_conversion_rate>" + dcc + "</ssl_conversion_rate></txn>";
+        ElavonTransactionResponse transaction = xmlMapper.read(xml, ElavonTransactionResponse.class);
         println(transaction.getConversionRate());
         assertEquals(dcc, transaction.getConversionRate(), 0);
     }
@@ -94,9 +78,9 @@ public class ElavonTransactionResponseTest {
         req.setDescription("tables & chairs");
 
         StringWriter w = new StringWriter();
-        serializer.write(req, w);
+        String pseudoXml = "xmldata=" + xmlMapper.write(req);
         println(w.toString());
-        RequestBody body = RequestBody.create(urlEncoded, "xmldata="+ URLEncoder.encode(w.toString(), "UTF-8"));
+        RequestBody body = RequestBody.create(urlEncoded, pseudoXml);
         Request request = new Request.Builder()
                 .url(url)
                 .post(body)
@@ -105,8 +89,8 @@ public class ElavonTransactionResponseTest {
         Response response = client.newCall(request).execute();
 
         System.out.println(response.toString());
-        Reader r = new StringReader(response.body().string());
-        ElavonTransactionResponse elavonResponse = serializer.read(ElavonTransactionResponse.class, r, false);
+        String responseXml = response.body().string();
+        ElavonTransactionResponse elavonResponse = xmlMapper.read(responseXml, ElavonTransactionResponse.class);
         println("approval code: " + elavonResponse.getApprovalCode());
     }
 

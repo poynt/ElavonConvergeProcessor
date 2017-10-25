@@ -2,7 +2,6 @@ package com.elavon.converge;
 
 
 import android.app.Service;
-import android.content.ComponentName;
 import android.content.Intent;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -15,8 +14,6 @@ import java.util.Map;
 import co.poynt.api.model.AdjustTransactionRequest;
 import co.poynt.api.model.BalanceInquiry;
 import co.poynt.api.model.EMVData;
-import co.poynt.api.model.EntryMode;
-import co.poynt.api.model.FundingSourceType;
 import co.poynt.api.model.Transaction;
 import co.poynt.os.model.Payment;
 import co.poynt.os.services.v1.IPoyntCheckCardListener;
@@ -29,9 +26,7 @@ public class TransactionService extends Service {
     private static final String TAG = "SampleProcessor";
 
     public TransactionService() {
-
     }
-
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -57,15 +52,8 @@ public class TransactionService extends Service {
             //transactionManager.collectNewPin(transaction, requestId, listener);
 
             // if you want to collect MSR
-            if (transaction.getFundingSource().getType() == FundingSourceType.CREDIT_DEBIT
-                    && transaction.getFundingSource().getEntryDetails().getEntryMode() == EntryMode.TRACK_DATA_FROM_MAGSTRIPE
-                    ) {
-                transactionManager.collectCVV(transaction, requestId, listener);
-            } else {
-                // otherwise just process as usual
-                transactionManager.processTransaction(transaction, requestId, listener);
-            }
-
+            // otherwise just process as usual
+            transactionManager.processTransaction(transaction, requestId, listener);
         }
 
         @Override
@@ -159,25 +147,9 @@ public class TransactionService extends Service {
                     + ") issuerCodeTableIndex(" + issuerCodeTableIndex + ")"
                     + ") applicationPreferredName(" + applicationPreferredName + ")"
                     + ") keyIdentifier(" + keyIdentifier + ")");
-            Intent paymentActivity = new Intent("CHECK_CARD");
-            paymentActivity.setComponent(new ComponentName(getPackageName(), PaymentActivity.class.getName()));
-            paymentActivity.putExtra("payment", payment);
-            paymentActivity.putExtra("serviceCode", serviceCode);
-            paymentActivity.putExtra("cardHolderName", cardHolderName);
-            paymentActivity.putExtra("expiration", expirationDate);
-            paymentActivity.putExtra("last4", last4);
-            paymentActivity.putExtra("binRange", binRange);
-            paymentActivity.putExtra("aid", AID);
-            paymentActivity.putExtra("applicationLabel", applicationLabel);
-            paymentActivity.putExtra("panSequenceNumber", panSequenceNumber);
-            paymentActivity.putExtra("issuerCountryCode", issuerCountryCode);
-            paymentActivity.putExtra("encryptedPAN", encryptedPAN);
-//            paymentActivity.putExtra("encryptedTrack2", encryptedTrack2);
-//            paymentActivity.putExtra("issuerCodeTableIndex", issuerCodeTableIndex);
-//            paymentActivity.putExtra("applicationPreferredName", applicationPreferredName);
-//            paymentActivity.putExtra("keyIdentifier", keyIdentifier);
 
-            callback.onLaunchActivity(paymentActivity);
+            //shouldn't be called - just continue
+            callback.onContinue();
         }
 
     };

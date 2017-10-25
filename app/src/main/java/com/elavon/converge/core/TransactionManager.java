@@ -11,14 +11,11 @@ import android.util.Log;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import co.poynt.api.model.Address;
 import co.poynt.api.model.AdjustTransactionRequest;
 import co.poynt.api.model.EMVData;
 import co.poynt.api.model.FundingSourceType;
@@ -29,21 +26,11 @@ import co.poynt.api.model.Transaction;
 import co.poynt.api.model.TransactionAction;
 import co.poynt.api.model.TransactionAmounts;
 import co.poynt.api.model.TransactionStatus;
-import co.poynt.api.model.VerificationData;
-import co.poynt.os.model.DateFormatType;
-import co.poynt.os.model.ManualEntryFieldType;
-import co.poynt.os.model.ManualEntryInputField;
-import co.poynt.os.model.ManualEntryOutputField;
 import co.poynt.os.model.PoyntError;
-import co.poynt.os.services.v1.IPoyntManualEntryDataListener;
-import co.poynt.os.services.v1.IPoyntNewPINListener;
 import co.poynt.os.services.v1.IPoyntSecurityService;
 import co.poynt.os.services.v1.IPoyntTransactionServiceListener;
 import fr.devnied.bitlib.BytesUtils;
 
-/**
- * Created by palavilli on 11/29/15.
- */
 public class TransactionManager {
 
     private static final String TAG = "TransactionManager";
@@ -249,25 +236,6 @@ public class TransactionManager {
 
     }
 
-    public Transaction processTransaction(Transaction transaction, String zipCode) {
-        Log.d(TAG, "PROCESSED TRANSACTION w/ zip code ");
-        // process transaction with zip code
-        if (transaction.getAction() == TransactionAction.AUTHORIZE) {
-            transaction.setStatus(TransactionStatus.AUTHORIZED);
-        } else {
-            transaction.setStatus(TransactionStatus.CAPTURED);
-        }
-        VerificationData verificationData = transaction.getFundingSource().getVerificationData();
-        if (verificationData == null) {
-            verificationData = new VerificationData();
-        }
-        Address address = new Address();
-        address.setPostalCode(zipCode);
-        verificationData.setCardHolderBillingAddress(address);
-        transaction.getFundingSource().setVerificationData(verificationData);
-        TRANSACTION_CACHE.put(transaction.getId(), transaction);
-        return transaction;
-    }
 
     public void captureTransaction(String transactionId, AdjustTransactionRequest adjustTransactionRequest, String requestId, IPoyntTransactionServiceListener listener) {
         Log.d(TAG, "CAPTURED TRANSACTION: " + transactionId);
@@ -316,311 +284,6 @@ public class TransactionManager {
         }
     }
 
-    public void collectNewPin(final Transaction transaction, final String requestId, final IPoyntTransactionServiceListener listener) {
-        if (poyntSecurityService != null) {
-            try {
-                poyntSecurityService.collectNewPin(new IPoyntNewPINListener.Stub() {
-                    @Override
-                    public void onSuccess(String encryptedData, String ksn) throws RemoteException {
-                        // at this point the new pin should be saved in backend
-                        // and return original authorization
-                        Log.d(TAG, "Collected new PIN: " + encryptedData + " ksn: " + ksn);
-                        processTransaction(transaction, requestId, listener);
-                    }
-
-                    @Override
-                    public void onError(PoyntError poyntError) throws RemoteException {
-                        Log.d(TAG, "Failed to collect new PIN: " + poyntError.toString());
-                        listener.onResponse(null, requestId, poyntError);
-                    }
-                });
-            } catch (RemoteException e) {
-                e.printStackTrace();
-                PoyntError poyntError = new PoyntError();
-                poyntError.setCode(PoyntError.NEW_PIN_FAILURE);
-                try {
-                    listener.onResponse(null, requestId, poyntError);
-                } catch (RemoteException e1) {
-                    e1.printStackTrace();
-                }
-            }
-        }
-    }
-
-    public void collectCVV(final Transaction transaction, final String requestId, final IPoyntTransactionServiceListener listener) {
-        // use the poyntsecurity service to requect collection of CVV
-        if (poyntSecurityService != null) {
-            try {
-                // get MSR token
-                byte[] msrTokenBytes = null;
-                if (transaction.getFundingSource() != null && transaction.getFundingSource().getEmvData() != null) {
-                    EMVData emvData = transaction.getFundingSource().getEmvData();
-                    Map<String, String> tags = emvData.getEmvTags();
-                    for (Map.Entry<String, String> entry : tags.entrySet()) {
-                        if (entry.getKey().equals("0x1F8153")) {
-                            Log.d(TAG, "Found MSR Token: " + entry.getValue());
-                            msrTokenBytes = BytesUtils.fromString(entry.getValue());
-                            break;
-                        }
-                    }
-                }
-
-                List<ManualEntryInputField> inputFieldList = new ArrayList<ManualEntryInputField>();
-                ManualEntryInputField cvvField = new ManualEntryInputField();
-                cvvField.setDataEncoding(ManualEntryInputField.DataEncodingType.ASCII);
-                cvvField.setInputFieldId(ManualEntryFieldType.CSC);
-                cvvField.setMaxLength(5);
-                cvvField.setMinLength(2);
-                cvvField.setTimeout(10);
-                cvvField.setEncrypt(true);
-                cvvField.setDateFormat(DateFormatType.NA);
-                cvvField.setCancelReasonCodeRequired(true);
-                inputFieldList.add(cvvField);
-
-                List<ManualEntryOutputField> outputFieldList = new ArrayList<ManualEntryOutputField>();
-                outputFieldList.add(ManualEntryOutputField.CSC);
-
-                poyntSecurityService.collectManualEntryData(inputFieldList, outputFieldList, null,
-                        null, msrTokenBytes,
-                        new IPoyntManualEntryDataListener.Stub() {
-                            @Override
-                            public void onSuccess(byte[] cvvData, boolean partial) throws RemoteException {
-                                Log.d(TAG, "Collected CVV: " + BytesUtils.bytesToStringNoSpace(cvvData)
-                                        + " isPartialData? " + partial);
-                                processTransaction(transaction, requestId, listener);
-                            }
-
-                            @Override
-                            public void onError(PoyntError poyntError) throws RemoteException {
-                                Log.d(TAG, "Failed to collect new PIN: " + poyntError.toString());
-                                transaction.setStatus(TransactionStatus.DECLINED);
-                                ProcessorResponse processorResponse = new ProcessorResponse();
-                                processorResponse.setStatus(ProcessorStatus.Failure);
-                                processorResponse.setStatusMessage("Missing CVV");
-                                processorResponse.setProcessor(Processor.MOCK);
-                                processorResponse.setAcquirer(Processor.MOCK);
-                                processorResponse.setTransactionId(UUID.randomUUID().toString());
-                                processorResponse.setApprovalCode(UUID.randomUUID().toString().substring(0, 6));
-                                processorResponse.setApprovedAmount(transaction.getAmounts().getTransactionAmount());
-                                transaction.setProcessorResponse(processorResponse);
-                                if (transaction.getId() == null) {
-                                    transaction.setId(UUID.randomUUID());
-                                }
-                                if (transaction.getCreatedAt() == null) {
-                                    transaction.setCreatedAt(Calendar.getInstance());
-                                }
-                                if (transaction.getUpdatedAt() == null) {
-                                    transaction.setUpdatedAt(Calendar.getInstance());
-                                }
-                                listener.onResponse(transaction, requestId, null);
-                            }
-                        });
-            } catch (RemoteException e) {
-                e.printStackTrace();
-                PoyntError poyntError = new PoyntError();
-                poyntError.setCode(PoyntError.MANUAL_ENTRY_FAILED);
-                try {
-                    listener.onResponse(null, requestId, poyntError);
-                } catch (RemoteException e1) {
-                    e1.printStackTrace();
-                }
-            }
-        } else {
-            Log.d(TAG, "Unable to collect CVV - continuing...");
-            processTransaction(transaction, requestId, listener);
-        }
-    }
-
-    public void collectLast4(final Transaction transaction, final String requestId, final IPoyntTransactionServiceListener listener) {
-        // use the poyntsecurity service to requect collection of CVV
-        if (poyntSecurityService != null) {
-            try {
-
-                // get MSR token
-                byte[] msrTokenBytes = null;
-                if (transaction.getFundingSource() != null && transaction.getFundingSource().getEmvData() != null) {
-                    EMVData emvData = transaction.getFundingSource().getEmvData();
-                    Map<String, String> tags = emvData.getEmvTags();
-                    for (Map.Entry<String, String> entry : tags.entrySet()) {
-                        if (entry.getKey().equals("0x1F8153")) {
-                            Log.d(TAG, "Found MSR Token: " + entry.getValue());
-                            msrTokenBytes = BytesUtils.fromString(entry.getValue());
-                            break;
-                        }
-                    }
-                }
-
-                List<ManualEntryInputField> inputFieldList = new ArrayList<ManualEntryInputField>();
-                ManualEntryInputField last4Field = new ManualEntryInputField();
-                last4Field.setDataEncoding(ManualEntryInputField.DataEncodingType.ASCII);
-                last4Field.setInputFieldId(ManualEntryFieldType.PAN_LAST_4);
-                last4Field.setMaxLength(4);
-                last4Field.setMinLength(4);
-                last4Field.setTimeout(10);
-                last4Field.setEncrypt(false);
-                last4Field.setDateFormat(DateFormatType.NA);
-                last4Field.setHideDigits(false);
-                inputFieldList.add(last4Field);
-
-                List<ManualEntryOutputField> outputFieldList = new ArrayList<ManualEntryOutputField>();
-                outputFieldList.add(ManualEntryOutputField.PAN_LAST_4);
-
-                poyntSecurityService.collectManualEntryData(inputFieldList, outputFieldList, null, null,
-                        msrTokenBytes,
-                        new IPoyntManualEntryDataListener.Stub() {
-                            @Override
-                            public void onSuccess(byte[] cvvData, boolean partial) throws RemoteException {
-                                Log.d(TAG, "Collected LAST4: " + BytesUtils.bytesToStringNoSpace(cvvData)
-                                        + " isPartialData? " + partial);
-                                processTransaction(transaction, requestId, listener);
-                            }
-
-                            @Override
-                            public void onError(PoyntError poyntError) throws RemoteException {
-                                Log.d(TAG, "Failed to collect LAST4: " + poyntError.toString());
-                                transaction.setStatus(TransactionStatus.DECLINED);
-                                ProcessorResponse processorResponse = new ProcessorResponse();
-                                processorResponse.setStatus(ProcessorStatus.Failure);
-                                processorResponse.setStatusMessage("Missing LAST4");
-                                processorResponse.setProcessor(Processor.MOCK);
-                                processorResponse.setAcquirer(Processor.MOCK);
-                                processorResponse.setTransactionId(UUID.randomUUID().toString());
-                                processorResponse.setApprovalCode(UUID.randomUUID().toString().substring(0, 6));
-                                processorResponse.setApprovedAmount(transaction.getAmounts().getTransactionAmount());
-                                transaction.setProcessorResponse(processorResponse);
-                                if (transaction.getId() == null) {
-                                    transaction.setId(UUID.randomUUID());
-                                }
-                                if (transaction.getCreatedAt() == null) {
-                                    transaction.setCreatedAt(Calendar.getInstance());
-                                }
-                                if (transaction.getUpdatedAt() == null) {
-                                    transaction.setUpdatedAt(Calendar.getInstance());
-                                }
-                                listener.onResponse(transaction, requestId, null);
-                            }
-                        });
-            } catch (RemoteException e) {
-                e.printStackTrace();
-                PoyntError poyntError = new PoyntError();
-                poyntError.setCode(PoyntError.MANUAL_ENTRY_FAILED);
-                try {
-                    listener.onResponse(null, requestId, poyntError);
-                } catch (RemoteException e1) {
-                    e1.printStackTrace();
-                }
-            }
-        } else {
-            Log.d(TAG, "Unable to collect CVV - continuing...");
-            //processTransaction(transaction, requestId, listener);
-            transaction.setStatus(TransactionStatus.DECLINED);
-            ProcessorResponse processorResponse = new ProcessorResponse();
-            processorResponse.setStatus(ProcessorStatus.Failure);
-            processorResponse.setStatusMessage("Missing LAST4");
-            processorResponse.setProcessor(Processor.MOCK);
-            processorResponse.setAcquirer(Processor.MOCK);
-            processorResponse.setTransactionId(UUID.randomUUID().toString());
-            processorResponse.setApprovalCode(UUID.randomUUID().toString().substring(0, 6));
-            processorResponse.setApprovedAmount(transaction.getAmounts().getTransactionAmount());
-            transaction.setProcessorResponse(processorResponse);
-            if (transaction.getId() == null) {
-                transaction.setId(UUID.randomUUID());
-            }
-            if (transaction.getCreatedAt() == null) {
-                transaction.setCreatedAt(Calendar.getInstance());
-            }
-            if (transaction.getUpdatedAt() == null) {
-                transaction.setUpdatedAt(Calendar.getInstance());
-            }
-            try {
-                listener.onResponse(transaction, requestId, null);
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public void collectPIN(final Transaction transaction, final String requestId,
-                           final IPoyntTransactionServiceListener listener,
-                           boolean isRetry) {
-        // use the poynt security service to request collection of PIN
-        if (poyntSecurityService != null) {
-            try {
-                byte[] msrTokenBytes = null;
-                if (transaction.getFundingSource() != null && transaction.getFundingSource().getEmvData() != null) {
-                    EMVData emvData = transaction.getFundingSource().getEmvData();
-                    Map<String, String> tags = emvData.getEmvTags();
-                    for (Map.Entry<String, String> entry : tags.entrySet()) {
-                        if (entry.getKey().equals("0x1F8153")) {
-                            Log.d(TAG, "Found MSR Token: " + entry.getValue());
-                            msrTokenBytes = BytesUtils.fromString(entry.getValue());
-                        }
-                    }
-                }
-                List<ManualEntryInputField> inputFieldList = new ArrayList<ManualEntryInputField>();
-                ManualEntryInputField cvvField = new ManualEntryInputField();
-                cvvField.setDataEncoding(ManualEntryInputField.DataEncodingType.BCD);
-                cvvField.setInputFieldId(ManualEntryFieldType.PIN);
-                cvvField.setMaxLength(12);
-                cvvField.setMinLength(4);
-                cvvField.setTimeout(10);
-                cvvField.setEncrypt(true);
-                cvvField.setDateFormat(DateFormatType.NA);
-                inputFieldList.add(cvvField);
-
-                List<ManualEntryOutputField> outputFieldList = new ArrayList<ManualEntryOutputField>();
-                outputFieldList.add(ManualEntryOutputField.PIN);
-
-                poyntSecurityService.collectManualEntryData(inputFieldList, outputFieldList, null, null,
-                        msrTokenBytes,
-                        new IPoyntManualEntryDataListener.Stub() {
-                            @Override
-                            public void onSuccess(byte[] manualData, boolean partial) throws RemoteException {
-                                Log.d(TAG, "Collected Manual Data: " + BytesUtils.bytesToStringNoSpace(manualData)
-                                        + " isPartialData? " + partial);
-                                processTransaction(transaction, requestId, listener);
-                            }
-
-                            @Override
-                            public void onError(PoyntError poyntError) throws RemoteException {
-                                Log.d(TAG, "Failed to collect new PIN: " + poyntError.toString());
-                                transaction.setStatus(TransactionStatus.DECLINED);
-                                ProcessorResponse processorResponse = new ProcessorResponse();
-                                processorResponse.setStatus(ProcessorStatus.Failure);
-                                processorResponse.setStatusMessage("Missing CVV");
-                                processorResponse.setProcessor(Processor.MOCK);
-                                processorResponse.setAcquirer(Processor.MOCK);
-                                processorResponse.setTransactionId(UUID.randomUUID().toString());
-                                processorResponse.setApprovalCode(UUID.randomUUID().toString().substring(0, 6));
-                                processorResponse.setApprovedAmount(transaction.getAmounts().getTransactionAmount());
-                                transaction.setProcessorResponse(processorResponse);
-                                if (transaction.getId() == null) {
-                                    transaction.setId(UUID.randomUUID());
-                                }
-                                if (transaction.getCreatedAt() == null) {
-                                    transaction.setCreatedAt(Calendar.getInstance());
-                                }
-                                if (transaction.getUpdatedAt() == null) {
-                                    transaction.setUpdatedAt(Calendar.getInstance());
-                                }
-                                listener.onResponse(transaction, requestId, null);
-                            }
-                        });
-            } catch (RemoteException e) {
-                e.printStackTrace();
-                PoyntError poyntError = new PoyntError();
-                poyntError.setCode(PoyntError.MANUAL_ENTRY_FAILED);
-                try {
-                    listener.onResponse(null, requestId, poyntError);
-                } catch (RemoteException e1) {
-                    e1.printStackTrace();
-                }
-            }
-        } else {
-            Log.d(TAG, "Unable to collect PIN - continuing...");
-            processTransaction(transaction, requestId, listener);
-        }
-    }
 
     public void voidTransaction(String transactionId,
                                 EMVData emvData,

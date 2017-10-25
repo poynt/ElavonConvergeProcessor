@@ -1,9 +1,5 @@
 package com.elavon.converge.model;
 
-/**
- * Created by palavilli on 10/1/17.
- */
-
 import org.simpleframework.xml.Element;
 
 /**
@@ -20,13 +16,13 @@ import org.simpleframework.xml.Element;
  * </txn>
  */
 public class BaseModel {
-    @Element(name="ssl_merchant_id")
+    @Element(name = "ssl_merchant_id")
     private String merchantId;
-    @Element (name ="ssl_user_id")
+    @Element(name = "ssl_user_id")
     private String userId;
-    @Element (name ="ssl_pin")
+    @Element(name = "ssl_pin")
     private String pin;
-    @Element (name ="ssl_test_mode", required=false)
+    @Element(name = "ssl_test_mode", required = false)
     private String testMode;
 
     public String getMerchantId() {
