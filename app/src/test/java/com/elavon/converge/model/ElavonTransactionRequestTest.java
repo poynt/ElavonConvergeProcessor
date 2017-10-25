@@ -1,5 +1,6 @@
 package com.elavon.converge.model;
 
+import com.elavon.converge.BaseTest;
 import com.elavon.converge.xml.XmlMapper;
 
 import org.junit.Assert;
@@ -8,7 +9,7 @@ import org.junit.Test;
 
 import java.math.BigDecimal;
 
-public class ElavonTransactionTest {
+public class ElavonTransactionRequestTest extends BaseTest {
 
     private XmlMapper xmlMapper;
 
@@ -18,7 +19,7 @@ public class ElavonTransactionTest {
     }
 
     @Test
-    public void testRead() throws Exception {
+    public void read() throws Exception {
         // SETUP
         String xml =
                 "<txn>\n" +
@@ -43,7 +44,7 @@ public class ElavonTransactionTest {
     }
 
     @Test
-    public void testWriteEnumMapping() throws Exception {
+    public void writeEnumMapping() throws Exception {
         // SETUP
         ElavonTransactionRequest txn = MockObjectFactory.getElavonTransactionRequest();
 
@@ -52,12 +53,12 @@ public class ElavonTransactionTest {
 
         // VERIFY
         Assert.assertNotNull(xml);
-        println(xml);
+        print(xml);
     }
 
 
     @Test
-    public void testWriteBoolean() throws Exception {
+    public void writeBoolean() throws Exception {
         // SETUP
         ElavonTransactionRequest txn = MockObjectFactory.getElavonTransactionRequest();
         txn.setCardPresent(false);
@@ -67,11 +68,11 @@ public class ElavonTransactionTest {
 
         // VERIFY
         Assert.assertNotNull(xml);
-        println(xml);
+        print(xml);
     }
 
     @Test
-    public void testWriteBigDecimal() throws Exception {
+    public void writeBigDecimal() throws Exception {
         //SETUP
         ElavonTransactionRequest txn = MockObjectFactory.getElavonTransactionRequest();
         txn.setSalesTax(new BigDecimal(10.00).setScale(2, BigDecimal.ROUND_HALF_UP));
@@ -81,11 +82,11 @@ public class ElavonTransactionTest {
 
         // VERIFY
         Assert.assertNotNull(xml);
-        println(xml);
+        print(xml);
     }
 
     @Test
-    public void testWritePartialAuthIndicator() throws Exception {
+    public void writePartialAuthIndicator() throws Exception {
         // SETUP
         ElavonTransactionRequest txn = MockObjectFactory.getElavonTransactionRequest();
         txn.setPartialAuthIndicator(PartialAuthIndicator.SUPPORTED);
@@ -95,10 +96,6 @@ public class ElavonTransactionTest {
 
         // VERIFY
         Assert.assertNotNull(xml);
-        println(xml);
-    }
-
-    private void println(Object o) {
-        System.out.println(o);
+        print(xml);
     }
 }

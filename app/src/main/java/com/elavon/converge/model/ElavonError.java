@@ -1,9 +1,5 @@
 package com.elavon.converge.model;
 
-/**
- * Created by dennis on 10/24/17.
- */
-
 public class ElavonError {
     private static final int CODE_GATEWAY_NOT_RESPONDING = 3000;
     private static final int CODE_GATEWAY_GENERATED_ERROR = 3001;
@@ -33,7 +29,7 @@ public class ElavonError {
     private static final int CODE_AMOUNT_INVALID = 5002;
     private static final int CODE_APPROVAL_CODE_NO_FORCE = 5003; // A FORCE Approval Code was supplied for this transaction, however the transaction type is not FORCE
     private static final int CODE_INVALID_APPROVAL_CODE = 5004; // The FORCE Approval Code supplied in the authorization request
-        // appears to be invalid or blank. The FORCE Approval Code must be 6 or less alphanumeric characters
+    // appears to be invalid or blank. The FORCE Approval Code must be 6 or less alphanumeric characters
 
     private static final int CODE_FIELD_CHARACTER_LIMIT_EXCEEDED = 5005;
     private static final int CODE_REFUND_AMOUNT_EXCEEDS_LIMIT = 5006;

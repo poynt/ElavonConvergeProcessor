@@ -15,7 +15,7 @@ import org.simpleframework.xml.Element;
  * <ssl_first_name>Test</ssl_first_name>
  * </txn>
  */
-public class BaseModel {
+public abstract class ElavonRequest {
     @Element(name = "ssl_merchant_id")
     private String merchantId;
     @Element(name = "ssl_user_id")
