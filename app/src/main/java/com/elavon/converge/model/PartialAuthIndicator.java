@@ -1,9 +1,5 @@
 package com.elavon.converge.model;
 
-/**
- * Created by dennis on 10/23/17.
- */
-
 public enum PartialAuthIndicator {
     SUPPORTED(1);
 
@@ -17,7 +13,8 @@ public enum PartialAuthIndicator {
         return value;
     }
 
+    @Override
     public String toString() {
-        return ""+value;
+        return Integer.valueOf(value).toString();
     }
 }

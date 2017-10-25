@@ -1,51 +1,25 @@
 package com.elavon.converge.model;
 
+import com.elavon.converge.xml.XmlMapper;
+
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
-import org.simpleframework.xml.Serializer;
-import org.simpleframework.xml.core.Persister;
-import org.simpleframework.xml.transform.Matcher;
-import org.simpleframework.xml.transform.Transform;
-
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.math.BigDecimal;
 
 public class ElavonTransactionTest {
 
-    private Serializer serializer;
+    private XmlMapper xmlMapper;
 
     @Before
     public void initialize() {
-        serializer = new Persister(new Matcher() {
-            @Override
-            public Transform match(Class type) throws Exception {
-                if (type.isEnum()) {
-                    return new EnumTransform(type);
-                } else if (type.getSimpleName().equalsIgnoreCase("Boolean")) {
-                    return new BooleanTransform(type);
-                }
-                return null;
-            }
-        });
+        xmlMapper = new XmlMapper();
     }
 
     @Test
-    public void testEnumMapping() throws Exception {
-        ElavonTransaction txn = MockObjectFactory.getElavonTransaction();
-
-        StringWriter writer = new StringWriter();
-        serializer.write(txn, writer);
-        assertNotNull(writer.toString());
-        println(writer);
-    }
-
-    @Test
-    public void testDeserialization() throws Exception {
+    public void testRead() throws Exception {
+        // SETUP
         String xml =
                 "<txn>\n" +
                         "    <ssl_merchant_id>my_virtualmerchant_id</ssl_merchant_id>\n" +
@@ -58,50 +32,70 @@ public class ElavonTransactionTest {
                         "    <ssl_amount>10.00</ssl_amount>\n" +
                         "    <ssl_cvv2cvc2_indicator>1</ssl_cvv2cvc2_indicator>\n" +
                         "    <ssl_cvv2cvc2>123</ssl_cvv2cvc2>\n" +
-//            "    <ssl_first_name>Test</ssl_first_name>\n" +
+                        "    <ssl_first_name>Test</ssl_first_name>\n" +
                         "</txn>";
-        Reader reader = new StringReader(xml);
-        ElavonTransaction transaction = serializer.read(ElavonTransaction.class, reader, false);
-        assertEquals(transaction.getTransactionType(), ElavonTransactionType.SALE);
+
+        // TEST
+        ElavonTransaction transaction = xmlMapper.read(xml, ElavonTransaction.class);
+
+        // VERIFY
+        Assert.assertEquals(transaction.getTransactionType(), ElavonTransactionType.SALE);
     }
 
     @Test
-    public void testBooleanSerializationn() throws Exception {
+    public void testWriteEnumMapping() throws Exception {
+        // SETUP
+        ElavonTransaction txn = MockObjectFactory.getElavonTransaction();
+
+        // TEST
+        String xml = xmlMapper.write(txn);
+
+        // VERIFY
+        Assert.assertNotNull(xml);
+        println(xml);
+    }
+
+
+    @Test
+    public void testWriteBoolean() throws Exception {
+        // SETUP
         ElavonTransaction txn = MockObjectFactory.getElavonTransaction();
         txn.setCardPresent(false);
 
-        StringWriter w = new StringWriter();
-        serializer.write(txn, w);
-        println(w);
+        // TEST
+        String xml = xmlMapper.write(txn);
+
+        // VERIFY
+        Assert.assertNotNull(xml);
+        println(xml);
     }
 
     @Test
-    public void testBigDecimalSerialization() throws Exception {
-        ElavonTransaction t = MockObjectFactory.getElavonTransaction();
-        t.setSalesTax(new BigDecimal(10.00).setScale(2, BigDecimal.ROUND_HALF_UP));
-        println(t.getSalesTax());
+    public void testWriteBigDecimal() throws Exception {
+        //SETUP
+        ElavonTransaction txn = MockObjectFactory.getElavonTransaction();
+        txn.setSalesTax(new BigDecimal(10.00).setScale(2, BigDecimal.ROUND_HALF_UP));
 
-        StringWriter w = new StringWriter();
-        serializer.write(t, w);
-        println(w);
+        // TEST
+        String xml = xmlMapper.write(txn);
 
-        Reader r = new StringReader(w.toString());
-        ElavonTransaction transaction = serializer.read(ElavonTransaction.class, r, false);
-        println(transaction.getSalesTax());
-        assertEquals(t.getSalesTax(), transaction.getSalesTax());
+        // VERIFY
+        Assert.assertNotNull(xml);
+        println(xml);
     }
 
     @Test
-    public void testPartialAuthIndicator() throws Exception {
-        ElavonTransaction t = MockObjectFactory.getElavonTransaction();
-        //t.setPartialAuthIndicator(PartialAuthIndicator.SUPPORTED);
-        StringWriter w = new StringWriter();
-        serializer.write(t, w);
-        println(w);
+    public void testWritePartialAuthIndicator() throws Exception {
+        // SETUP
+        ElavonTransaction txn = MockObjectFactory.getElavonTransaction();
+        txn.setPartialAuthIndicator(PartialAuthIndicator.SUPPORTED);
 
-        Reader r = new StringReader(w.toString());
-        ElavonTransaction transaction = serializer.read(ElavonTransaction.class, r, false);
-        println(transaction.getPartialAuthIndicator());
+        // TEST
+        String xml = xmlMapper.write(txn);
+
+        // VERIFY
+        Assert.assertNotNull(xml);
+        println(xml);
     }
 
     private void println(Object o) {

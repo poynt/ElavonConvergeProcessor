@@ -9,12 +9,12 @@ public enum ElavonPosMode {
 
     private final String value;
 
-    ElavonPosMode(final String value){
+    ElavonPosMode(final String value) {
         this.value = value;
     }
 
-
-    public String toString(){
+    @Override
+    public String toString() {
         return value;
     }
 }

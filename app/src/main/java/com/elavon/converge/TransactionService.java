@@ -29,9 +29,7 @@ public class TransactionService extends Service {
     private static final String TAG = "SampleProcessor";
 
     public TransactionService() {
-
     }
-
 
     @Override
     public IBinder onBind(Intent intent) {

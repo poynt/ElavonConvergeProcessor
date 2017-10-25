@@ -1,31 +1,31 @@
-package com.elavon.converge.model;
+package com.elavon.converge.xml;
 
 import org.simpleframework.xml.transform.Transform;
 
 /**
  * Most boolean values in Converge spec take values of "Y" or "N"
  */
-
 public class BooleanTransform implements Transform<Boolean> {
     private final Class type;
 
-    public BooleanTransform(Class type){
+    public BooleanTransform(Class type) {
         this.type = type;
     }
+
     @Override
     public Boolean read(String value) throws Exception {
-        if ("Y".equalsIgnoreCase(value)){
+        if ("Y".equalsIgnoreCase(value)) {
             return Boolean.TRUE;
-        }else{
+        } else {
             return Boolean.FALSE;
         }
     }
 
     @Override
     public String write(Boolean value) throws Exception {
-        if (Boolean.TRUE == value) {
+        if (Boolean.TRUE.equals(value)) {
             return "Y";
-        }else{
+        } else {
             return "N";
         }
     }

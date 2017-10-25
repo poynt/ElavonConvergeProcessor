@@ -1,14 +1,11 @@
 package com.elavon.converge.config;
 
-/**
- * Created by palavilli on 5/11/16.
- */
 public class AIDConfig {
     /* mode 00-modify, 01-overwrite, 02-push*/
-    byte mode;
-    byte cardInterface;
-    byte[] aid;
-    byte[] tlvs;
+    private byte mode;
+    private byte cardInterface;
+    private byte[] aid;
+    private byte[] tlvs;
 
     public AIDConfig(byte mode, byte cardInterface, byte[] aid, byte[] tlvs) {
         this.mode = mode;
