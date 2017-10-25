@@ -2,7 +2,9 @@ package com.elavon.converge.model;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
+
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 import org.simpleframework.xml.transform.Matcher;
@@ -13,32 +15,28 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.math.BigDecimal;
 
-
-/**
- * Created by dennis on 10/23/17.
- */
 public class ElavonTransactionTest {
 
-    Serializer serializer;
+    private Serializer serializer;
 
     @Before
-    public void initialize(){
+    public void initialize() {
         serializer = new Persister(new Matcher() {
             @Override
             public Transform match(Class type) throws Exception {
-                if (type.isEnum()){
+                if (type.isEnum()) {
                     return new EnumTransform(type);
-                }else if (type.getSimpleName().equalsIgnoreCase("Boolean")){
+                } else if (type.getSimpleName().equalsIgnoreCase("Boolean")) {
                     return new BooleanTransform(type);
                 }
                 return null;
             }
         });
-
     }
+
     @Test
     public void testWriteEnumMapping() throws Exception{
-        ElavonTransactionRequest txn = new ElavonTransactionRequest();
+        ElavonTransactionRequest txn = MockObjectFactory.getElavonTransactionRequest();
         txn.setTransactionType(ElavonTransactionType.SALE);
         txn.setUserId("user");
         txn.setPin("pin");
@@ -47,7 +45,7 @@ public class ElavonTransactionTest {
         StringWriter writer = new StringWriter();
         serializer.write(txn, writer);
         assertNotNull(writer.toString());
-        System.out.println(writer.toString());
+        println(writer.toString());
 
     }
 
@@ -74,7 +72,7 @@ public class ElavonTransactionTest {
 
     @Test
     public void testWriteBoolean() throws Exception{
-        ElavonTransactionRequest txn = new ElavonTransactionRequest();
+        ElavonTransactionRequest txn = MockObjectFactory.getElavonTransactionRequest();
         txn.setUserId("user");
         txn.setPin("pin");
         txn.setMerchantId("merchant");
@@ -123,7 +121,37 @@ public class ElavonTransactionTest {
         txn.setTransactionType(ElavonTransactionType.SALE);
         return txn;
     }
-    private void println(Object o){
+
+    @Test
+    public void testBigDecimalSerialization() throws Exception {
+        ElavonTransactionRequest t = MockObjectFactory.getElavonTransactionRequest();
+        t.setSalesTax(new BigDecimal(10.00).setScale(2, BigDecimal.ROUND_HALF_UP));
+        println(t.getSalesTax());
+
+        StringWriter w = new StringWriter();
+        serializer.write(t, w);
+        println(w);
+
+        Reader r = new StringReader(w.toString());
+        ElavonTransactionRequest transaction = serializer.read(ElavonTransactionRequest.class, r, false);
+        println(transaction.getSalesTax());
+        assertEquals(t.getSalesTax(), transaction.getSalesTax());
+    }
+
+    @Test
+    public void testPartialAuthIndicator() throws Exception {
+        ElavonTransactionRequest t = MockObjectFactory.getElavonTransactionRequest();
+        //t.setPartialAuthIndicator(PartialAuthIndicator.SUPPORTED);
+        StringWriter w = new StringWriter();
+        serializer.write(t, w);
+        println(w);
+
+        Reader r = new StringReader(w.toString());
+        ElavonTransactionRequest transaction = serializer.read(ElavonTransactionRequest.class, r, false);
+        println(transaction.getPartialAuthIndicator());
+    }
+
+    private void println(Object o) {
         System.out.println(o);
     }
 }
