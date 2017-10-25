@@ -43,7 +43,7 @@ import java.util.TimeZone;
  </txn>
  */
 @Root (name = "txn")
-public class ElavonTransactionResponse {
+public class ElavonTransactionResponse extends ElavonResponse {
     public static final String RESULT_SUCCESS = "0";
 
     public static class RESULT_MESSAGE{
