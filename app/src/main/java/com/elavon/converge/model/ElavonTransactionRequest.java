@@ -19,8 +19,7 @@ import java.math.BigDecimal;
  * </txn>
  */
 @Root(name = "txn")
-public class ElavonTransaction extends BaseModel {
-    //@Element (name="ssl_transaction_type")
+public class ElavonTransactionRequest extends BaseModel {
     @Element(name = "ssl_transaction_type")
     private ElavonTransactionType transactionType;
     @Element(name = "ssl_card_number", required = false)

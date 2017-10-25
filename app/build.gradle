@@ -57,4 +57,5 @@ dependencies {
 
     // Unit testing dependencies
     testCompile 'junit:junit:4.12'
+    testCompile 'com.squareup.okhttp3:okhttp:3.9.0'
 }

@@ -2,8 +2,8 @@ package com.elavon.converge.model;
 
 public class MockObjectFactory {
 
-    public static ElavonTransaction getElavonTransaction() {
-        ElavonTransaction txn = new ElavonTransaction();
+    public static ElavonTransactionRequest getElavonTransactionRequest() {
+        ElavonTransactionRequest txn = new ElavonTransactionRequest();
         txn.setUserId("user");
         txn.setPin("pin");
         txn.setMerchantId("merchant");

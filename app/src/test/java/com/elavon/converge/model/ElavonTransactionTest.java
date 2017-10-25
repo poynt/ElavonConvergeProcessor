@@ -36,7 +36,7 @@ public class ElavonTransactionTest {
                         "</txn>";
 
         // TEST
-        ElavonTransaction transaction = xmlMapper.read(xml, ElavonTransaction.class);
+        ElavonTransactionRequest transaction = xmlMapper.read(xml, ElavonTransactionRequest.class);
 
         // VERIFY
         Assert.assertEquals(transaction.getTransactionType(), ElavonTransactionType.SALE);
@@ -45,7 +45,7 @@ public class ElavonTransactionTest {
     @Test
     public void testWriteEnumMapping() throws Exception {
         // SETUP
-        ElavonTransaction txn = MockObjectFactory.getElavonTransaction();
+        ElavonTransactionRequest txn = MockObjectFactory.getElavonTransactionRequest();
 
         // TEST
         String xml = xmlMapper.write(txn);
@@ -59,7 +59,7 @@ public class ElavonTransactionTest {
     @Test
     public void testWriteBoolean() throws Exception {
         // SETUP
-        ElavonTransaction txn = MockObjectFactory.getElavonTransaction();
+        ElavonTransactionRequest txn = MockObjectFactory.getElavonTransactionRequest();
         txn.setCardPresent(false);
 
         // TEST
@@ -73,7 +73,7 @@ public class ElavonTransactionTest {
     @Test
     public void testWriteBigDecimal() throws Exception {
         //SETUP
-        ElavonTransaction txn = MockObjectFactory.getElavonTransaction();
+        ElavonTransactionRequest txn = MockObjectFactory.getElavonTransactionRequest();
         txn.setSalesTax(new BigDecimal(10.00).setScale(2, BigDecimal.ROUND_HALF_UP));
 
         // TEST
@@ -87,7 +87,7 @@ public class ElavonTransactionTest {
     @Test
     public void testWritePartialAuthIndicator() throws Exception {
         // SETUP
-        ElavonTransaction txn = MockObjectFactory.getElavonTransaction();
+        ElavonTransactionRequest txn = MockObjectFactory.getElavonTransactionRequest();
         txn.setPartialAuthIndicator(PartialAuthIndicator.SUPPORTED);
 
         // TEST
