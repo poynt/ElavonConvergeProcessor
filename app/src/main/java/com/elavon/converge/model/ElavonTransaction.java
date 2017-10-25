@@ -1,11 +1,5 @@
 package com.elavon.converge.model;
 
-/**
- * Created by palavilli on 10/1/17.
- */
-
-import android.text.BoringLayout;
-
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;
 
@@ -25,21 +19,21 @@ import java.math.BigDecimal;
  * </txn>
  */
 
-@Root(name="txn")
+@Root(name = "txn")
 public class ElavonTransaction extends BaseModel {
     //@Element (name="ssl_transaction_type")
-    @Element(name="ssl_transaction_type")
+    @Element(name = "ssl_transaction_type")
     private ElavonTransactionType transactionType;
-    @Element (name ="ssl_card_number", required=false)
+    @Element(name = "ssl_card_number", required = false)
     private String cardNumber;
-    @Element (name ="ssl_exp_date", required=false)
+    @Element(name = "ssl_exp_date", required = false)
     /**
      * Do not send an expiration date with a token that is stored in the Card Manager.
      */
     private String expDate;
-    @Element (name = "ssl_enc_track_data", required=false)
+    @Element(name = "ssl_enc_track_data", required = false)
     private String encryptedTrackData;
-    @Element (name="ssl_ksn", required = false)
+    @Element(name = "ssl_ksn", required = false)
     private String ksn;
     /**
      * When specifying amounts, be sure to submit the correct number of decimal places for the transaction currency.
@@ -48,16 +42,16 @@ public class ElavonTransaction extends BaseModel {
      * For those currencies with 3 possible digits, for example: Bahraini Dinar, we will automatically
      * round the transaction to two decimals. (forexample: 1.235 will round to 1.23).
      */
-    @Element (name ="ssl_amount", required=false)
+    @Element(name = "ssl_amount", required = false)
     private BigDecimal amount;
-    @Element (name ="ssl_cvv2cvc2_indicator", required=false)
+    @Element(name = "ssl_cvv2cvc2_indicator", required = false)
     private String cvv2Indicator;
-    @Element (name ="ssl_cvv2cvc2", required=false)
+    @Element(name = "ssl_cvv2cvc2", required = false)
     private String cvv2;
-    @Element (name ="ssl_first_name", required=false)
+    @Element(name = "ssl_first_name", required = false)
     private String firstName;
 
-    @Element (name ="ssl_card_present", required = false)
+    @Element(name = "ssl_card_present", required = false)
     private Boolean cardPresent;
 
     @Element(name = "ssl_avs_zip", required = false)
@@ -81,9 +75,9 @@ public class ElavonTransaction extends BaseModel {
 
     /**
      * Use only with a terminal that is setup with DBA.
-     DBA name provided by the merchant with each transaction. The maximum allowable length of DBA
-     Name variable provided by the merchant can be 21, 17 or 12 based on the length setup for the DBA
-     constant in the field setup.
+     * DBA name provided by the merchant with each transaction. The maximum allowable length of DBA
+     * Name variable provided by the merchant can be 21, 17 or 12 based on the length setup for the DBA
+     * constant in the field setup.
      */
     @Element(name = "ssl_dynamic_dba", required = false)
     private String dynamicDBA;
@@ -95,18 +89,18 @@ public class ElavonTransaction extends BaseModel {
     // ssl_completion_date - NOT USED
     // ssl_transaction_currency - NOT USED (multi-currency support on terminal required)
 
-    @Element(name="ssl_get_token", required = false)
+    @Element(name = "ssl_get_token", required = false)
     private Boolean generateToken;
 
     /**
      * Use only with a terminal that is setup with Tokenization.
-     Add to Card Manager indicator, used to indicate if you wish to generate a token and
-     store it in Card Manager. Defaults to false.
-     To add the token to the card manager you must send the card data and cardholder first/last name,
-     those are required. Once stored to Card Manager, the token number can be sent alone and will be
-     used as a substitute for the stored information.
+     * Add to Card Manager indicator, used to indicate if you wish to generate a token and
+     * store it in Card Manager. Defaults to false.
+     * To add the token to the card manager you must send the card data and cardholder first/last name,
+     * those are required. Once stored to Card Manager, the token number can be sent alone and will be
+     * used as a substitute for the stored information.
      */
-    @Element(name="ssl_add_token", required = false)
+    @Element(name = "ssl_add_token", required = false)
     private Boolean generateAndStoreToken;
 
     public Boolean getGenerateToken() {
@@ -173,6 +167,7 @@ public class ElavonTransaction extends BaseModel {
     public void setCardPresent(Boolean cardPresent) {
         this.cardPresent = cardPresent;
     }
+
     public ElavonTransactionType getTransactionType() {
         return transactionType;
     }
@@ -244,6 +239,4 @@ public class ElavonTransaction extends BaseModel {
     public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
-
-
 }
