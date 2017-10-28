@@ -10,8 +10,7 @@ public enum AVSResponse {
     MALFORMED_STREET_ZIP("C"), // Street address and postal code in wrong formats
     MATCH_INTERNATIONAL("D"), // Street address and postal code match (international issuer)
     AVS_ERROR("E"), // AVS Error
-    //TODO Verify the meaning
-    MATCH_UK("F"), // Address does compare and five-digit ZIP code does compare (UK only)
+    MATCH_UK("F"), // Address does compare (i.e. match) and five-digit ZIP code does compare (UK only)
     NOT_SUPPORTED_INTL("G"), // Service not supported by non-US issuer
     NOT_VERIFIED("I"), // Address information not verified by international issuer
     MATCH_INTERNATIONAL_INTL("M"), // Street Address and Postal code match (international issuer)

@@ -9,6 +9,17 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 
+import com.elavon.converge.model.ConvergeMapper;
+import com.elavon.converge.model.ElavonResponse;
+import com.elavon.converge.model.ElavonTransactionRequest;
+import com.elavon.converge.model.ElavonTransactionResponse;
+import com.elavon.converge.processor.ConvergeCallback;
+import com.elavon.converge.processor.ConvergeClient;
+import com.elavon.converge.xml.XmlMapper;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
@@ -18,6 +29,8 @@ import java.util.UUID;
 
 import co.poynt.api.model.AdjustTransactionRequest;
 import co.poynt.api.model.EMVData;
+import co.poynt.api.model.EntryMode;
+import co.poynt.api.model.FundingSourceEntryDetails;
 import co.poynt.api.model.FundingSourceType;
 import co.poynt.api.model.Processor;
 import co.poynt.api.model.ProcessorResponse;
@@ -39,8 +52,15 @@ public class TransactionManager {
     private Context context;
     private Map<UUID, Transaction> TRANSACTION_CACHE;
 
+    private ConvergeClient convergeClient;
+
     private TransactionManager(Context context) {
         this.context = context;
+        try {
+            convergeClient = new ConvergeClient();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         TRANSACTION_CACHE = new HashMap<>();
         bind();
     }
@@ -95,6 +115,35 @@ public class TransactionManager {
 
     public void processTransaction(final Transaction transaction, final String requestId, final IPoyntTransactionServiceListener listener) {
         Log.d(TAG, "PROCESSED TRANSACTION");
+        Type transactionType = new TypeToken<Transaction>(){}.getType();
+        System.out.println("TXN: " + new Gson().toJson(transaction, transactionType));
+
+        // MSR Sale
+        if (transaction.getAction() == TransactionAction.SALE &&
+                transaction.getFundingSource().getEntryDetails().getEntryMode() == EntryMode.TRACK_DATA_FROM_MAGSTRIPE) {
+            ElavonTransactionRequest request = ConvergeMapper.createMSRSaleRequest(transaction);
+            System.out.println(new Gson().toJson(request));
+            convergeClient.call(request, new ConvergeCallback<ElavonTransactionResponse>() {
+                @Override
+                public void onResponse(ElavonTransactionResponse elavonResponse) {
+                    try {
+                        System.out.println(new XmlMapper().write(elavonResponse));
+                        ConvergeMapper.handleMSRSaleResponse(transaction, elavonResponse);
+                        listener.onResponse(transaction, requestId, null);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onFailure(Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+            });
+
+        }
+
+/*
 
         // get track1 length if available
         int track1Len = 0;
@@ -233,6 +282,7 @@ public class TransactionManager {
                 e1.printStackTrace();
             }
         }
+*/
 
     }
 

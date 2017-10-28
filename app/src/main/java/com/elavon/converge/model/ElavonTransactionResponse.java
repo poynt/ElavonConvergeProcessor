@@ -47,6 +47,7 @@ public class ElavonTransactionResponse extends ElavonResponse {
     public static final String RESULT_SUCCESS = "0";
 
     public static class RESULT_MESSAGE{
+        public static final String APPROVAL="APPROVAL";// Approved
         public static final String PARTIAL_APPROVAL="PARTIAL APPROVAL";// Approved for a Partial Amount
         public static final String DECLINE_CVV2="DECLINE CVV2";// Do not honor due to CVV2 mismatchfailure
         public static final String PICK_UP_CARD="PICK UP CARD";// Pick up card
@@ -208,7 +209,8 @@ public class ElavonTransactionResponse extends ElavonResponse {
     @Nullable
     public Date getTxnTimeAsDate(){
         SimpleDateFormat isoFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a");
-        // Converge returns time in EST
+        // TODO per Elavon: The timestamp comes from Converge and is in customer MID local time.
+        //
         isoFormat.setTimeZone(TimeZone.getTimeZone("America/New_York"));
         try {
             return isoFormat.parse(txnTime);
