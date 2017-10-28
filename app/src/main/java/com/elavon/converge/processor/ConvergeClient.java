@@ -31,7 +31,7 @@ public class ConvergeClient {
 
     private static final int CONNECT_TIMEOUT_MS = 10000;
     private static final int WRITE_TIMEOUT_MS = 5000;
-    private static final int READ_TIMEOUT_MS = 5000;
+    private static final int READ_TIMEOUT_MS = 30000;
     private static final MediaType FORM_URL_ENCODED_TYPE = MediaType.parse("application/x-www-form-urlencoded; charset=utf-8");
 
     private final String host;

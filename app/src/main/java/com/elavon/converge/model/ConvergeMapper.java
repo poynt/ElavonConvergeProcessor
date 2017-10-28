@@ -165,6 +165,31 @@ public class ConvergeMapper {
             // TODO implement
         }else { // DECLINE
             // TODO
+            /*
+
+            //TODO implement response below
+            <txn>
+               <errorCode>5000</errorCode>
+               <errorName>Credit Card Number Invalid</errorName>
+               <errorMessage>The Credit Card Number supplied in the authorization request appears to be invalid.</errorMessage>
+            </txn>
+
+            <txn>
+               <errorMessage>Only Test Cards Allowed in this environment</errorMessage>
+               <errorName>Only Test Cards Allowed</errorName>
+               <errorCode>9999</errorCode>
+               <ssl_conversion_rate>0.0</ssl_conversion_rate>
+            </txn>
+
+            */
+            if (et.getErrorCode()!=0){
+                t.setStatus(TransactionStatus.DECLINED);
+                ProcessorResponse response = createProcessorResponse();
+                response.setStatus(ProcessorStatus.Failure);
+                response.setStatusMessage(et.getErrorName());
+                t.setProcessorResponse(response);
+            }
+
         }
     }
 
