@@ -6,15 +6,16 @@
     <uses-permission android:name="poynt.permission.CONFIGURATION_SERVICE" />
     <uses-permission android:name="co.poynt.business.ACCESS_BUSINESS" />
     <uses-permission android:name="poynt.permission.SECOND_SCREEN_SERVICE" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:name="com.elavon.converge.ElavonConvergeProcessorApplication"
+        android:name=".ElavonConvergeProcessorApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
         <service
-            android:name="com.elavon.converge.TransactionService"
+            android:name=".TransactionService"
             android:exported="true">
             <intent-filter>
                 <action android:name="co.poynt.os.services.v1.IPoyntTransactionService" />
@@ -24,6 +25,19 @@
                 android:name="co.poynt.os.service.capability"
                 android:resource="@xml/transaction_capabilities" />
         </service>
+
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/app_name"
+            android:noHistory="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

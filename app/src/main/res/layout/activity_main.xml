@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.elavon.converge.MainActivity">
+
+
+    <Button
+        android:id="@+id/trackDataFormatBtn00"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="00h: SS, ES and LRC not included" />
+
+    <Button
+        android:id="@+id/trackDataFormatBtn01"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="01h: SS &amp; ES are included in the track data but LRC is not." />
+
+    <Button
+        android:id="@+id/trackDataFormatBtn02"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="02h: SS, ES and LRC ARE included " />
+
+    <Button
+        android:id="@+id/setASCIIModeBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Use ASCII Format for Track Data" />
+
+</LinearLayout>

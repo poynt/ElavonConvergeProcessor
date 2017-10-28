@@ -20,7 +20,7 @@ public class ConvergeClientTest extends BaseTest {
     private ConvergeClient convergeClient;
 
     @Before
-    public void initialize() {
+    public void initialize() throws Exception {
         convergeClient = new ConvergeClient();
     }
 

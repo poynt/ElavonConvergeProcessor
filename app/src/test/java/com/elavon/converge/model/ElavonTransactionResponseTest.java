@@ -53,4 +53,17 @@ public class ElavonTransactionResponseTest extends BaseTest {
         assertEquals(dcc, transaction.getConversionRate(), 0);
         print(transaction.getConversionRate());
     }
+
+    @Test
+    public void readAuthApproval() throws Exception{
+        // SETUP
+        String xml = "<txn><ssl_card_short_description>MC</ssl_card_short_description><ssl_cvv2_response></ssl_cvv2_response><ssl_account_balance>0.00</ssl_account_balance><ssl_result_message>APPROVAL</ssl_result_message><ssl_invoice_number></ssl_invoice_number><ssl_promo_code></ssl_promo_code><ssl_result>0</ssl_result><ssl_txn_id>271017A15-D11434F9-B6AE-4312-A9BB-034F961636AB</ssl_txn_id><ssl_completion_date></ssl_completion_date><ssl_transaction_type>SALE</ssl_transaction_type><ssl_avs_response> </ssl_avs_response><ssl_account_status></ssl_account_status><ssl_approval_code>CMC648</ssl_approval_code><ssl_enrollment></ssl_enrollment><ssl_exp_date>1225</ssl_exp_date><ssl_loyalty_program></ssl_loyalty_program><ssl_tender_amount></ssl_tender_amount><ssl_departure_date></ssl_departure_date><ssl_card_type>CREDITCARD</ssl_card_type><ssl_loyalty_account_balance></ssl_loyalty_account_balance><ssl_salestax></ssl_salestax><ssl_amount>5.20</ssl_amount><ssl_card_number>54**********3330</ssl_card_number><ssl_issue_points></ssl_issue_points><ssl_txn_time>10/27/2017 01:37:53 PM</ssl_txn_time><ssl_access_code></ssl_access_code></txn>";
+
+        // TEST
+        ElavonTransactionResponse transactionResponse = xmlMapper.read(xml, ElavonTransactionResponse.class);
+        printJson(transactionResponse);
+
+    }
+
+
 }
