@@ -1,15 +1,19 @@
 package com.elavon.converge;
 
-
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 
+import com.elavon.converge.inject.AppComponent;
+import com.elavon.converge.inject.AppModule;
+import com.elavon.converge.inject.DaggerAppComponent;
 import com.elavon.converge.core.TransactionManager;
 
 import java.util.Map;
+
+import javax.inject.Inject;
 
 import co.poynt.api.model.AdjustTransactionRequest;
 import co.poynt.api.model.BalanceInquiry;
@@ -25,7 +29,13 @@ public class TransactionService extends Service {
 
     private static final String TAG = "SampleProcessor";
 
-    public TransactionService() {
+    @Inject
+    protected TransactionManager transactionManager;
+
+    @Override
+    public void onCreate() {
+        final AppComponent component = DaggerAppComponent.builder().appModule(new AppModule(this.getApplicationContext())).build();
+        component.inject(this);
     }
 
     @Override
@@ -44,10 +54,6 @@ public class TransactionService extends Service {
         public void processTransaction(final Transaction transaction, final String requestId, final IPoyntTransactionServiceListener listener) throws RemoteException {
             Log.d(TAG, "processTransaction :" + requestId);
             Log.d(TAG, "Transaction:" + transaction.toString());
-
-            final TransactionManager transactionManager = ElavonConvergeProcessorApplication.getInstance().getTransactionManager();
-            //transactionManager.processTransaction(transaction, requestId, listener);
-
             // if you want to collect a new pin after processing a card
             //transactionManager.collectNewPin(transaction, requestId, listener);
 
@@ -59,7 +65,6 @@ public class TransactionService extends Service {
         @Override
         public void voidTransaction(String transactionId, EMVData emvData, String requestId, IPoyntTransactionServiceListener listener) throws RemoteException {
             Log.d(TAG, "voidTransaction :" + requestId);
-            TransactionManager transactionManager = ElavonConvergeProcessorApplication.getInstance().getTransactionManager();
             transactionManager.voidTransaction(transactionId, emvData, requestId, listener);
         }
 
@@ -69,9 +74,7 @@ public class TransactionService extends Service {
                                        String requestId,
                                        IPoyntTransactionServiceListener listener) throws RemoteException {
             Log.d(TAG, "captureTransaction:" + requestId);
-            TransactionManager transactionManager = ElavonConvergeProcessorApplication.getInstance().getTransactionManager();
-            transactionManager.captureTransaction(transactionId,
-                    transaction, requestId, listener);
+            transactionManager.captureTransaction(transactionId, transaction, requestId, listener);
 
         }
 
@@ -84,7 +87,6 @@ public class TransactionService extends Service {
         @Override
         public void updateTransaction(String transactionId, AdjustTransactionRequest transaction, String requestId, IPoyntTransactionServiceListener listener) throws RemoteException {
             Log.d(TAG, "updateTransaction:" + requestId);
-            TransactionManager transactionManager = ElavonConvergeProcessorApplication.getInstance().getTransactionManager();
             transactionManager.updateTransaction(transactionId, transaction, requestId, listener);
         }
 
@@ -120,7 +122,6 @@ public class TransactionService extends Service {
         @Override
         public void getTransaction(String transactionId, String requestId, IPoyntTransactionServiceListener listener) throws RemoteException {
             Log.d(TAG, "getTransaction:" + transactionId);
-            TransactionManager transactionManager = ElavonConvergeProcessorApplication.getInstance().getTransactionManager();
             transactionManager.getTransaction(transactionId, requestId, listener);
         }
 
@@ -151,6 +152,5 @@ public class TransactionService extends Service {
             //shouldn't be called - just continue
             callback.onContinue();
         }
-
     };
 }

@@ -8,57 +8,30 @@ import com.elavon.converge.xml.XmlMapper;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.net.URLEncoder;
-import java.security.KeyStore;
-import java.util.Collections;
-import java.util.concurrent.TimeUnit;
 
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
-
+import javax.inject.Inject;
 
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.ConnectionSpec;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import okhttp3.TlsVersion;
 
 public class ConvergeClient {
 
-    private static final int CONNECT_TIMEOUT_MS = 10000;
-    private static final int WRITE_TIMEOUT_MS = 5000;
-    private static final int READ_TIMEOUT_MS = 30000;
     private static final MediaType FORM_URL_ENCODED_TYPE = MediaType.parse("application/x-www-form-urlencoded; charset=utf-8");
 
-    private final String host;
-    private final OkHttpClient client;
-    private final XmlMapper xmlMapper;
+    protected final String host;
+    protected final OkHttpClient client;
+    protected final XmlMapper xmlMapper;
 
-    public ConvergeClient() throws Exception{
-        // TODO have these injected
-        host = "https://api.demo.convergepay.com/VirtualMerchantDemo/processxml.do";
-        //Force all traffic to use TLSv1.2 for PCI-PTS
-
-        ConnectionSpec spec = new ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS).tlsVersions
-                (TlsVersion.TLS_1_2).build();
-        SSLSocketFactory sslSocketFactory = new TLSv1_2_SSLSocketFactory();
-        TrustManagerFactory tmf = TrustManagerFactory
-                .getInstance(TrustManagerFactory.getDefaultAlgorithm());
-        tmf.init((KeyStore) null);
-        X509TrustManager xtm = (X509TrustManager) tmf.getTrustManagers()[0];
-        client = new OkHttpClient.Builder()
-                .connectTimeout(CONNECT_TIMEOUT_MS, TimeUnit.MILLISECONDS)
-                .writeTimeout(WRITE_TIMEOUT_MS, TimeUnit.MILLISECONDS)
-                .readTimeout(READ_TIMEOUT_MS, TimeUnit.MILLISECONDS)
-                .connectionSpecs(Collections.singletonList(spec))
-                .sslSocketFactory(sslSocketFactory, xtm)
-                .build();
-
-        xmlMapper = new XmlMapper();
+    @Inject
+    public ConvergeClient(final String host, final OkHttpClient client, final XmlMapper xmlMapper) {
+        this.host = host;
+        this.client = client;
+        this.xmlMapper = xmlMapper;
     }
 
     public <T extends ElavonResponse> void call(final ElavonRequest model, final ConvergeCallback<T> callback) {
@@ -120,7 +93,6 @@ public class ConvergeClient {
 
     private <T extends ElavonResponse> T getResponse(final String xml, final Class<T> responseClass) {
         try {
-            System.out.println(xml);
             return xmlMapper.read(xml, responseClass);
         } catch (Exception e) {
             throw new ConvergeClientException("Invalid XML response", e);

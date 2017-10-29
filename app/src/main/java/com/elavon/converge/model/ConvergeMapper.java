@@ -1,8 +1,8 @@
 package com.elavon.converge.model;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
-import co.poynt.api.model.CVResult;
 import co.poynt.api.model.Processor;
 import co.poynt.api.model.ProcessorResponse;
 import co.poynt.api.model.ProcessorStatus;
@@ -161,6 +161,11 @@ public class ConvergeMapper {
             // TODO for now assuming that we are only dealing with currency that have decimal values
             processorResponse.setApprovedAmount(et.getAmount().multiply(new BigDecimal(100)).longValue());
             t.setProcessorResponse(processorResponse);
+
+            // TODO temporary fix
+            if (t.getId() == null) {
+                t.setId(UUID.randomUUID());
+            }
         }else if (et.getResultMessage() == ElavonTransactionResponse.RESULT_MESSAGE.PARTIAL_APPROVAL) {// PARTIAL APPROVAL
             // TODO implement
         }else { // DECLINE

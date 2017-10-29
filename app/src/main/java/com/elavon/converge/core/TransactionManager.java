@@ -4,13 +4,11 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.AsyncTask;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 
 import com.elavon.converge.model.ConvergeMapper;
-import com.elavon.converge.model.ElavonResponse;
 import com.elavon.converge.model.ElavonTransactionRequest;
 import com.elavon.converge.model.ElavonTransactionResponse;
 import com.elavon.converge.processor.ConvergeCallback;
@@ -20,62 +18,43 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.inject.Inject;
+
 import co.poynt.api.model.AdjustTransactionRequest;
 import co.poynt.api.model.EMVData;
 import co.poynt.api.model.EntryMode;
-import co.poynt.api.model.FundingSourceEntryDetails;
-import co.poynt.api.model.FundingSourceType;
-import co.poynt.api.model.Processor;
-import co.poynt.api.model.ProcessorResponse;
-import co.poynt.api.model.ProcessorStatus;
 import co.poynt.api.model.Transaction;
 import co.poynt.api.model.TransactionAction;
 import co.poynt.api.model.TransactionAmounts;
 import co.poynt.api.model.TransactionStatus;
-import co.poynt.os.model.PoyntError;
 import co.poynt.os.services.v1.IPoyntSecurityService;
 import co.poynt.os.services.v1.IPoyntTransactionServiceListener;
-import fr.devnied.bitlib.BytesUtils;
 
 public class TransactionManager {
 
     private static final String TAG = "TransactionManager";
-    private static TransactionManager transactionManager;
     private IPoyntSecurityService poyntSecurityService;
-    private Context context;
-    private Map<UUID, Transaction> TRANSACTION_CACHE;
 
-    private ConvergeClient convergeClient;
+    protected Context context;
+    protected ConvergeClient convergeClient;
+    protected Map<UUID, Transaction> transactionCache;
 
-    private TransactionManager(Context context) {
+    @Inject
+    public TransactionManager(final Context context, final ConvergeClient convergeClient) {
         this.context = context;
-        try {
-            convergeClient = new ConvergeClient();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        TRANSACTION_CACHE = new HashMap<>();
+        this.convergeClient = convergeClient;
+        this.transactionCache = new HashMap<>();
         bind();
-    }
-
-    public static TransactionManager getInstance(Context context) {
-        if (transactionManager == null) {
-            transactionManager = new TransactionManager(context);
-        }
-        return transactionManager;
     }
 
     public synchronized void bind() {
         if (poyntSecurityService == null) {
-            context.bindService(new Intent(IPoyntSecurityService.class.getName()),
-                    mConnection, Context.BIND_AUTO_CREATE);
+            context.bindService(new Intent(IPoyntSecurityService.class.getName()), mConnection, Context.BIND_AUTO_CREATE);
         } else {
             // already connected ?
         }
@@ -290,7 +269,7 @@ public class TransactionManager {
     public void captureTransaction(String transactionId, AdjustTransactionRequest adjustTransactionRequest, String requestId, IPoyntTransactionServiceListener listener) {
         Log.d(TAG, "CAPTURED TRANSACTION: " + transactionId);
         // get cached transaction
-        Transaction transaction = TRANSACTION_CACHE.get(UUID.fromString(transactionId));
+        Transaction transaction = transactionCache.get(UUID.fromString(transactionId));
         if (transaction == null) {
             // if we did not find one just generate a new one
             transaction = new Transaction();
@@ -301,7 +280,7 @@ public class TransactionManager {
         transaction.setStatus(TransactionStatus.CAPTURED);
         transaction.setUpdatedAt(Calendar.getInstance());
         try {
-            TRANSACTION_CACHE.put(transaction.getId(), transaction);
+            transactionCache.put(transaction.getId(), transaction);
             if (listener != null) {
                 listener.onResponse(transaction, requestId, null);
             }
@@ -313,7 +292,7 @@ public class TransactionManager {
     public void updateTransaction(String transactionId, AdjustTransactionRequest adjustTransactionRequest, String requestId, IPoyntTransactionServiceListener listener) {
         Log.d(TAG, "UPDATE TRANSACTION: " + transactionId);
         // get cached transaction
-        Transaction transaction = TRANSACTION_CACHE.get(UUID.fromString(transactionId));
+        Transaction transaction = transactionCache.get(UUID.fromString(transactionId));
         if (transaction == null) {
             // if we did not find one just generate a new one
             transaction = new Transaction();
@@ -323,7 +302,7 @@ public class TransactionManager {
         transaction.setAmounts(adjustTransactionRequest.getAmounts());
         transaction.setUpdatedAt(Calendar.getInstance());
         try {
-            TRANSACTION_CACHE.put(transaction.getId(), transaction);
+            transactionCache.put(transaction.getId(), transaction);
             if (listener != null) {
                 listener.onResponse(transaction, requestId, null);
             } else {
@@ -340,7 +319,7 @@ public class TransactionManager {
                                 String requestId,
                                 IPoyntTransactionServiceListener listener) {
         // get cached transaction
-        Transaction transaction = TRANSACTION_CACHE.get(UUID.fromString(transactionId));
+        Transaction transaction = transactionCache.get(UUID.fromString(transactionId));
         if (transaction == null) {
             // if we did not find one just generate a new one
             transaction = new Transaction();
@@ -355,7 +334,7 @@ public class TransactionManager {
         transaction.setUpdatedAt(Calendar.getInstance());
 
         try {
-            TRANSACTION_CACHE.put(transaction.getId(), transaction);
+            transactionCache.put(transaction.getId(), transaction);
             listener.onResponse(transaction, requestId, null);
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -365,7 +344,7 @@ public class TransactionManager {
     public void getTransaction(String transactionId, String requestId, IPoyntTransactionServiceListener listener) {
         Log.d(TAG, "CAPTURED TRANSACTION: " + transactionId);
         // get cached transaction
-        Transaction transaction = TRANSACTION_CACHE.get(UUID.fromString(transactionId));
+        Transaction transaction = transactionCache.get(UUID.fromString(transactionId));
         try {
             listener.onResponse(transaction, requestId, null);
         } catch (RemoteException e) {
