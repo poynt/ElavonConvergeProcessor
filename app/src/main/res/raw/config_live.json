@@ -1,0 +1,8 @@
+{
+  "convergeClient": {
+    "host": "https://api.convergepay.com/VirtualMerchantDemo/processxml.do",
+    "connectTimeoutMs": 10000,
+    "readTimeoutMs": 30000,
+    "writeTimeoutMs": 30000
+  }
+}

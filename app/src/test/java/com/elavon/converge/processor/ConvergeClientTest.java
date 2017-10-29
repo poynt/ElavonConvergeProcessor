@@ -1,6 +1,7 @@
 package com.elavon.converge.processor;
 
 import com.elavon.converge.BaseTest;
+import com.elavon.converge.inject.AppModule;
 import com.elavon.converge.model.ElavonTransactionRequest;
 import com.elavon.converge.model.ElavonTransactionResponse;
 import com.elavon.converge.model.MockObjectFactory;
@@ -21,7 +22,7 @@ public class ConvergeClientTest extends BaseTest {
 
     @Before
     public void initialize() throws Exception {
-        convergeClient = new ConvergeClient();
+        convergeClient = appModule.provideConvergeClient(appModule.provideXmlMapper());
     }
 
     @Test
