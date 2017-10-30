@@ -2,13 +2,12 @@ package com.elavon.converge.core;
 
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 
-import com.elavon.converge.model.ConvergeMapper;
+import com.elavon.converge.model.mapper.ConvergeMapper;
 import com.elavon.converge.model.ElavonTransactionRequest;
 import com.elavon.converge.model.ElavonTransactionResponse;
 import com.elavon.converge.processor.ConvergeCallback;

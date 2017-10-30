@@ -1,5 +1,10 @@
 package com.elavon.converge.model;
 
+import com.elavon.converge.model.type.ElavonEntryMode;
+import com.elavon.converge.model.type.ElavonPosMode;
+import com.elavon.converge.model.type.ElavonTransactionType;
+import com.elavon.converge.model.type.PartialAuthIndicator;
+
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;
 

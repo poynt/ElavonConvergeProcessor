@@ -1,4 +1,4 @@
-package com.elavon.converge.model;
+package com.elavon.converge.model.type;
 
 public enum PartialAuthIndicator {
     SUPPORTED(1);

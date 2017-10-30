@@ -1,4 +1,4 @@
-package com.elavon.converge.model;
+package com.elavon.converge.model.type;
 
 /**
  * Created by dennis on 10/24/17.

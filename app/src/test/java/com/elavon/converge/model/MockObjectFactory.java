@@ -1,5 +1,7 @@
 package com.elavon.converge.model;
 
+import com.elavon.converge.model.type.ElavonTransactionType;
+
 import java.math.BigDecimal;
 
 public class MockObjectFactory {

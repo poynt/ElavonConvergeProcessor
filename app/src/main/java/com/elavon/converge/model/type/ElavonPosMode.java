@@ -1,4 +1,4 @@
-package com.elavon.converge.model;
+package com.elavon.converge.model.type;
 
 public enum ElavonPosMode {
     MANUAL_ENTRY_ONLY("01"),
