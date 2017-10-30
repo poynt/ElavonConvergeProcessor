@@ -1,6 +1,8 @@
 package com.elavon.converge.model;
 
 import com.elavon.converge.BaseTest;
+import com.elavon.converge.model.type.ElavonTransactionType;
+import com.elavon.converge.model.type.PartialAuthIndicator;
 import com.elavon.converge.xml.XmlMapper;
 
 import org.junit.Assert;

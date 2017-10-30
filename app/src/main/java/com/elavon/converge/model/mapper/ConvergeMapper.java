@@ -1,4 +1,9 @@
-package com.elavon.converge.model;
+package com.elavon.converge.model.mapper;
+
+import com.elavon.converge.model.ElavonTransactionRequest;
+import com.elavon.converge.model.ElavonTransactionResponse;
+import com.elavon.converge.model.type.ElavonPosMode;
+import com.elavon.converge.model.type.ElavonTransactionType;
 
 import java.math.BigDecimal;
 import java.util.UUID;

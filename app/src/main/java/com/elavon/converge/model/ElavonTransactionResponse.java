@@ -2,6 +2,12 @@ package com.elavon.converge.model;
 
 import android.support.annotation.Nullable;
 
+import com.elavon.converge.model.type.AVSResponse;
+import com.elavon.converge.model.type.CVV2Response;
+import com.elavon.converge.model.type.CardShortDescription;
+import com.elavon.converge.model.type.CardType;
+import com.elavon.converge.model.type.TokenResponse;
+
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;
 

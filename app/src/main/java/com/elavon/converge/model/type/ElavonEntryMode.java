@@ -1,4 +1,4 @@
-package com.elavon.converge.model;
+package com.elavon.converge.model.type;
 
 /**
  * Recommended for swiped or Contactless transactions

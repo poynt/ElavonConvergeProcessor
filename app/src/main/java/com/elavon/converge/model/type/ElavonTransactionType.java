@@ -1,4 +1,4 @@
-package com.elavon.converge.model;
+package com.elavon.converge.model.type;
 
 import org.simpleframework.xml.Element;
 
