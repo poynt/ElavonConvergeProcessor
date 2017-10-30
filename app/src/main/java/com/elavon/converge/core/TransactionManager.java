@@ -32,6 +32,7 @@ import co.poynt.api.model.Transaction;
 import co.poynt.api.model.TransactionAction;
 import co.poynt.api.model.TransactionAmounts;
 import co.poynt.api.model.TransactionStatus;
+import co.poynt.os.model.Intents;
 import co.poynt.os.services.v1.IPoyntSecurityService;
 import co.poynt.os.services.v1.IPoyntTransactionServiceListener;
 
@@ -54,7 +55,9 @@ public class TransactionManager {
 
     public synchronized void bind() {
         if (poyntSecurityService == null) {
-            context.bindService(new Intent(IPoyntSecurityService.class.getName()), mConnection, Context.BIND_AUTO_CREATE);
+            ComponentName COMPONENT_POYNT_SECURITY_SERVICE = new ComponentName("co.poynt.services", "co.poynt.services.PoyntSecurityService");
+            context.bindService(Intents.getComponentIntent(COMPONENT_POYNT_SECURITY_SERVICE),
+                    mConnection, Context.BIND_AUTO_CREATE);
         } else {
             // already connected ?
         }
