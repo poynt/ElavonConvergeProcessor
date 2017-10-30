@@ -90,6 +90,44 @@ public class ElavonTransactionRequest extends ElavonRequest {
     @Element(name = "ssl_get_token", required = false)
     private Boolean generateToken;
 
+    @Element(name = "ssl_pos_mode", required = false)
+    private ElavonPosMode posMode;
+
+    @Element(name = "ssl_entry_mode", required = false)
+    private ElavonEntryMode entryMode;
+
+    public ElavonEntryMode getEntryMode() {
+        return entryMode;
+    }
+
+    public void setEntryMode(ElavonEntryMode entryMode) {
+        this.entryMode = entryMode;
+    }
+
+    public String getDynamicDBA() {
+        return dynamicDBA;
+    }
+
+    public void setDynamicDBA(String dynamicDBA) {
+        this.dynamicDBA = dynamicDBA;
+    }
+
+    public ElavonPosMode getPosMode() {
+        return posMode;
+    }
+
+    public void setPosMode(ElavonPosMode posMode) {
+        this.posMode = posMode;
+    }
+
+    public Boolean getGenerateAndStoreToken() {
+        return generateAndStoreToken;
+    }
+
+    public void setGenerateAndStoreToken(Boolean generateAndStoreToken) {
+        this.generateAndStoreToken = generateAndStoreToken;
+    }
+
     /**
      * Use only with a terminal that is setup with Tokenization.
      * Add to Card Manager indicator, used to indicate if you wish to generate a token and

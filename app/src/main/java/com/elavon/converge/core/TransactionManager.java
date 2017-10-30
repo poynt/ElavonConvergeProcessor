@@ -101,9 +101,10 @@ public class TransactionManager {
         System.out.println("TXN: " + new Gson().toJson(transaction, transactionType));
 
         // MSR Sale
-        if (transaction.getAction() == TransactionAction.SALE &&
+        if ((transaction.getAction() == TransactionAction.SALE || transaction.getAction() == TransactionAction.AUTHORIZE) &&
                 transaction.getFundingSource().getEntryDetails().getEntryMode() == EntryMode.TRACK_DATA_FROM_MAGSTRIPE) {
-            ElavonTransactionRequest request = ConvergeMapper.createMSRSaleRequest(transaction);
+            boolean authOnly = transaction.getAction() == TransactionAction.AUTHORIZE ? true : false;
+            ElavonTransactionRequest request = ConvergeMapper.createMSRSaleRequest(transaction, authOnly);
             System.out.println(new Gson().toJson(request));
             convergeClient.call(request, new ConvergeCallback<ElavonTransactionResponse>() {
                 @Override
