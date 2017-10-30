@@ -5,6 +5,9 @@ import org.simpleframework.xml.Element;
 public enum ElavonTransactionType {
     SALE("ccsale"),
     AUTH_ONLY("ccauthonly"),
+    // transaction is used to verify the credit card account for AVS data. An AVS code is returned
+    // to indicate if the AVS data passed originally was correct and matched the cardholder statement
+    // billing address. Not supported by POYNT.
     AVS_ONLY("ccavsonly"),
     VERIFY("ccverify"),
     CREDIT("cccredit"),

@@ -91,14 +91,19 @@ public class ConvergeMapper {
   "signatureRequired": true
 }
      */
-    public static ElavonTransactionRequest createMSRSaleRequest(Transaction t){
+    public static ElavonTransactionRequest createMSRSaleRequest(Transaction t, boolean authOnly){
         ElavonTransactionRequest request = new ElavonTransactionRequest();
         //TODO credentials should be set in ConvergeClient?
         request.setMerchantId("009005");
         request.setUserId("devportal");
         request.setPin("BDDZY5KOUDCNPV4L3821K7PETO4Z7TPYOJB06TYBI1CW771IDHXBVBP51HZ6ZANJ");
 
-        request.setTransactionType(ElavonTransactionType.SALE);
+        if (authOnly) {
+            request.setTransactionType(ElavonTransactionType.AUTH_ONLY);
+        }else{
+            request.setTransactionType(ElavonTransactionType.SALE);
+        }
+        request.setPosMode(ElavonPosMode.SWIPE_CAPABLE);
         request.setAmount(BigDecimal.valueOf((double)t.getAmounts().getTransactionAmount() / 100.0));
         //TODO handle tip
 
