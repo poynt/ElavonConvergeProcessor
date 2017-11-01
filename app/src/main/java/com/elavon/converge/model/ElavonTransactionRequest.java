@@ -2,7 +2,6 @@ package com.elavon.converge.model;
 
 import com.elavon.converge.model.type.ElavonEntryMode;
 import com.elavon.converge.model.type.ElavonPosMode;
-import com.elavon.converge.model.type.ElavonTransactionType;
 import com.elavon.converge.model.type.PartialAuthIndicator;
 
 import org.simpleframework.xml.Element;
@@ -12,32 +11,35 @@ import java.math.BigDecimal;
 
 /**
  * <txn>
- * <ssl_merchant_id>009005</ssl_merchant_id>
- * <ssl_user_id>devportal</ssl_user_id>
- * <ssl_pin>BDDZY5KOUDCNPV4L3821K7PETO4Z7TPYOJB06TYBI1CW771IDHXBVBP51HZ6ZANJ</ssl_pin>
- * <ssl_test_mode>false</ssl_test_mode>
- * <ssl_transaction_type>ccsale</ssl_transaction_type>
- * <ssl_card_number>5472063333333330</ssl_card_number>
- * <ssl_exp_date>1225</ssl_exp_date>
- * <ssl_amount>10.00</ssl_amount>
- * <ssl_first_name>Test</ssl_first_name>
+ *   <ssl_merchant_id>009005</ssl_merchant_id>
+ *   <ssl_user_id>devportal</ssl_user_id>
+ *   <ssl_pin>BDDZY5KOUDCNPV4L3821K7PETO4Z7TPYOJB06TYBI1CW771IDHXBVBP51HZ6ZANJ</ssl_pin>
+ *   <ssl_test_mode>false</ssl_test_mode>
+ *   <ssl_transaction_type>ccsale</ssl_transaction_type>
+ *   <ssl_card_number>5472063333333330</ssl_card_number>
+ *   <ssl_exp_date>1225</ssl_exp_date>
+ *   <ssl_amount>10.00</ssl_amount>
+ *   <ssl_first_name>Test</ssl_first_name>
  * </txn>
  */
 @Root(name = "txn")
 public class ElavonTransactionRequest extends ElavonRequest {
-    @Element(name = "ssl_transaction_type")
-    private ElavonTransactionType transactionType;
+
     @Element(name = "ssl_card_number", required = false)
     private String cardNumber;
-    @Element(name = "ssl_exp_date", required = false)
+
     /**
      * Do not send an expiration date with a token that is stored in the Card Manager.
      */
+    @Element(name = "ssl_exp_date", required = false)
     private String expDate;
+
     @Element(name = "ssl_enc_track_data", required = false)
     private String encryptedTrackData;
+
     @Element(name = "ssl_ksn", required = false)
     private String ksn;
+
     /**
      * When specifying amounts, be sure to submit the correct number of decimal places for the transaction currency.
      * For Japanese Yen, there are no currency exponents after the decimal place. Any numbers included
@@ -47,10 +49,13 @@ public class ElavonTransactionRequest extends ElavonRequest {
      */
     @Element(name = "ssl_amount", required = false)
     private BigDecimal amount;
+
     @Element(name = "ssl_cvv2cvc2_indicator", required = false)
     private String cvv2Indicator;
+
     @Element(name = "ssl_cvv2cvc2", required = false)
     private String cvv2;
+
     @Element(name = "ssl_first_name", required = false)
     private String firstName;
 
@@ -101,6 +106,20 @@ public class ElavonTransactionRequest extends ElavonRequest {
     @Element(name = "ssl_entry_mode", required = false)
     private ElavonEntryMode entryMode;
 
+    /**
+     * Use only with a terminal that is setup with Tokenization.
+     * Add to Card Manager indicator, used to indicate if you wish to generate a token and
+     * store it in Card Manager. Defaults to false.
+     * To add the token to the card manager you must send the card data and cardholder first/last name,
+     * those are required. Once stored to Card Manager, the token number can be sent alone and will be
+     * used as a substitute for the stored information.
+     */
+    @Element(name = "ssl_add_token", required = false)
+    private Boolean generateAndStoreToken;
+
+    // not part of xml
+    private String cardLast4;
+
     public ElavonEntryMode getEntryMode() {
         return entryMode;
     }
@@ -132,17 +151,6 @@ public class ElavonTransactionRequest extends ElavonRequest {
     public void setGenerateAndStoreToken(Boolean generateAndStoreToken) {
         this.generateAndStoreToken = generateAndStoreToken;
     }
-
-    /**
-     * Use only with a terminal that is setup with Tokenization.
-     * Add to Card Manager indicator, used to indicate if you wish to generate a token and
-     * store it in Card Manager. Defaults to false.
-     * To add the token to the card manager you must send the card data and cardholder first/last name,
-     * those are required. Once stored to Card Manager, the token number can be sent alone and will be
-     * used as a substitute for the stored information.
-     */
-    @Element(name = "ssl_add_token", required = false)
-    private Boolean generateAndStoreToken;
 
     public Boolean getGenerateToken() {
         return generateToken;
@@ -209,14 +217,6 @@ public class ElavonTransactionRequest extends ElavonRequest {
         this.cardPresent = cardPresent;
     }
 
-    public ElavonTransactionType getTransactionType() {
-        return transactionType;
-    }
-
-    public void setTransactionType(ElavonTransactionType transactionType) {
-        this.transactionType = transactionType;
-    }
-
     public String getCardNumber() {
         return cardNumber;
     }
@@ -279,5 +279,13 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     public void setFirstName(String firstName) {
         this.firstName = firstName;
+    }
+
+    public String getCardLast4() {
+        return cardLast4;
+    }
+
+    public void setCardLast4(String cardLast4) {
+        this.cardLast4 = cardLast4;
     }
 }

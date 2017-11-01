@@ -54,6 +54,7 @@ dependencies {
     //compile 'com.squareup.okhttp3:okhttp:3.9.0'
     compile 'com.squareup.okhttp3:okhttp:3.4.1'
     compile 'com.squareup.okhttp3:okhttp-urlconnection:3.4.1'
+    compile 'com.squareup.okhttp3:logging-interceptor:3.4.1'
     compile 'com.squareup.okio:okio:1.9.0'
     compile('org.simpleframework:simple-xml:2.7.+') {
         exclude module: 'stax'

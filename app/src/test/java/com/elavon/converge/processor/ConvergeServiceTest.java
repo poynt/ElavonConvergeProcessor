@@ -3,13 +3,13 @@ package com.elavon.converge.processor;
 import com.elavon.converge.BaseTest;
 import com.elavon.converge.model.ElavonTransactionRequest;
 import com.elavon.converge.model.ElavonTransactionResponse;
-import com.elavon.converge.model.ElavonTransactionSearchRequest;
-import com.elavon.converge.model.ElavonTransactionSearchResponse;
 import com.elavon.converge.model.MockObjectFactory;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -17,17 +17,17 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static junit.framework.Assert.assertTrue;
 
-public class ConvergeClientTest extends BaseTest {
+public class ConvergeServiceTest extends BaseTest {
 
-    private ConvergeClient convergeClient;
+    private ConvergeService convergeService;
 
     @Before
     public void initialize() throws Exception {
-        convergeClient = appModule.provideConvergeClient(appModule.provideXmlMapper());
+        convergeService = appModule.provideConvergeService(appModule.provideConvergeClient(appModule.provideXmlMapper()));
     }
 
     @Test
-    public void callElavonTransactionRequest() throws Exception {
+    public void createTransaction() throws Exception {
         // SETUP
         final ElavonTransactionRequest req = MockObjectFactory.getElavonTransactionRequest();
         final CountDownLatch latch = new CountDownLatch(1);
@@ -35,7 +35,7 @@ public class ConvergeClientTest extends BaseTest {
         final AtomicReference<ElavonTransactionResponse> res = new AtomicReference<>();
 
         // TEST
-        convergeClient.call(req, new ConvergeCallback<ElavonTransactionResponse>() {
+        convergeService.create(req, new ConvergeCallback<ElavonTransactionResponse>() {
             @Override
             public void onResponse(final ElavonTransactionResponse response) {
                 isSuccess.set(true);
@@ -51,7 +51,7 @@ public class ConvergeClientTest extends BaseTest {
         });
 
         // VERIFY
-        assertTrue(latch.await(5000, TimeUnit.MILLISECONDS));
+        assertTrue(latch.await(50000, TimeUnit.MILLISECONDS));
         assertTrue(isSuccess.get());
 
         printXml(res.get());
@@ -59,30 +59,19 @@ public class ConvergeClientTest extends BaseTest {
     }
 
     @Test
-    public void callSyncElavonTransactionRequest() throws Exception {
+    public void findTransaction() throws Exception {
         // SETUP
         final ElavonTransactionRequest req = MockObjectFactory.getElavonTransactionRequest();
-
-        // TEST
-        final ElavonTransactionResponse response = convergeClient.callSync(req, ElavonTransactionResponse.class);
-
-        // VERIFY
-        printXml(response);
-        assertTrue(response.getApprovalCode().length() > 0);
-    }
-
-    @Test
-    public void callElavonTransactionSearchRequest() throws Exception {
-        // SETUP
-        final ElavonTransactionSearchRequest search = MockObjectFactory.getElavonTransactionSearchRequest();
+        final Date dateAfter = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a").parse("10/01/2017 00:00:00 AM");
+        final String cardLast4 = req.getCardNumber().substring(req.getCardNumber().length() - 4, req.getCardNumber().length());
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicBoolean isSuccess = new AtomicBoolean();
-        final AtomicReference<ElavonTransactionSearchResponse> res = new AtomicReference<>();
+        final AtomicReference<ElavonTransactionResponse> res = new AtomicReference<>();
 
         // TEST
-        convergeClient.call(search, new ConvergeCallback<ElavonTransactionSearchResponse>() {
+        convergeService.find(cardLast4, req.getAmount(), dateAfter, new ConvergeCallback<ElavonTransactionResponse>() {
             @Override
-            public void onResponse(final ElavonTransactionSearchResponse response) {
+            public void onResponse(final ElavonTransactionResponse response) {
                 isSuccess.set(true);
                 res.set(response);
                 latch.countDown();
@@ -96,10 +85,10 @@ public class ConvergeClientTest extends BaseTest {
         });
 
         // VERIFY
-        assertTrue(latch.await(5000, TimeUnit.MILLISECONDS));
+        assertTrue(latch.await(50000, TimeUnit.MILLISECONDS));
         assertTrue(isSuccess.get());
 
         printXml(res.get());
-        assertTrue(res.get().getCount() >= 0);
+        assertTrue(res.get().getApprovalCode().length() > 0);
     }
 }

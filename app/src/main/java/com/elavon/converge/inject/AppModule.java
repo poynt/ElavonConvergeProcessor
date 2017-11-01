@@ -7,6 +7,7 @@ import com.elavon.converge.config.ConfigLoader;
 import com.elavon.converge.core.TransactionManager;
 import com.elavon.converge.exception.AppInitException;
 import com.elavon.converge.processor.ConvergeClient;
+import com.elavon.converge.processor.ConvergeService;
 import com.elavon.converge.processor.TLSSocketFactory;
 import com.elavon.converge.xml.XmlMapper;
 
@@ -23,6 +24,7 @@ import dagger.Provides;
 import okhttp3.ConnectionSpec;
 import okhttp3.OkHttpClient;
 import okhttp3.TlsVersion;
+import okhttp3.logging.HttpLoggingInterceptor;
 
 @Module
 public class AppModule {
@@ -59,20 +61,32 @@ public class AppModule {
             throw new AppInitException("Failed to initialize converge client", e);
         }
 
-        final OkHttpClient client = new OkHttpClient.Builder()
+        final OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder()
                 .connectTimeout(config.getConvergeClient().getConnectTimeoutMs(), TimeUnit.MILLISECONDS)
                 .writeTimeout(config.getConvergeClient().getWriteTimeoutMs(), TimeUnit.MILLISECONDS)
                 .readTimeout(config.getConvergeClient().getReadTimeoutMs(), TimeUnit.MILLISECONDS)
                 .connectionSpecs(Collections.singletonList(spec))
-                .sslSocketFactory(new TLSSocketFactory(), (X509TrustManager) tmf.getTrustManagers()[0])
-                .build();
+                .sslSocketFactory(new TLSSocketFactory(), (X509TrustManager) tmf.getTrustManagers()[0]);
 
-        return new ConvergeClient(config.getConvergeClient().getHost(), client, xmlMapper);
+        // add logging interceptor
+        if (Boolean.TRUE.equals(config.getLog().getEnableHttpClient())) {
+            final HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+            logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+            clientBuilder.addInterceptor(logging);
+        }
+
+        return new ConvergeClient(config.getConvergeClient().getHost(), clientBuilder.build(), xmlMapper);
     }
 
     @Provides
     @Singleton
-    public TransactionManager provideTransactionManager(final ConvergeClient convergeClient) {
-        return new TransactionManager(context, convergeClient);
+    public ConvergeService provideConvergeService(final ConvergeClient convergeClient) {
+        return new ConvergeService(convergeClient, config.getTransaction().getMaxRetryCount());
+    }
+
+    @Provides
+    @Singleton
+    public TransactionManager provideTransactionManager(final ConvergeService convergeService) {
+        return new TransactionManager(context, convergeService);
     }
 }

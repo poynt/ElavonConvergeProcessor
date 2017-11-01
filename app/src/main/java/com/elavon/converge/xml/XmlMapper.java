@@ -8,6 +8,7 @@ import org.simpleframework.xml.transform.Transform;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.Date;
 
 public class XmlMapper {
 
@@ -19,8 +20,10 @@ public class XmlMapper {
             public Transform match(Class type) throws Exception {
                 if (type.isEnum()) {
                     return new EnumTransform(type);
-                } else if (type == Boolean.TYPE) {
-                    return new BooleanTransform(type);
+                } else if (type == Boolean.TYPE || type == Boolean.class) {
+                    return new BooleanTransform();
+                } else if (type == Date.class) {
+                    return new DateTransform();
                 }
                 return null;
             }

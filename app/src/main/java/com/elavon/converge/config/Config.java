@@ -7,6 +7,8 @@ public class Config {
     }
 
     private ConvergeClient convergeClient;
+    private Transaction transaction;
+    private Log log;
 
     public ConvergeClient getConvergeClient() {
         return convergeClient;
@@ -14,6 +16,22 @@ public class Config {
 
     public void setConvergeClient(ConvergeClient convergeClient) {
         this.convergeClient = convergeClient;
+    }
+
+    public Transaction getTransaction() {
+        return transaction;
+    }
+
+    public void setTransaction(Transaction transaction) {
+        this.transaction = transaction;
+    }
+
+    public Log getLog() {
+        return log;
+    }
+
+    public void setLog(Log log) {
+        this.log = log;
     }
 
     public static class ConvergeClient {
@@ -53,6 +71,32 @@ public class Config {
 
         public void setWriteTimeoutMs(Integer writeTimeoutMs) {
             this.writeTimeoutMs = writeTimeoutMs;
+        }
+    }
+
+    public static class Transaction {
+
+        private Integer maxRetryCount;
+
+        public Integer getMaxRetryCount() {
+            return maxRetryCount;
+        }
+
+        public void setMaxRetryCount(Integer maxRetryCount) {
+            this.maxRetryCount = maxRetryCount;
+        }
+    }
+
+    public static class Log {
+
+        private Boolean enableHttpClient;
+
+        public Boolean getEnableHttpClient() {
+            return enableHttpClient;
+        }
+
+        public void setEnableHttpClient(Boolean enableHttpClient) {
+            this.enableHttpClient = enableHttpClient;
         }
     }
 }

@@ -36,8 +36,8 @@ public class ElavonTransactionResponseTest extends BaseTest {
         ElavonTransactionResponse transaction = xmlMapper.read(xml, ElavonTransactionResponse.class);
 
         // VERIFY
-        assertEquals(date, transaction.getTxnTimeAsDate());
-        print(transaction.getTxnTimeAsDate());
+        assertEquals(date, transaction.getTxnTime());
+        print(transaction.getTxnTime());
     }
 
     @Test
