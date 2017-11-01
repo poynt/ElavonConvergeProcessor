@@ -23,12 +23,24 @@ public class ConvergeClient {
 
     private static final MediaType FORM_URL_ENCODED_TYPE = MediaType.parse("application/x-www-form-urlencoded; charset=utf-8");
 
+    protected final String merchantId;
+    protected final String userId;
+    protected final String pin;
     protected final String host;
     protected final OkHttpClient client;
     protected final XmlMapper xmlMapper;
 
     @Inject
-    public ConvergeClient(final String host, final OkHttpClient client, final XmlMapper xmlMapper) {
+    public ConvergeClient(
+            final String merchantId,
+            final String userId,
+            final String pin,
+            final String host,
+            final OkHttpClient client,
+            final XmlMapper xmlMapper) {
+        this.merchantId = merchantId;
+        this.userId = userId;
+        this.pin = pin;
         this.host = host;
         this.client = client;
         this.xmlMapper = xmlMapper;
@@ -80,11 +92,15 @@ public class ConvergeClient {
         }
     }
 
-    private Request getRequest(final ElavonRequest model) {
+    private Request getRequest(final ElavonRequest request) {
+        // set credentials
+        request.setMerchantId(merchantId);
+        request.setUserId(userId);
+        request.setPin(pin);
         try {
             return new Request.Builder()
                     .url(host)
-                    .post(RequestBody.create(FORM_URL_ENCODED_TYPE, "xmldata=" + URLEncoder.encode(xmlMapper.write(model), "UTF-8")))
+                    .post(RequestBody.create(FORM_URL_ENCODED_TYPE, "xmldata=" + URLEncoder.encode(xmlMapper.write(request), "UTF-8")))
                     .build();
         } catch (Exception e) {
             throw new ConvergeClientException("Invalid XML request", e);

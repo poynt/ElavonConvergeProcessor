@@ -17,11 +17,13 @@ import javax.inject.Inject;
 
 public class ConvergeService {
 
+    protected final ConvergeMapper convergeMapper;
     protected final ConvergeClient convergeClient;
     protected final int maxRetryCount;
 
     @Inject
-    public ConvergeService(final ConvergeClient convergeClient, final int maxRetryCount) {
+    public ConvergeService(final ConvergeMapper convergeMapper, final ConvergeClient convergeClient, final int maxRetryCount) {
+        this.convergeMapper = convergeMapper;
         this.convergeClient = convergeClient;
         this.maxRetryCount = maxRetryCount;
     }
@@ -117,7 +119,7 @@ public class ConvergeService {
             }
         };
 
-        final ElavonTransactionSearchRequest searchRequest = ConvergeMapper.createSearchRequest(cardLast4, dateAfter);
+        final ElavonTransactionSearchRequest searchRequest = convergeMapper.createSearchRequest(cardLast4, dateAfter);
         convergeClient.call(searchRequest, cb);
     }
 }

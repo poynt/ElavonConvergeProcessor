@@ -23,13 +23,19 @@ public abstract class BaseTest {
         convergeClientConfig.setReadTimeoutMs(30000);
         convergeClientConfig.setWriteTimeoutMs(30000);
 
+        final Config.Credential credential = new Config.Credential();
+        credential.setMerchantId("get");
+        credential.setUserId("this from");
+        credential.setPin("someone");
+
         final Config.Transaction transactionConfig = new Config.Transaction();
         transactionConfig.setMaxRetryCount(2);
 
         final Config.Log logConfig = new Config.Log();
-        logConfig.setEnableHttpClient(true);
+        logConfig.setEnableHttpTracing(true);
 
         final Config config = new Config();
+        config.setCredential(credential);
         config.setConvergeClient(convergeClientConfig);
         config.setTransaction(transactionConfig);
         config.setLog(logConfig);

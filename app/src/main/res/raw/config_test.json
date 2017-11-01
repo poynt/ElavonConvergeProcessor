@@ -9,6 +9,6 @@
     "maxRetryCount": 3
   },
   "log": {
-    "enableHttpClient": true
+    "enableHttpTracing": true
   }
 }
