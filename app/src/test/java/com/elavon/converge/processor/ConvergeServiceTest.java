@@ -23,7 +23,10 @@ public class ConvergeServiceTest extends BaseTest {
 
     @Before
     public void initialize() throws Exception {
-        convergeService = appModule.provideConvergeService(appModule.provideConvergeClient(appModule.provideXmlMapper()));
+        convergeService = appModule.provideConvergeService(
+                appModule.provideConvergeMapper(appModule.provideMsrMapper(), appModule.provideEmvMapper()),
+                appModule.provideConvergeClient(appModule.provideXmlMapper())
+        );
     }
 
     @Test

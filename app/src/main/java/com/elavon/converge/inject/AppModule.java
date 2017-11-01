@@ -6,6 +6,9 @@ import com.elavon.converge.config.Config;
 import com.elavon.converge.config.ConfigLoader;
 import com.elavon.converge.core.TransactionManager;
 import com.elavon.converge.exception.AppInitException;
+import com.elavon.converge.model.mapper.ConvergeMapper;
+import com.elavon.converge.model.mapper.EmvMapper;
+import com.elavon.converge.model.mapper.MsrMapper;
 import com.elavon.converge.processor.ConvergeClient;
 import com.elavon.converge.processor.ConvergeService;
 import com.elavon.converge.processor.TLSSocketFactory;
@@ -50,6 +53,23 @@ public class AppModule {
 
     @Provides
     @Singleton
+    public MsrMapper provideMsrMapper() {
+        return new MsrMapper();
+    }
+    @Provides
+    @Singleton
+    public EmvMapper provideEmvMapper() {
+        return new EmvMapper();
+    }
+
+    @Provides
+    @Singleton
+    public ConvergeMapper provideConvergeMapper(final MsrMapper msrMapper, final EmvMapper emvMapper) {
+        return new ConvergeMapper(msrMapper, emvMapper);
+    }
+
+    @Provides
+    @Singleton
     public ConvergeClient provideConvergeClient(final XmlMapper xmlMapper) {
 
         final ConnectionSpec spec = new ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS).tlsVersions(TlsVersion.TLS_1_2).build();
@@ -69,24 +89,30 @@ public class AppModule {
                 .sslSocketFactory(new TLSSocketFactory(), (X509TrustManager) tmf.getTrustManagers()[0]);
 
         // add logging interceptor
-        if (Boolean.TRUE.equals(config.getLog().getEnableHttpClient())) {
+        if (Boolean.TRUE.equals(config.getLog().getEnableHttpTracing())) {
             final HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
             logging.setLevel(HttpLoggingInterceptor.Level.BODY);
             clientBuilder.addInterceptor(logging);
         }
 
-        return new ConvergeClient(config.getConvergeClient().getHost(), clientBuilder.build(), xmlMapper);
+        return new ConvergeClient(
+                config.getCredential().getMerchantId(),
+                config.getCredential().getUserId(),
+                config.getCredential().getPin(),
+                config.getConvergeClient().getHost(),
+                clientBuilder.build(),
+                xmlMapper);
     }
 
     @Provides
     @Singleton
-    public ConvergeService provideConvergeService(final ConvergeClient convergeClient) {
-        return new ConvergeService(convergeClient, config.getTransaction().getMaxRetryCount());
+    public ConvergeService provideConvergeService(final ConvergeMapper convergeMapper, final ConvergeClient convergeClient) {
+        return new ConvergeService(convergeMapper, convergeClient, config.getTransaction().getMaxRetryCount());
     }
 
     @Provides
     @Singleton
-    public TransactionManager provideTransactionManager(final ConvergeService convergeService) {
-        return new TransactionManager(context, convergeService);
+    public TransactionManager provideTransactionManager(final ConvergeService convergeService, final ConvergeMapper convergeMapper) {
+        return new TransactionManager(context, convergeService, convergeMapper);
     }
 }

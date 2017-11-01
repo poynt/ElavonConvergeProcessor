@@ -11,9 +11,9 @@ import java.math.BigDecimal;
 
 /**
  * <txn>
- *   <ssl_merchant_id>009005</ssl_merchant_id>
- *   <ssl_user_id>devportal</ssl_user_id>
- *   <ssl_pin>BDDZY5KOUDCNPV4L3821K7PETO4Z7TPYOJB06TYBI1CW771IDHXBVBP51HZ6ZANJ</ssl_pin>
+ *   <ssl_merchant_id>merchant_id</ssl_merchant_id>
+ *   <ssl_user_id>user_id</ssl_user_id>
+ *   <ssl_pin>pin</ssl_pin>
  *   <ssl_test_mode>false</ssl_test_mode>
  *   <ssl_transaction_type>ccsale</ssl_transaction_type>
  *   <ssl_card_number>5472063333333330</ssl_card_number>
