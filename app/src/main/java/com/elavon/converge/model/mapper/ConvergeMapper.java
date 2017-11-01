@@ -2,10 +2,13 @@ package com.elavon.converge.model.mapper;
 
 import com.elavon.converge.model.ElavonTransactionRequest;
 import com.elavon.converge.model.ElavonTransactionResponse;
+import com.elavon.converge.model.ElavonTransactionSearchRequest;
 import com.elavon.converge.model.type.ElavonPosMode;
 import com.elavon.converge.model.type.ElavonTransactionType;
 
 import java.math.BigDecimal;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.UUID;
 
 import co.poynt.api.model.Processor;
@@ -118,6 +121,7 @@ public class ConvergeMapper {
                 t.getFundingSource().getCard().getExpirationYear() % 100;
         request.setKsn(t.getFundingSource().getCard().getKeySerialNumber());
         request.setExpDate(expiration);
+        request.setCardLast4(t.getFundingSource().getCard().getNumberLast4());
 //        request.setCardNumber("4124939999999990");
 //        request.setExpDate("1219");
         return request;
@@ -213,5 +217,18 @@ public class ConvergeMapper {
         processorResponse.setProcessor(Processor.ELAVON);
         processorResponse.setAcquirer(Processor.ELAVON);
         return processorResponse;
+    }
+
+    public static ElavonTransactionSearchRequest createSearchRequest(final String cardLast4, final Date searchStartDate) {
+        // TODO you know what I mean
+        final ElavonTransactionSearchRequest search = new ElavonTransactionSearchRequest();
+        search.setMerchantId("009005");
+        search.setUserId("devportal");
+        search.setPin("BDDZY5KOUDCNPV4L3821K7PETO4Z7TPYOJB06TYBI1CW771IDHXBVBP51HZ6ZANJ");
+        search.setTestMode("false");
+        search.setTransactionType(ElavonTransactionType.TRANSACTION_QUERY);
+        search.setCardSuffix(cardLast4);
+        search.setSearchStartDate(searchStartDate);
+        return search;
     }
 }

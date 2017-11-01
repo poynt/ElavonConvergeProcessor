@@ -17,13 +17,22 @@ public abstract class BaseTest {
     @BeforeClass
     public static void beforeClass() {
         // TODO load from resoruce file
-        final Config.ConvergeClient convergeClient = new Config.ConvergeClient();
-        convergeClient.setHost("https://api.demo.convergepay.com/VirtualMerchantDemo/processxml.do");
-        convergeClient.setConnectTimeoutMs(10000);
-        convergeClient.setReadTimeoutMs(30000);
-        convergeClient.setWriteTimeoutMs(30000);
+        final Config.ConvergeClient convergeClientConfig = new Config.ConvergeClient();
+        convergeClientConfig.setHost("https://api.demo.convergepay.com/VirtualMerchantDemo/processxml.do");
+        convergeClientConfig.setConnectTimeoutMs(10000);
+        convergeClientConfig.setReadTimeoutMs(30000);
+        convergeClientConfig.setWriteTimeoutMs(30000);
+
+        final Config.Transaction transactionConfig = new Config.Transaction();
+        transactionConfig.setMaxRetryCount(2);
+
+        final Config.Log logConfig = new Config.Log();
+        logConfig.setEnableHttpClient(true);
+
         final Config config = new Config();
-        config.setConvergeClient(convergeClient);
+        config.setConvergeClient(convergeClientConfig);
+        config.setTransaction(transactionConfig);
+        config.setLog(logConfig);
 
         appModule = new AppModule(null, config);
 

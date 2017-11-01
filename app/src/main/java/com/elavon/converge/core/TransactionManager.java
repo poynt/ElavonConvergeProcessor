@@ -12,6 +12,7 @@ import com.elavon.converge.model.ElavonTransactionRequest;
 import com.elavon.converge.model.ElavonTransactionResponse;
 import com.elavon.converge.processor.ConvergeCallback;
 import com.elavon.converge.processor.ConvergeClient;
+import com.elavon.converge.processor.ConvergeService;
 import com.elavon.converge.xml.XmlMapper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -41,13 +42,13 @@ public class TransactionManager {
     private IPoyntSecurityService poyntSecurityService;
 
     protected Context context;
-    protected ConvergeClient convergeClient;
+    protected ConvergeService convergeService;
     protected Map<UUID, Transaction> transactionCache;
 
     @Inject
-    public TransactionManager(final Context context, final ConvergeClient convergeClient) {
+    public TransactionManager(final Context context, final ConvergeService convergeService) {
         this.context = context;
-        this.convergeClient = convergeClient;
+        this.convergeService = convergeService;
         this.transactionCache = new HashMap<>();
         bind();
     }
@@ -105,7 +106,7 @@ public class TransactionManager {
             boolean authOnly = transaction.getAction() == TransactionAction.AUTHORIZE ? true : false;
             ElavonTransactionRequest request = ConvergeMapper.createMSRSaleRequest(transaction, authOnly);
             System.out.println(new Gson().toJson(request));
-            convergeClient.call(request, new ConvergeCallback<ElavonTransactionResponse>() {
+            convergeService.create(request, new ConvergeCallback<ElavonTransactionResponse>() {
                 @Override
                 public void onResponse(ElavonTransactionResponse elavonResponse) {
                     try {
