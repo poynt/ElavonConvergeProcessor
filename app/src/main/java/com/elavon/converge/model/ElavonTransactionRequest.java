@@ -106,6 +106,9 @@ public class ElavonTransactionRequest extends ElavonRequest {
     @Element(name = "ssl_entry_mode", required = false)
     private ElavonEntryMode entryMode;
 
+    @Element(name = "ssl_tlv_enc", required = false)
+    private String tlvEnc;
+
     /**
      * Use only with a terminal that is setup with Tokenization.
      * Add to Card Manager indicator, used to indicate if you wish to generate a token and
@@ -287,5 +290,13 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     public void setCardLast4(String cardLast4) {
         this.cardLast4 = cardLast4;
+    }
+
+    public String getTlvEnc() {
+        return tlvEnc;
+    }
+
+    public void setTlvEnc(String tlvEnc) {
+        this.tlvEnc = tlvEnc;
     }
 }

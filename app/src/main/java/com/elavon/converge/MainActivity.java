@@ -64,6 +64,7 @@ public class MainActivity extends Activity {
                     byte [] tag = BytesUtils.fromString("1F8133");
                     byte MODE_MODIFY = (byte)0x00;
                     byte INTERFACE_MSR = (byte)0x01;
+//                    byte INTERFACE_EMV = (byte)0x04;
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     baos.write(tag);
                     baos.write((byte)0x01); // length

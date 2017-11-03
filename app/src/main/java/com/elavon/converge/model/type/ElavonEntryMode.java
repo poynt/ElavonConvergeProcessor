@@ -8,7 +8,10 @@ public enum ElavonEntryMode {
     MANUAL_ENTRY_ONLY("01"),
     KEY_ENTERED_CARD_PRESENT("02"),
     SWIPED("03"), // Default value when track Data is sent alone
-    CONTACTLESS("04");
+    CONTACTLESS("04"),
+    EMV_WITH_CVV("05"),
+    EMV_PROXIMITY_READ("06"),
+    EMV_WITHOUT_CVV("07");
 
     private final String value;
 

@@ -127,7 +127,6 @@ public class MsrMapper implements InterfaceMapper {
      * </code></pre>
      */
     private ElavonTransactionRequest createAuthOrSale(final Transaction t, final boolean isAuthOnly) {
-        System.out.println("@#$@#$#@$@#$@#$#@$");
         //TODO handle tip
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
         request.setTransactionType(isAuthOnly ? ElavonTransactionType.AUTH_ONLY : ElavonTransactionType.SALE);
