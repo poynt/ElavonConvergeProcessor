@@ -15,7 +15,9 @@ import javax.inject.Inject;
 
 import co.poynt.api.model.Transaction;
 
-public class EmvMapper implements InterfaceMapper {
+public class EmvMapper extends InterfaceMapper {
+
+    private static final String TAG = "EmvMapper";
 
     @Inject
     public EmvMapper() {
@@ -23,7 +25,9 @@ public class EmvMapper implements InterfaceMapper {
 
     @Override
     public ElavonTransactionRequest createAuth(final Transaction transaction) {
-        return createAuthOrSale(transaction, true);
+        final ElavonTransactionRequest request = createRequest(transaction);
+        request.setTransactionType(ElavonTransactionType.EMV_CT_AUTH_ONLY);
+        return request;
     }
 
     @Override
@@ -48,7 +52,9 @@ public class EmvMapper implements InterfaceMapper {
 
     @Override
     public ElavonTransactionRequest createSale(final Transaction transaction) {
-        return createAuthOrSale(transaction, false);
+        final ElavonTransactionRequest request = createRequest(transaction);
+        request.setTransactionType(ElavonTransactionType.EMV_CT_SALE);
+        return request;
     }
 
     @Override
@@ -56,27 +62,24 @@ public class EmvMapper implements InterfaceMapper {
         throw new RuntimeException("Please implement");
     }
 
-    private ElavonTransactionRequest createAuthOrSale(final Transaction t, final boolean isAuthOnly) {
+    private ElavonTransactionRequest createRequest(final Transaction t) {
         //TODO handle tip
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
-        request.setTransactionType(isAuthOnly ? ElavonTransactionType.EMV_CT_AUTH_ONLY : ElavonTransactionType.EMV_CT_SALE);
         request.setTlvEnc(getTlvTags(t));
-        request.setPosMode(ElavonPosMode.CT_MAGSTRIPE);
+        request.setPosMode(ElavonPosMode.CT_ONLY);
         request.setEntryMode(ElavonEntryMode.EMV_WITH_CVV);
         return request;
     }
 
-    private String getTlvTags(Transaction t) {
+    private String getTlvTags(final Transaction t) {
         final StringBuilder builder = new StringBuilder();
         for (final Map.Entry<String, String> tag : t.getFundingSource().getEmvData().getEmvTags().entrySet()) {
-
             final String kHex = tag.getKey().substring(2);
             final String lHex = HexDump.toHexString((byte) (tag.getValue().length() / 2));
             builder.append(kHex);
             builder.append(lHex);
             builder.append(tag.getValue());
-
-            Log.i("EmvMapper", MessageFormat.format("T:%s, L:%s, V:%s", kHex, lHex, tag.getValue()));
+            Log.d(TAG, MessageFormat.format("T:{0}, L:{1}, V:{2}", kHex, lHex, tag.getValue()));
         }
         return builder.toString();
     }

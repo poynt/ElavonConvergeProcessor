@@ -17,6 +17,8 @@ import javax.inject.Inject;
 
 public class ConvergeService {
 
+    private static final String TAG = "ConvergeService";
+
     protected final ConvergeMapper convergeMapper;
     protected final ConvergeClient convergeClient;
     protected final int maxRetryCount;
@@ -40,11 +42,11 @@ public class ConvergeService {
 
         if (retryCount > maxRetryCount) {
             // TODO submit reversal
-            Log.e("ConvergeService", "Max retry count reached. Starting reversal...");
+            Log.e(TAG, "Max retry count reached. Starting reversal...");
             callback.onFailure(new ConvergeClientException("Transaction failed after all retries"));
             return;
         }
-        Log.i("ConvergeService", "Create with retry count: " + retryCount);
+        Log.i(TAG, "Create with retry count: " + retryCount);
 
         final ConvergeCallback cb = new ConvergeCallback<ElavonTransactionResponse>() {
             @Override
@@ -56,7 +58,7 @@ public class ConvergeService {
             public void onFailure(final Throwable t) {
                 // retry if timeout
                 if (t instanceof SocketTimeoutException) {
-                    Log.e("ConvergeService", "Create transaction timeout. Retrying...");
+                    Log.e(TAG, "Create transaction timeout. Retrying...");
                     checkAndCreate(request, callback, retryCount + 1, originalTime);
                     return;
                 }
@@ -74,13 +76,13 @@ public class ConvergeService {
         final ConvergeCallback cb = new ConvergeCallback<ElavonTransactionResponse>() {
             @Override
             public void onResponse(final ElavonTransactionResponse response) {
-                Log.i("ConvergeService", "Found transaction after timeout");
+                Log.i(TAG, "Found transaction after timeout");
                 callback.onResponse(response);
             }
 
             @Override
             public void onFailure(final Throwable t) {
-                Log.e("ConvergeService", "Failed to find transaction after timeout");
+                Log.e(TAG, "Failed to find transaction after timeout");
                 create(request, callback, retryCount, originalTime);
             }
         };
@@ -119,7 +121,7 @@ public class ConvergeService {
             }
         };
 
-        final ElavonTransactionSearchRequest searchRequest = convergeMapper.createSearchRequest(cardLast4, dateAfter);
+        final ElavonTransactionSearchRequest searchRequest = convergeMapper.getSearchRequest(cardLast4, dateAfter);
         convergeClient.call(searchRequest, cb);
     }
 }

@@ -94,13 +94,12 @@ public class TransactionManager {
     public void processTransaction(final Transaction transaction, final String requestId, final IPoyntTransactionServiceListener listener) {
         Log.d(TAG, "PROCESSED TRANSACTION");
 
-        final ElavonTransactionRequest request = convergeMapper.createSale(transaction);
-        System.out.println(new Gson().toJson(request));
+        final ElavonTransactionRequest request = convergeMapper.getTransactionRequest(transaction);
         convergeService.create(request, new ConvergeCallback<ElavonTransactionResponse>() {
             @Override
-            public void onResponse(ElavonTransactionResponse elavonResponse) {
+            public void onResponse(final ElavonTransactionResponse elavonResponse) {
                 try {
-                    convergeMapper.handleMSRSaleResponse(transaction, elavonResponse);
+                    convergeMapper.mapTransactionResponse(elavonResponse, transaction);
                     listener.onResponse(transaction, requestId, null);
                 } catch (RemoteException e) {
                     Log.e(TAG, "Failed to respond", e);

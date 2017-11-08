@@ -22,6 +22,8 @@ import fr.devnied.bitlib.BytesUtils;
 
 public class MainActivity extends Activity {
 
+    private static final String TAG = "MainActivity";
+
     private IPoyntConfigurationService poyntConfigurationService;
 
     @Override
@@ -64,7 +66,8 @@ public class MainActivity extends Activity {
                     byte [] tag = BytesUtils.fromString("1F8133");
                     byte MODE_MODIFY = (byte)0x00;
                     byte INTERFACE_MSR = (byte)0x01;
-//                    byte INTERFACE_EMV = (byte)0x04;
+                    // byte INTERFACE_CONTACTLESS = (byte)0x02;
+                    // byte INTERFACE_EMV = (byte)0x04;
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     baos.write(tag);
                     baos.write((byte)0x01); // length
@@ -74,12 +77,12 @@ public class MainActivity extends Activity {
 
                         @Override
                         public void onSuccess() throws RemoteException {
-                            Log.d("ConfigTestActivity", "onSuccess: ");
+                            Log.d(TAG, "onSuccess: ");
                             try {
                                 poyntConfigurationService.getTerminalConfiguration((byte) 0x01, new IPoyntConfigurationReadListener.Stub() {
                                     @Override
                                     public void onSuccess(byte[] bytes) throws RemoteException {
-                                        Log.d("ConfigTestActivity", "onSuccess: "+ BytesUtils.bytesToString(bytes));
+                                        Log.d(TAG, "onSuccess: "+ BytesUtils.bytesToString(bytes));
                                     }
 
                                     @Override
@@ -94,7 +97,7 @@ public class MainActivity extends Activity {
 
                         @Override
                         public void onFailure() throws RemoteException {
-                            Log.d("ConfigTestActivity", "onFailure: ");
+                            Log.d(TAG, "onFailure: ");
                         }
                     });
                 } catch (IOException e) {
@@ -122,12 +125,12 @@ public class MainActivity extends Activity {
 
                         @Override
                         public void onSuccess() throws RemoteException {
-                            System.out.println("worked");
+                            Log.i(TAG, "TrackDataFormat update success");
                         }
 
                         @Override
                         public void onFailure() throws RemoteException {
-                            System.out.println("failed");
+                            Log.i(TAG, "TrackDataFormat update fail");
                         }
                     });
         } catch (Exception e) {
@@ -142,14 +145,14 @@ public class MainActivity extends Activity {
     private ServiceConnection poyntConfigurationServiceConnection = new ServiceConnection() {
         // Called when the connection with the service is established
         public void onServiceConnected(ComponentName className, IBinder service) {
-            Log.e("ConfigurationTest", "IPoyntConfigurationService is now connected");
+            Log.e(TAG, "IPoyntConfigurationService is now connected");
             // Following the example above for an AIDL interface,
             // this gets an instance of the IRemoteInterface, which we can use to call on the service
             poyntConfigurationService = IPoyntConfigurationService.Stub.asInterface(service);
         }
         // Called when the connection with the service disconnects unexpectedly
         public void onServiceDisconnected(ComponentName className) {
-            Log.e("ConfigurationTest", "IPoyntConfigurationService has unexpectedly disconnected");
+            Log.e(TAG, "IPoyntConfigurationService has unexpectedly disconnected");
             poyntConfigurationService = null;
         }
     };

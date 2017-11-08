@@ -27,7 +27,7 @@ import co.poynt.os.services.v1.IPoyntTransactionServiceListener;
 
 public class TransactionService extends Service {
 
-    private static final String TAG = "SampleProcessor";
+    private static final String TAG = "TransactionService";
 
     @Inject
     protected TransactionManager transactionManager;

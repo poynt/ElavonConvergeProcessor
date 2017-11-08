@@ -50,6 +50,9 @@ public class ElavonTransactionRequest extends ElavonRequest {
     @Element(name = "ssl_amount", required = false)
     private BigDecimal amount;
 
+    @Element(name = "ssl_tip_amount", required = false)
+    private BigDecimal tipAmount;
+
     @Element(name = "ssl_cvv2cvc2_indicator", required = false)
     private String cvv2Indicator;
 
@@ -58,6 +61,9 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     @Element(name = "ssl_first_name", required = false)
     private String firstName;
+
+    @Element(name = "ssl_last_name", required = false)
+    private String lastName;
 
     @Element(name = "ssl_card_present", required = false)
     private Boolean cardPresent;
@@ -260,6 +266,14 @@ public class ElavonTransactionRequest extends ElavonRequest {
         this.amount = amount;
     }
 
+    public BigDecimal getTipAmount() {
+        return tipAmount;
+    }
+
+    public void setTipAmount(BigDecimal tipAmount) {
+        this.tipAmount = tipAmount;
+    }
+
     public String getCvv2Indicator() {
         return cvv2Indicator;
     }
@@ -282,6 +296,14 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     public void setFirstName(String firstName) {
         this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public String getCardLast4() {
