@@ -3,12 +3,14 @@ package com.elavon.converge.model.mapper;
 import com.elavon.converge.model.ElavonTransactionRequest;
 import com.elavon.converge.model.type.ElavonPosMode;
 import com.elavon.converge.model.type.ElavonTransactionType;
+import com.elavon.converge.util.CardUtil;
+import com.elavon.converge.util.CurrencyUtil;
 
 import javax.inject.Inject;
 
 import co.poynt.api.model.Transaction;
 
-public class MsrMapper extends InterfaceMapper {
+public class MsrMapper implements InterfaceMapper {
 
     @Inject
     public MsrMapper() {
@@ -142,13 +144,12 @@ public class MsrMapper extends InterfaceMapper {
     private ElavonTransactionRequest createRequest(final Transaction t) {
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
         request.setPosMode(ElavonPosMode.SWIPE_CAPABLE);
-        request.setAmount(getAmount(t.getAmounts().getTransactionAmount(), t.getAmounts().getCurrency()));
-        request.setTipAmount(getAmount(t.getAmounts().getTipAmount(), t.getAmounts().getCurrency()));
+        request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getTransactionAmount(), t.getAmounts().getCurrency()));
         request.setFirstName(t.getFundingSource().getCard().getCardHolderFirstName());
         request.setLastName(t.getFundingSource().getCard().getCardHolderLastName());
         request.setEncryptedTrackData(t.getFundingSource().getCard().getTrack2data());
         request.setKsn(t.getFundingSource().getCard().getKeySerialNumber());
-        request.setExpDate(getCardExpiry(t.getFundingSource().getCard()));
+        request.setExpDate(CardUtil.getCardExpiry(t.getFundingSource().getCard()));
         request.setCardLast4(t.getFundingSource().getCard().getNumberLast4());
         return request;
     }

@@ -90,6 +90,22 @@ public class ConvergeService {
         find(request.getCardLast4(), request.getAmount(), originalTime, cb);
     }
 
+    public void update(
+            final ElavonTransactionRequest request,
+            final ConvergeCallback<ElavonTransactionResponse> callback) {
+        convergeClient.call(request, new ConvergeCallback<ElavonTransactionResponse>() {
+            @Override
+            public void onResponse(final ElavonTransactionResponse response) {
+                callback.onResponse(response);
+            }
+
+            @Override
+            public void onFailure(final Throwable t) {
+                callback.onFailure(t);
+            }
+        });
+    }
+
     public void find(
             final String cardLast4,
             final BigDecimal amount,

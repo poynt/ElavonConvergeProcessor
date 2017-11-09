@@ -1,16 +1,14 @@
 package com.elavon.converge.model.type;
 
-public enum CardType {
-    CASH("CASH"),
-    CREDIT("CREDITCARD"),
-    DEBIT("DEBITCARD"),
-    FOODSTAMP("FOODSTAMP"),
-    GIFTCARD("GIFTCARD"),
-    LOYALTY("LOYALTY");
+public enum SignatureImageType {
+    GIF("GIF"),
+    TIF("TIF"),
+    JPG("JPG"),
+    PNG("PNG");
 
     private final String value;
 
-    CardType(final String value) {
+    SignatureImageType(final String value) {
         this.value = value;
     }
 

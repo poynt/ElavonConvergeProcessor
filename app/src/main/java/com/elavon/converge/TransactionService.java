@@ -20,6 +20,7 @@ import co.poynt.api.model.BalanceInquiry;
 import co.poynt.api.model.EMVData;
 import co.poynt.api.model.Transaction;
 import co.poynt.os.model.Payment;
+import co.poynt.os.model.PoyntError;
 import co.poynt.os.services.v1.IPoyntCheckCardListener;
 import co.poynt.os.services.v1.IPoyntTransactionBalanceInquiryListener;
 import co.poynt.os.services.v1.IPoyntTransactionService;
@@ -28,6 +29,27 @@ import co.poynt.os.services.v1.IPoyntTransactionServiceListener;
 public class TransactionService extends Service {
 
     private static final String TAG = "TransactionService";
+    /**
+     * Replaces null listener
+     */
+    private static final IPoyntTransactionServiceListener EMPTY_LISTENER = new IPoyntTransactionServiceListener() {
+        @Override
+        public void onResponse(Transaction transaction, String s, PoyntError poyntError) throws RemoteException {
+        }
+
+        @Override
+        public void onLoginRequired() throws RemoteException {
+        }
+
+        @Override
+        public void onLaunchActivity(Intent intent, String s) throws RemoteException {
+        }
+
+        @Override
+        public IBinder asBinder() {
+            return null;
+        }
+    };
 
     @Inject
     protected TransactionManager transactionManager;
@@ -47,12 +69,12 @@ public class TransactionService extends Service {
 
         @Override
         public void createTransaction(Transaction transaction, String requestId, IPoyntTransactionServiceListener listener) throws RemoteException {
-            Log.d(TAG, "createTransaction :" + requestId);
+            Log.d(TAG, "createTransaction: " + requestId);
         }
 
         @Override
         public void processTransaction(final Transaction transaction, final String requestId, final IPoyntTransactionServiceListener listener) throws RemoteException {
-            Log.d(TAG, "processTransaction :" + requestId);
+            Log.d(TAG, "processTransaction: " + requestId);
             Log.d(TAG, "Transaction:" + transaction.toString());
             // if you want to collect a new pin after processing a card
             //transactionManager.collectNewPin(transaction, requestId, listener);
@@ -85,9 +107,13 @@ public class TransactionService extends Service {
         }
 
         @Override
-        public void updateTransaction(String transactionId, AdjustTransactionRequest transaction, String requestId, IPoyntTransactionServiceListener listener) throws RemoteException {
+        public void updateTransaction(
+                final String transactionId,
+                final AdjustTransactionRequest transaction,
+                final String requestId,
+                final IPoyntTransactionServiceListener listener) throws RemoteException {
             Log.d(TAG, "updateTransaction:" + requestId);
-            transactionManager.updateTransaction(transactionId, transaction, requestId, listener);
+            transactionManager.updateTransaction(transactionId, transaction, requestId, listener == null ? EMPTY_LISTENER : listener);
         }
 
         @Override

@@ -3,6 +3,7 @@ package com.elavon.converge.model;
 import com.elavon.converge.model.type.ElavonEntryMode;
 import com.elavon.converge.model.type.ElavonPosMode;
 import com.elavon.converge.model.type.PartialAuthIndicator;
+import com.elavon.converge.model.type.SignatureImageType;
 
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;
@@ -24,6 +25,9 @@ import java.math.BigDecimal;
  */
 @Root(name = "txn")
 public class ElavonTransactionRequest extends ElavonRequest {
+
+    @Element(name = "ssl_txn_id", required = false)
+    private String txnId;
 
     @Element(name = "ssl_card_number", required = false)
     private String cardNumber;
@@ -49,9 +53,6 @@ public class ElavonTransactionRequest extends ElavonRequest {
      */
     @Element(name = "ssl_amount", required = false)
     private BigDecimal amount;
-
-    @Element(name = "ssl_tip_amount", required = false)
-    private BigDecimal tipAmount;
 
     @Element(name = "ssl_cvv2cvc2_indicator", required = false)
     private String cvv2Indicator;
@@ -86,6 +87,9 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     @Element(name = "ssl_salestax", required = false)
     private BigDecimal salesTax;
+
+    @Element(name = "ssl_tip_amount", required = false)
+    private BigDecimal tipAmount;
 
     /**
      * Use only with a terminal that is setup with DBA.
@@ -126,8 +130,25 @@ public class ElavonTransactionRequest extends ElavonRequest {
     @Element(name = "ssl_add_token", required = false)
     private Boolean generateAndStoreToken;
 
+    @Element(name = "ssl_image_type", required = false)
+    private SignatureImageType imageType;
+
+    /**
+     * Base64 encoded image
+     */
+    @Element(name = "ssl_signature_image", required = false)
+    private String signatureImage;
+
     // not part of xml
     private String cardLast4;
+
+    public String getTxnId() {
+        return txnId;
+    }
+
+    public void setTxnId(String txnId) {
+        this.txnId = txnId;
+    }
 
     public ElavonEntryMode getEntryMode() {
         return entryMode;
@@ -209,6 +230,14 @@ public class ElavonTransactionRequest extends ElavonRequest {
         this.salesTax = salesTax;
     }
 
+    public BigDecimal getTipAmount() {
+        return tipAmount;
+    }
+
+    public void setTipAmount(BigDecimal tipAmount) {
+        this.tipAmount = tipAmount;
+    }
+
     public String getAvsZip() {
         return avsZip;
     }
@@ -218,7 +247,6 @@ public class ElavonTransactionRequest extends ElavonRequest {
     }
 
     public Boolean getCardPresent() {
-
         return cardPresent;
     }
 
@@ -264,14 +292,6 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     public void setAmount(BigDecimal amount) {
         this.amount = amount;
-    }
-
-    public BigDecimal getTipAmount() {
-        return tipAmount;
-    }
-
-    public void setTipAmount(BigDecimal tipAmount) {
-        this.tipAmount = tipAmount;
     }
 
     public String getCvv2Indicator() {
@@ -320,5 +340,21 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     public void setTlvEnc(String tlvEnc) {
         this.tlvEnc = tlvEnc;
+    }
+
+    public SignatureImageType getImageType() {
+        return imageType;
+    }
+
+    public void setImageType(SignatureImageType imageType) {
+        this.imageType = imageType;
+    }
+
+    public String getSignatureImage() {
+        return signatureImage;
+    }
+
+    public void setSignatureImage(String signatureImage) {
+        this.signatureImage = signatureImage;
     }
 }

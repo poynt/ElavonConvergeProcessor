@@ -1,9 +1,5 @@
 package com.elavon.converge.model.type;
 
-/**
- * Created by dennis on 10/24/17.
- */
-
 public enum CVV2Response {
     MATCH("M"), // CVV2/CVC2 Match
     NO_MATCH("N"), // CVV2/CVC2 No match

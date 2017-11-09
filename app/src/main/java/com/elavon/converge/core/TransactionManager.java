@@ -12,7 +12,6 @@ import com.elavon.converge.model.ElavonTransactionResponse;
 import com.elavon.converge.model.mapper.ConvergeMapper;
 import com.elavon.converge.processor.ConvergeCallback;
 import com.elavon.converge.processor.ConvergeService;
-import com.google.gson.Gson;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -92,7 +91,7 @@ public class TransactionManager {
     };
 
     public void processTransaction(final Transaction transaction, final String requestId, final IPoyntTransactionServiceListener listener) {
-        Log.d(TAG, "PROCESSED TRANSACTION");
+        Log.d(TAG, "processTransaction");
 
         final ElavonTransactionRequest request = convergeMapper.getTransactionRequest(transaction);
         convergeService.create(request, new ConvergeCallback<ElavonTransactionResponse>() {
@@ -100,8 +99,10 @@ public class TransactionManager {
             public void onResponse(final ElavonTransactionResponse elavonResponse) {
                 try {
                     convergeMapper.mapTransactionResponse(elavonResponse, transaction);
+                    // TODO replace this with poynt service
+                    transactionCache.put(transaction.getId(), transaction);
                     listener.onResponse(transaction, requestId, null);
-                } catch (RemoteException e) {
+                } catch (final RemoteException e) {
                     Log.e(TAG, "Failed to respond", e);
                 }
             }
@@ -113,15 +114,18 @@ public class TransactionManager {
                 error.setThrowable(t);
                 try {
                     listener.onResponse(transaction, "", error);
-                } catch (RemoteException e) {
+                } catch (final RemoteException e) {
                     Log.e(TAG, "Failed to respond", e);
                 }
             }
         });
     }
 
-    public void captureTransaction(String transactionId, AdjustTransactionRequest adjustTransactionRequest, String requestId, IPoyntTransactionServiceListener listener) {
-        Log.d(TAG, "CAPTURED TRANSACTION: " + transactionId);
+    public void captureTransaction(
+            final String transactionId,
+            final AdjustTransactionRequest adjustTransactionRequest,
+            final String requestId, IPoyntTransactionServiceListener listener) {
+        Log.d(TAG, "captureTransaction: " + transactionId);
         // get cached transaction
         Transaction transaction = transactionCache.get(UUID.fromString(transactionId));
         if (transaction == null) {
@@ -143,35 +147,61 @@ public class TransactionManager {
         }
     }
 
-    public void updateTransaction(String transactionId, AdjustTransactionRequest adjustTransactionRequest, String requestId, IPoyntTransactionServiceListener listener) {
-        Log.d(TAG, "UPDATE TRANSACTION: " + transactionId);
-        // get cached transaction
-        Transaction transaction = transactionCache.get(UUID.fromString(transactionId));
-        if (transaction == null) {
-            // if we did not find one just generate a new one
-            transaction = new Transaction();
-            transaction.setId(UUID.fromString(transactionId));
-            transaction.setCreatedAt(Calendar.getInstance());
-        }
-        transaction.setAmounts(adjustTransactionRequest.getAmounts());
-        transaction.setUpdatedAt(Calendar.getInstance());
-        try {
-            transactionCache.put(transaction.getId(), transaction);
-            if (listener != null) {
+    public void updateTransaction(
+            final String transactionId,
+            final AdjustTransactionRequest adjustTransactionRequest,
+            final String requestId,
+            final IPoyntTransactionServiceListener listener) {
+        Log.d(TAG, "updateTransaction: " + transactionId);
+
+        // TODO get transaction from poynt service
+        final Transaction transaction = transactionCache.get(UUID.fromString(transactionId));
+
+        // check if tip is passed
+        // TODO also add signature
+        if (Boolean.TRUE.equals(adjustTransactionRequest.getAmounts().isCustomerOptedNoTip())) {
+            try {
                 listener.onResponse(transaction, requestId, null);
-            } else {
-                Log.d(TAG, "ignoring callback as it's null");
+            } catch (final RemoteException e) {
+                Log.e(TAG, "Failed to respond", e);
             }
-        } catch (RemoteException e) {
-            e.printStackTrace();
+        } else {
+            final ElavonTransactionRequest request = convergeMapper.getTransactionTipUpdateRequest(
+                    transaction.getProcessorResponse().getTransactionId(),
+                    adjustTransactionRequest);
+            convergeService.update(request, new ConvergeCallback<ElavonTransactionResponse>() {
+                @Override
+                public void onResponse(final ElavonTransactionResponse elavonResponse) {
+                    try {
+                        if (elavonResponse.isSuccess()) {
+                            listener.onResponse(transaction, requestId, null);
+                        } else {
+                            listener.onResponse(transaction, requestId, new PoyntError(PoyntError.CODE_API_ERROR));
+                        }
+                    } catch (final RemoteException e) {
+                        Log.e(TAG, "Failed to respond", e);
+                    }
+                }
+
+                @Override
+                public void onFailure(final Throwable t) {
+                    final PoyntError error = new PoyntError(PoyntError.CODE_API_ERROR);
+                    error.setThrowable(t);
+                    try {
+                        listener.onResponse(transaction, requestId, error);
+                    } catch (final RemoteException e) {
+                        Log.e(TAG, "Failed to respond", e);
+                    }
+                }
+            });
         }
     }
-
 
     public void voidTransaction(String transactionId,
                                 EMVData emvData,
                                 String requestId,
                                 IPoyntTransactionServiceListener listener) {
+        Log.d(TAG, "voidTransaction: " + transactionId);
         // get cached transaction
         Transaction transaction = transactionCache.get(UUID.fromString(transactionId));
         if (transaction == null) {
@@ -196,7 +226,7 @@ public class TransactionManager {
     }
 
     public void getTransaction(String transactionId, String requestId, IPoyntTransactionServiceListener listener) {
-        Log.d(TAG, "CAPTURED TRANSACTION: " + transactionId);
+        Log.d(TAG, "getTransaction: " + transactionId);
         // get cached transaction
         Transaction transaction = transactionCache.get(UUID.fromString(transactionId));
         try {

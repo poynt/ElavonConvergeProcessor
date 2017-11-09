@@ -15,7 +15,7 @@ import javax.inject.Inject;
 
 import co.poynt.api.model.Transaction;
 
-public class EmvMapper extends InterfaceMapper {
+public class EmvMapper implements InterfaceMapper {
 
     private static final String TAG = "EmvMapper";
 

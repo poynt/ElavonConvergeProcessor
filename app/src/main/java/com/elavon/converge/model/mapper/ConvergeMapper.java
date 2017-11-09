@@ -1,12 +1,16 @@
 package com.elavon.converge.model.mapper;
 
+import android.util.Base64;
+
 import com.elavon.converge.exception.ConvergeMapperException;
+import com.elavon.converge.model.ElavonResponse;
 import com.elavon.converge.model.ElavonTransactionRequest;
 import com.elavon.converge.model.ElavonTransactionResponse;
 import com.elavon.converge.model.ElavonTransactionSearchRequest;
 import com.elavon.converge.model.type.ElavonTransactionType;
+import com.elavon.converge.model.type.SignatureImageType;
+import com.elavon.converge.util.CurrencyUtil;
 
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,6 +18,7 @@ import java.util.UUID;
 
 import javax.inject.Inject;
 
+import co.poynt.api.model.AdjustTransactionRequest;
 import co.poynt.api.model.EntryMode;
 import co.poynt.api.model.Processor;
 import co.poynt.api.model.ProcessorResponse;
@@ -59,6 +64,23 @@ public class ConvergeMapper {
             default:
                 throw new ConvergeMapperException("Invalid transaction action found");
         }
+    }
+
+    public ElavonTransactionRequest getTransactionTipUpdateRequest(final String transactionId, final AdjustTransactionRequest adjustTransactionRequest) {
+        final ElavonTransactionRequest request = new ElavonTransactionRequest();
+        request.setTransactionType(ElavonTransactionType.UPDATE_TIP);
+        request.setTxnId(transactionId);
+        request.setTipAmount(CurrencyUtil.getAmount(adjustTransactionRequest.getAmounts().getTipAmount(), adjustTransactionRequest.getAmounts().getCurrency()));
+        return request;
+    }
+
+    public ElavonTransactionRequest getTransactionSignatureUpdateRequest(final String transactionId, final AdjustTransactionRequest adjustTransactionRequest) {
+        final ElavonTransactionRequest request = new ElavonTransactionRequest();
+        request.setTransactionType(ElavonTransactionType.SIGNATURE);
+        request.setTxnId(transactionId);
+        request.setImageType(SignatureImageType.PNG);
+        request.setSignatureImage(Base64.encodeToString(adjustTransactionRequest.getSignature(), Base64.DEFAULT));
+        return request;
     }
 
     public ElavonTransactionSearchRequest getSearchRequest(final String cardLast4, final Date searchStartDate) {
@@ -109,19 +131,20 @@ public class ConvergeMapper {
         processorResponse.setProcessor(Processor.ELAVON);
         processorResponse.setAcquirer(Processor.ELAVON);
 
-        // APPROVAL
-        if (ElavonTransactionResponse.RESULT_MESSAGE.APPROVAL.equals(etResponse.getResultMessage())) {
-
+        if (etResponse.isSuccess()) {
             processorResponse.setStatus(ProcessorStatus.Successful);
             processorResponse.setStatusCode(etResponse.getResult());
             processorResponse.setTransactionId(etResponse.getTxnId());
             processorResponse.setApprovalCode(etResponse.getApprovalCode());
-            processorResponse.setApprovedAmount(etResponse.getAmount().multiply(new BigDecimal(100)).longValue());
+            processorResponse.setApprovedAmount(CurrencyUtil.getAmount(etResponse.getAmount(), transaction.getAmounts().getCurrency()));
             transaction.setProcessorResponse(processorResponse);
 
             // TODO temporary fix
             if (transaction.getId() == null) {
                 transaction.setId(UUID.randomUUID());
+            }
+            if (transaction.isSignatureCaptured() == null) {
+                transaction.setSignatureCaptured(false);
             }
 
             switch (transaction.getAction()) {
@@ -143,7 +166,7 @@ public class ConvergeMapper {
                 default:
                     throw new ConvergeMapperException("Invalid transaction action found");
             }
-        } else if (etResponse.getResultMessage() == ElavonTransactionResponse.RESULT_MESSAGE.PARTIAL_APPROVAL) {// PARTIAL APPROVAL
+        } else if (ElavonResponse.RESULT_MESSAGE.PARTIAL_APPROVAL.equals(etResponse.getResultMessage())) {
             // TODO implement
         } else { // DECLINE
             if (etResponse.getErrorCode() != 0) {
