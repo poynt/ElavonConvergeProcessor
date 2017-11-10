@@ -4,6 +4,8 @@ import org.simpleframework.xml.Element;
 
 public abstract class ElavonResponse {
 
+    public static final String RESULT_SUCCESS = "0";
+
     public static class RESULT_MESSAGE {
         public static final String APPROVAL = "APPROVAL";// Approved
         public static final String PARTIAL_APPROVAL = "PARTIAL APPROVAL";// Approved for a Partial Amount
@@ -99,6 +101,6 @@ public abstract class ElavonResponse {
     }
 
     public boolean isSuccess() {
-        return RESULT_MESSAGE.APPROVAL.equals(resultMessage);
+        return RESULT_SUCCESS.equals(result);
     }
 }

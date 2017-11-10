@@ -30,15 +30,32 @@ public class ConvergeServiceTest extends BaseTest {
     }
 
     @Test
-    public void createTransaction() throws Exception {
-        // SETUP
-        final ElavonTransactionRequest req = MockObjectFactory.getElavonTransactionRequest();
+    public void createThenUpdate() throws Exception {
+        // SETUP - create
+        final ElavonTransactionRequest txnReq = MockObjectFactory.getElavonTransactionRequest();
+
+        // TEST - create
+        final ElavonTransactionResponse txnRes = callSync(txnReq);
+
+        // VERIFY - create
+        assertTrue(txnRes.isSuccess());
+
+        // SETUP - update
+        final ElavonTransactionRequest updateReq = MockObjectFactory.getElavonTransactionUpdateRequest(txnRes.getTxnId());
+
+        // TEST - update
+        final ElavonTransactionResponse updateRes = callSync(updateReq);
+
+        // VERIFY - update
+        assertTrue(updateRes.isSuccess());
+    }
+
+    private ElavonTransactionResponse callSync(ElavonTransactionRequest request) throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicBoolean isSuccess = new AtomicBoolean();
         final AtomicReference<ElavonTransactionResponse> res = new AtomicReference<>();
 
-        // TEST
-        convergeService.create(req, new ConvergeCallback<ElavonTransactionResponse>() {
+        convergeService.create(request, new ConvergeCallback<ElavonTransactionResponse>() {
             @Override
             public void onResponse(final ElavonTransactionResponse response) {
                 isSuccess.set(true);
@@ -53,16 +70,13 @@ public class ConvergeServiceTest extends BaseTest {
             }
         });
 
-        // VERIFY
         assertTrue(latch.await(50000, TimeUnit.MILLISECONDS));
         assertTrue(isSuccess.get());
-
-        printXml(res.get());
-        assertTrue(res.get().getApprovalCode().length() > 0);
+        return res.get();
     }
 
     @Test
-    public void findTransaction() throws Exception {
+    public void find() throws Exception {
         // SETUP
         final ElavonTransactionRequest req = MockObjectFactory.getElavonTransactionRequest();
         final Date dateAfter = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a").parse("10/01/2017 00:00:00 AM");
