@@ -4,6 +4,7 @@
 
     <uses-permission android:name="poynt.permission.SECURITY_SERVICE" />
     <uses-permission android:name="poynt.permission.CONFIGURATION_SERVICE" />
+    <uses-permission android:name="poynt.permission.TRANSACTION_SERVICE" />
     <uses-permission android:name="co.poynt.business.ACCESS_BUSINESS" />
     <uses-permission android:name="poynt.permission.SECOND_SCREEN_SERVICE" />
     <uses-permission android:name="android.permission.INTERNET" />

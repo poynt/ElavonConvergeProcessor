@@ -1,12 +1,16 @@
 package com.elavon.converge.model.mapper;
 
+import android.util.Base64;
+
 import com.elavon.converge.exception.ConvergeMapperException;
+import com.elavon.converge.model.ElavonResponse;
 import com.elavon.converge.model.ElavonTransactionRequest;
 import com.elavon.converge.model.ElavonTransactionResponse;
 import com.elavon.converge.model.ElavonTransactionSearchRequest;
 import com.elavon.converge.model.type.ElavonTransactionType;
+import com.elavon.converge.model.type.SignatureImageType;
+import com.elavon.converge.util.CurrencyUtil;
 
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,6 +18,7 @@ import java.util.UUID;
 
 import javax.inject.Inject;
 
+import co.poynt.api.model.AdjustTransactionRequest;
 import co.poynt.api.model.EntryMode;
 import co.poynt.api.model.Processor;
 import co.poynt.api.model.ProcessorResponse;
@@ -26,17 +31,16 @@ public class ConvergeMapper {
     private final Map<EntryMode, InterfaceMapper> interfaceMappers;
 
     @Inject
-    public ConvergeMapper(final MsrMapper msrMapper, final EmvMapper emvMapper) {
+    public ConvergeMapper(final MsrMapper msrMapper, final EmvMapper emvMapper, final ContactlessMapper contactlessMapper) {
         interfaceMappers = new HashMap<>();
         interfaceMappers.put(EntryMode.KEYED, null);
         interfaceMappers.put(EntryMode.TRACK_DATA_FROM_MAGSTRIPE, msrMapper);
         interfaceMappers.put(EntryMode.CONTACTLESS_MAGSTRIPE, null);
         interfaceMappers.put(EntryMode.INTEGRATED_CIRCUIT_CARD, emvMapper);
-        interfaceMappers.put(EntryMode.CONTACTLESS_INTEGRATED_CIRCUIT_CARD, null);
+        interfaceMappers.put(EntryMode.CONTACTLESS_INTEGRATED_CIRCUIT_CARD, contactlessMapper);
     }
 
-    public ElavonTransactionRequest createSale(final Transaction transaction) {
-
+    public ElavonTransactionRequest getTransactionRequest(final Transaction transaction) {
         final InterfaceMapper mapper = interfaceMappers.get(transaction.getFundingSource().getEntryDetails().getEntryMode());
         if (mapper == null) {
             throw new ConvergeMapperException("Invalid entry mode found");
@@ -61,6 +65,33 @@ public class ConvergeMapper {
                 throw new ConvergeMapperException("Invalid transaction action found");
         }
     }
+
+    public ElavonTransactionRequest getTransactionTipUpdateRequest(final String transactionId, final AdjustTransactionRequest adjustTransactionRequest) {
+        final ElavonTransactionRequest request = new ElavonTransactionRequest();
+        request.setTransactionType(ElavonTransactionType.UPDATE_TIP);
+        request.setTxnId(transactionId);
+        request.setTipAmount(CurrencyUtil.getAmount(adjustTransactionRequest.getAmounts().getTipAmount(), adjustTransactionRequest.getAmounts().getCurrency()));
+        return request;
+    }
+
+    public ElavonTransactionRequest getTransactionSignatureUpdateRequest(final String transactionId, final AdjustTransactionRequest adjustTransactionRequest) {
+        final ElavonTransactionRequest request = new ElavonTransactionRequest();
+        request.setTransactionType(ElavonTransactionType.SIGNATURE);
+        request.setTxnId(transactionId);
+        request.setImageType(SignatureImageType.PNG);
+        request.setSignatureImage(Base64.encodeToString(adjustTransactionRequest.getSignature(), Base64.DEFAULT));
+        return request;
+    }
+
+    public ElavonTransactionSearchRequest getSearchRequest(final String cardLast4, final Date searchStartDate) {
+        final ElavonTransactionSearchRequest search = new ElavonTransactionSearchRequest();
+        search.setTestMode("false");
+        search.setTransactionType(ElavonTransactionType.TRANSACTION_QUERY);
+        search.setCardSuffix(cardLast4);
+        search.setSearchStartDate(searchStartDate);
+        return search;
+    }
+
     /**
      * <pre><code>
      * Example Transaction:
@@ -94,73 +125,61 @@ public class ConvergeMapper {
      * </txn>
      * </code></pre>
      */
-    public void handleMSRSaleResponse(Transaction t, ElavonTransactionResponse et) {
-        // APPROVAL
-        if (ElavonTransactionResponse.RESULT_MESSAGE.APPROVAL.equals(et.getResultMessage())) {
-            t.setStatus(TransactionStatus.CAPTURED);
+    public void mapTransactionResponse(final ElavonTransactionResponse etResponse, final Transaction transaction) {
 
-            ProcessorResponse processorResponse = createProcessorResponse();
-            processorResponse.setStatus(ProcessorStatus.Successful);
-            processorResponse.setStatusCode(et.getResult());
-//          //TODO Move to Manual Entry handler and add other responses
-//            if(et.getCvv2Response() == null) {
-//                processorResponse.setCvResult(CVResult.NO_RESPONSE);
-//            }
-            processorResponse.setTransactionId(et.getTxnId());
-            processorResponse.setApprovalCode(et.getApprovalCode());
-            // TODO for now assuming that we are only dealing with currency that have decimal values
-            processorResponse.setApprovedAmount(et.getAmount().multiply(new BigDecimal(100)).longValue());
-            t.setProcessorResponse(processorResponse);
-
-            // TODO temporary fix
-            if (t.getId() == null) {
-                t.setId(UUID.randomUUID());
-            }
-        } else if (et.getResultMessage() == ElavonTransactionResponse.RESULT_MESSAGE.PARTIAL_APPROVAL) {// PARTIAL APPROVAL
-            // TODO implement
-        } else { // DECLINE
-            // TODO
-            /*
-
-            //TODO implement response below
-            <txn>
-               <errorCode>5000</errorCode>
-               <errorName>Credit Card Number Invalid</errorName>
-               <errorMessage>The Credit Card Number supplied in the authorization request appears to be invalid.</errorMessage>
-            </txn>
-
-            <txn>
-               <errorMessage>Only Test Cards Allowed in this environment</errorMessage>
-               <errorName>Only Test Cards Allowed</errorName>
-               <errorCode>9999</errorCode>
-               <ssl_conversion_rate>0.0</ssl_conversion_rate>
-            </txn>
-
-            */
-            if (et.getErrorCode() != 0) {
-                t.setStatus(TransactionStatus.DECLINED);
-                ProcessorResponse response = createProcessorResponse();
-                response.setStatus(ProcessorStatus.Failure);
-                response.setStatusMessage(et.getErrorName());
-                t.setProcessorResponse(response);
-            }
-
-        }
-    }
-
-    private ProcessorResponse createProcessorResponse() {
-        ProcessorResponse processorResponse = new ProcessorResponse();
+        final ProcessorResponse processorResponse = new ProcessorResponse();
         processorResponse.setProcessor(Processor.ELAVON);
         processorResponse.setAcquirer(Processor.ELAVON);
-        return processorResponse;
-    }
 
-    public ElavonTransactionSearchRequest createSearchRequest(final String cardLast4, final Date searchStartDate) {
-        final ElavonTransactionSearchRequest search = new ElavonTransactionSearchRequest();
-        search.setTestMode("false");
-        search.setTransactionType(ElavonTransactionType.TRANSACTION_QUERY);
-        search.setCardSuffix(cardLast4);
-        search.setSearchStartDate(searchStartDate);
-        return search;
+        if (etResponse.isSuccess()) {
+            processorResponse.setStatus(ProcessorStatus.Successful);
+            processorResponse.setStatusCode(etResponse.getResult());
+
+            // TODO currently there is issue with processor response transaction id overwritten
+            // TODO with transaction id. using retrieval ref num to store converge transaction id
+            processorResponse.setTransactionId(etResponse.getTxnId());
+            processorResponse.setRetrievalRefNum(etResponse.getTxnId());
+
+            processorResponse.setApprovalCode(etResponse.getApprovalCode());
+            processorResponse.setApprovedAmount(CurrencyUtil.getAmount(etResponse.getAmount(), transaction.getAmounts().getCurrency()));
+            transaction.setProcessorResponse(processorResponse);
+
+            // TODO temporary fix
+            if (transaction.getId() == null) {
+                transaction.setId(UUID.randomUUID());
+            }
+            if (transaction.isSignatureCaptured() == null) {
+                transaction.setSignatureCaptured(false);
+            }
+
+            switch (transaction.getAction()) {
+                case AUTHORIZE:
+                case SALE:
+                    transaction.setStatus(TransactionStatus.CAPTURED);
+                    break;
+                case CAPTURE:
+                    break;
+                case VOID:
+                    break;
+                case OFFLINE_AUTHORIZE:
+                    break;
+                case REFUND:
+                    transaction.setStatus(TransactionStatus.REFUNDED);
+                    break;
+                case VERIFY:
+                    break;
+                default:
+                    throw new ConvergeMapperException("Invalid transaction action found");
+            }
+        } else if (ElavonResponse.RESULT_MESSAGE.PARTIAL_APPROVAL.equals(etResponse.getResultMessage())) {
+            // TODO implement
+        } else { // DECLINE
+            if (etResponse.getErrorCode() != 0) {
+                transaction.setStatus(TransactionStatus.DECLINED);
+                processorResponse.setStatus(ProcessorStatus.Failure);
+                processorResponse.setStatusMessage(etResponse.getErrorName());
+                transaction.setProcessorResponse(processorResponse);
+            }
+        }
     }
 }

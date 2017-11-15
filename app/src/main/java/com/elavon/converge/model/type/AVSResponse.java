@@ -1,9 +1,5 @@
 package com.elavon.converge.model.type;
 
-/**
- * Created by dennis on 10/24/17.
- */
-
 public enum AVSResponse {
     STREET_MATCH("A"), // Address matches - ZIP Code does not match
     STREET_MATCH_MALFORMED_ZIP("B"), // Street address match, Postal code in wrong format (international issuer)

@@ -3,6 +3,7 @@ package com.elavon.converge.model;
 import com.elavon.converge.model.type.ElavonEntryMode;
 import com.elavon.converge.model.type.ElavonPosMode;
 import com.elavon.converge.model.type.PartialAuthIndicator;
+import com.elavon.converge.model.type.SignatureImageType;
 
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;
@@ -24,6 +25,9 @@ import java.math.BigDecimal;
  */
 @Root(name = "txn")
 public class ElavonTransactionRequest extends ElavonRequest {
+
+    @Element(name = "ssl_txn_id", required = false)
+    private String txnId;
 
     @Element(name = "ssl_card_number", required = false)
     private String cardNumber;
@@ -59,6 +63,9 @@ public class ElavonTransactionRequest extends ElavonRequest {
     @Element(name = "ssl_first_name", required = false)
     private String firstName;
 
+    @Element(name = "ssl_last_name", required = false)
+    private String lastName;
+
     @Element(name = "ssl_card_present", required = false)
     private Boolean cardPresent;
 
@@ -80,6 +87,9 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     @Element(name = "ssl_salestax", required = false)
     private BigDecimal salesTax;
+
+    @Element(name = "ssl_tip_amount", required = false)
+    private BigDecimal tipAmount;
 
     /**
      * Use only with a terminal that is setup with DBA.
@@ -106,6 +116,9 @@ public class ElavonTransactionRequest extends ElavonRequest {
     @Element(name = "ssl_entry_mode", required = false)
     private ElavonEntryMode entryMode;
 
+    @Element(name = "ssl_tlv_enc", required = false)
+    private String tlvEnc;
+
     /**
      * Use only with a terminal that is setup with Tokenization.
      * Add to Card Manager indicator, used to indicate if you wish to generate a token and
@@ -117,8 +130,25 @@ public class ElavonTransactionRequest extends ElavonRequest {
     @Element(name = "ssl_add_token", required = false)
     private Boolean generateAndStoreToken;
 
+    @Element(name = "ssl_image_type", required = false)
+    private SignatureImageType imageType;
+
+    /**
+     * Base64 encoded image
+     */
+    @Element(name = "ssl_signature_image", required = false)
+    private String signatureImage;
+
     // not part of xml
     private String cardLast4;
+
+    public String getTxnId() {
+        return txnId;
+    }
+
+    public void setTxnId(String txnId) {
+        this.txnId = txnId;
+    }
 
     public ElavonEntryMode getEntryMode() {
         return entryMode;
@@ -200,6 +230,14 @@ public class ElavonTransactionRequest extends ElavonRequest {
         this.salesTax = salesTax;
     }
 
+    public BigDecimal getTipAmount() {
+        return tipAmount;
+    }
+
+    public void setTipAmount(BigDecimal tipAmount) {
+        this.tipAmount = tipAmount;
+    }
+
     public String getAvsZip() {
         return avsZip;
     }
@@ -209,7 +247,6 @@ public class ElavonTransactionRequest extends ElavonRequest {
     }
 
     public Boolean getCardPresent() {
-
         return cardPresent;
     }
 
@@ -281,11 +318,43 @@ public class ElavonTransactionRequest extends ElavonRequest {
         this.firstName = firstName;
     }
 
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
     public String getCardLast4() {
         return cardLast4;
     }
 
     public void setCardLast4(String cardLast4) {
         this.cardLast4 = cardLast4;
+    }
+
+    public String getTlvEnc() {
+        return tlvEnc;
+    }
+
+    public void setTlvEnc(String tlvEnc) {
+        this.tlvEnc = tlvEnc;
+    }
+
+    public SignatureImageType getImageType() {
+        return imageType;
+    }
+
+    public void setImageType(SignatureImageType imageType) {
+        this.imageType = imageType;
+    }
+
+    public String getSignatureImage() {
+        return signatureImage;
+    }
+
+    public void setSignatureImage(String signatureImage) {
+        this.signatureImage = signatureImage;
     }
 }
