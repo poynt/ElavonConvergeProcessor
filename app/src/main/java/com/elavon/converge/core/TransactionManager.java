@@ -99,8 +99,6 @@ public class TransactionManager {
             public void onResponse(final ElavonTransactionResponse elavonResponse) {
                 try {
                     convergeMapper.mapTransactionResponse(elavonResponse, transaction);
-                    // TODO replace this with poynt service
-                    transactionCache.put(transaction.getId(), transaction);
                     listener.onResponse(transaction, requestId, null);
                 } catch (final RemoteException e) {
                     Log.e(TAG, "Failed to respond", e);
@@ -148,14 +146,11 @@ public class TransactionManager {
     }
 
     public void updateTransaction(
-            final String transactionId,
+            final Transaction transaction,
             final AdjustTransactionRequest adjustTransactionRequest,
             final String requestId,
             final IPoyntTransactionServiceListener listener) {
-        Log.d(TAG, "updateTransaction: " + transactionId);
-
-        // TODO get transaction from poynt service
-        final Transaction transaction = transactionCache.get(UUID.fromString(transactionId));
+        Log.d(TAG, "updateTransaction: " + transaction.getId());
 
         // check if tip is passed
         // TODO also add signature
@@ -167,7 +162,7 @@ public class TransactionManager {
             }
         } else {
             final ElavonTransactionRequest request = convergeMapper.getTransactionTipUpdateRequest(
-                    transaction.getProcessorResponse().getTransactionId(),
+                    transaction.getProcessorResponse().getRetrievalRefNum(),
                     adjustTransactionRequest);
             convergeService.update(request, new ConvergeCallback<ElavonTransactionResponse>() {
                 @Override

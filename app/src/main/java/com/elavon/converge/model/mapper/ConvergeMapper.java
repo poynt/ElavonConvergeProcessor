@@ -134,7 +134,12 @@ public class ConvergeMapper {
         if (etResponse.isSuccess()) {
             processorResponse.setStatus(ProcessorStatus.Successful);
             processorResponse.setStatusCode(etResponse.getResult());
+
+            // TODO currently there is issue with processor response transaction id overwritten
+            // TODO with transaction id. using retrieval ref num to store converge transaction id
             processorResponse.setTransactionId(etResponse.getTxnId());
+            processorResponse.setRetrievalRefNum(etResponse.getTxnId());
+
             processorResponse.setApprovalCode(etResponse.getApprovalCode());
             processorResponse.setApprovedAmount(CurrencyUtil.getAmount(etResponse.getAmount(), transaction.getAmounts().getCurrency()));
             transaction.setProcessorResponse(processorResponse);
