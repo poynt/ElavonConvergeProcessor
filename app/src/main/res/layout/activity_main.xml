@@ -8,27 +8,9 @@
 
 
     <Button
-        android:id="@+id/trackDataFormatBtn00"
+        android:id="@+id/setTrackFormats"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="00h: SS, ES and LRC not included" />
-
-    <Button
-        android:id="@+id/trackDataFormatBtn01"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="01h: SS &amp; ES are included in the track data but LRC is not." />
-
-    <Button
-        android:id="@+id/trackDataFormatBtn02"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="02h: SS, ES and LRC ARE included " />
-
-    <Button
-        android:id="@+id/setASCIIModeBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Use ASCII Format for Track Data" />
+        android:text="SET TRACK FORMAT" />
 
 </LinearLayout>

@@ -12,15 +12,15 @@ import java.math.BigDecimal;
 
 /**
  * <txn>
- *   <ssl_merchant_id>merchant_id</ssl_merchant_id>
- *   <ssl_user_id>user_id</ssl_user_id>
- *   <ssl_pin>pin</ssl_pin>
- *   <ssl_test_mode>false</ssl_test_mode>
- *   <ssl_transaction_type>ccsale</ssl_transaction_type>
- *   <ssl_card_number>5472063333333330</ssl_card_number>
- *   <ssl_exp_date>1225</ssl_exp_date>
- *   <ssl_amount>10.00</ssl_amount>
- *   <ssl_first_name>Test</ssl_first_name>
+ * <ssl_merchant_id>merchant_id</ssl_merchant_id>
+ * <ssl_user_id>user_id</ssl_user_id>
+ * <ssl_pin>pin</ssl_pin>
+ * <ssl_test_mode>false</ssl_test_mode>
+ * <ssl_transaction_type>ccsale</ssl_transaction_type>
+ * <ssl_card_number>5472063333333330</ssl_card_number>
+ * <ssl_exp_date>1225</ssl_exp_date>
+ * <ssl_amount>10.00</ssl_amount>
+ * <ssl_first_name>Test</ssl_first_name>
  * </txn>
  */
 @Root(name = "txn")
@@ -118,6 +118,12 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     @Element(name = "ssl_tlv_enc", required = false)
     private String tlvEnc;
+
+    @Element(name = "ssl_pin_block", required = false)
+    private String pinBlock;
+
+    @Element(name = "ssl_dukpt", required = false)
+    private String pinKsn;
 
     /**
      * Use only with a terminal that is setup with Tokenization.
@@ -356,5 +362,21 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     public void setSignatureImage(String signatureImage) {
         this.signatureImage = signatureImage;
+    }
+
+    public String getPinBlock() {
+        return pinBlock;
+    }
+
+    public void setPinBlock(String pinBlock) {
+        this.pinBlock = pinBlock;
+    }
+
+    public String getPinKsn() {
+        return pinKsn;
+    }
+
+    public void setPinKsn(String pinKsn) {
+        this.pinKsn = pinKsn;
     }
 }

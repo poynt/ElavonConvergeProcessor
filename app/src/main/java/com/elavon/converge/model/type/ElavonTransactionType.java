@@ -32,7 +32,7 @@ public enum ElavonTransactionType {
     PINLESS_DEBIT_SALE("pldpurchase"),
     CASH_SALE("cashsale"),
     CASH_CREDIT("cashcredit"),
-    EMV_CT_SALE("emvchipsale"),
+    EMV_CT_SALE("EMVCHIPSALE"),
     EMV_CT_AUTH_ONLY("emvchipauthonly"),
     EMV_SWIPE_SALE("emvswipesale"),
     EMV_SWIPE_AUTH_ONLY("emvswipeauthonly"),

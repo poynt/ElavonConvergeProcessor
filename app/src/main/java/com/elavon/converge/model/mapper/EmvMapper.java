@@ -6,6 +6,7 @@ import com.elavon.converge.model.ElavonTransactionRequest;
 import com.elavon.converge.model.type.ElavonEntryMode;
 import com.elavon.converge.model.type.ElavonPosMode;
 import com.elavon.converge.model.type.ElavonTransactionType;
+import com.elavon.converge.util.CardUtil;
 import com.elavon.converge.util.HexDump;
 
 import java.text.MessageFormat;
@@ -68,6 +69,17 @@ public class EmvMapper implements InterfaceMapper {
         request.setTlvEnc(getTlvTags(t));
         request.setPosMode(ElavonPosMode.CT_ONLY);
         request.setEntryMode(ElavonEntryMode.EMV_WITH_CVV);
+        request.setFirstName(t.getFundingSource().getCard().getCardHolderFirstName());
+        request.setLastName(t.getFundingSource().getCard().getCardHolderLastName());
+        request.setEncryptedTrackData(t.getFundingSource().getCard().getTrack2data());
+        request.setKsn(t.getFundingSource().getCard().getKeySerialNumber());
+        request.setExpDate(CardUtil.getCardExpiry(t.getFundingSource().getCard()));
+        request.setCardLast4(t.getFundingSource().getCard().getNumberLast4());
+        if (t.getFundingSource().getVerificationData() != null) {
+            request.setPinBlock(t.getFundingSource().getVerificationData().getPin());
+            request.setPinKsn(t.getFundingSource().getVerificationData().getKeySerialNumber());
+        }
+
         return request;
     }
 
@@ -76,7 +88,22 @@ public class EmvMapper implements InterfaceMapper {
         for (final Map.Entry<String, String> tag : t.getFundingSource().getEmvData().getEmvTags().entrySet()) {
             final String kHex = tag.getKey().substring(2);
             final String lHex = HexDump.toHexString((byte) (tag.getValue().length() / 2));
-            builder.append(kHex);
+            Log.d(TAG, String.format("%s=%s", kHex, tag.getValue()));
+
+            if (kHex.equals("57")) {
+                builder.append("D0");
+                builder.append(lHex);
+                builder.append(tag.getValue());
+                // actual 57
+                builder.append(kHex);
+            } else if (kHex.equals("1F8102")) {
+                builder.append("C0");
+            } else if (kHex.startsWith("1F81")) {
+                // skip all other tags
+                continue;
+            } else {
+                builder.append(kHex);
+            }
             builder.append(lHex);
             builder.append(tag.getValue());
             Log.d(TAG, MessageFormat.format("T:{0}, L:{1}, V:{2}", kHex, lHex, tag.getValue()));
