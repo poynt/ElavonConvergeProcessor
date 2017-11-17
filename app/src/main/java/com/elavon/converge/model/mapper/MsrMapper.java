@@ -1,6 +1,7 @@
 package com.elavon.converge.model.mapper;
 
 import com.elavon.converge.model.ElavonTransactionRequest;
+import com.elavon.converge.model.type.ElavonEntryMode;
 import com.elavon.converge.model.type.ElavonPosMode;
 import com.elavon.converge.model.type.ElavonTransactionType;
 import com.elavon.converge.util.CardUtil;
@@ -8,6 +9,8 @@ import com.elavon.converge.util.CurrencyUtil;
 
 import javax.inject.Inject;
 
+import co.poynt.api.model.EntryMode;
+import co.poynt.api.model.FundingSourceEntryDetails;
 import co.poynt.api.model.Transaction;
 
 public class MsrMapper implements InterfaceMapper {
@@ -143,7 +146,16 @@ public class MsrMapper implements InterfaceMapper {
      */
     private ElavonTransactionRequest createRequest(final Transaction t) {
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
-        request.setPosMode(ElavonPosMode.SWIPE_CAPABLE);
+        FundingSourceEntryDetails entryDetails = t.getFundingSource().getEntryDetails();
+
+        if (entryDetails.getEntryMode() == EntryMode.CONTACTLESS_INTEGRATED_CIRCUIT_CARD
+                || entryDetails.getEntryMode() == EntryMode.CONTACTLESS_MAGSTRIPE) {
+            request.setPosMode(ElavonPosMode.CL_CAPABLE);
+            request.setEntryMode(ElavonEntryMode.CONTACTLESS);
+        } else if (entryDetails.getEntryMode() == EntryMode.TRACK_DATA_FROM_MAGSTRIPE) {
+            request.setPosMode(ElavonPosMode.SWIPE_CAPABLE);
+            request.setEntryMode(ElavonEntryMode.SWIPED);
+        }
         request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getTransactionAmount(), t.getAmounts().getCurrency()));
         request.setFirstName(t.getFundingSource().getCard().getCardHolderFirstName());
         request.setLastName(t.getFundingSource().getCard().getCardHolderLastName());

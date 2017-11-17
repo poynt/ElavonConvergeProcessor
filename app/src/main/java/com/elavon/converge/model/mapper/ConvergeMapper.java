@@ -37,9 +37,9 @@ public class ConvergeMapper {
         interfaceMappers = new HashMap<>();
         interfaceMappers.put(EntryMode.KEYED, null);
         interfaceMappers.put(EntryMode.TRACK_DATA_FROM_MAGSTRIPE, msrMapper);
-        interfaceMappers.put(EntryMode.CONTACTLESS_MAGSTRIPE, null);
+        interfaceMappers.put(EntryMode.CONTACTLESS_MAGSTRIPE, msrMapper);
         interfaceMappers.put(EntryMode.INTEGRATED_CIRCUIT_CARD, emvMapper);
-        interfaceMappers.put(EntryMode.CONTACTLESS_INTEGRATED_CIRCUIT_CARD, contactlessMapper);
+        interfaceMappers.put(EntryMode.CONTACTLESS_INTEGRATED_CIRCUIT_CARD, emvMapper);
     }
 
     public ElavonTransactionRequest getTransactionRequest(final Transaction transaction) {

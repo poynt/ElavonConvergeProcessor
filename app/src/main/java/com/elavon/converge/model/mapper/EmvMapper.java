@@ -14,6 +14,8 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import co.poynt.api.model.EntryMode;
+import co.poynt.api.model.FundingSourceEntryDetails;
 import co.poynt.api.model.Transaction;
 
 public class EmvMapper implements InterfaceMapper {
@@ -67,8 +69,15 @@ public class EmvMapper implements InterfaceMapper {
         //TODO handle tip
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
         request.setTlvEnc(getTlvTags(t));
-        request.setPosMode(ElavonPosMode.CT_ONLY);
-        request.setEntryMode(ElavonEntryMode.EMV_WITH_CVV);
+        FundingSourceEntryDetails entryDetails = t.getFundingSource().getEntryDetails();
+        if (entryDetails.getEntryMode() == EntryMode.CONTACTLESS_INTEGRATED_CIRCUIT_CARD
+                || entryDetails.getEntryMode() == EntryMode.CONTACTLESS_MAGSTRIPE) {
+            request.setPosMode(ElavonPosMode.CL_CAPABLE);
+            request.setEntryMode(ElavonEntryMode.CONTACTLESS);
+        } else if (entryDetails.getEntryMode() == EntryMode.INTEGRATED_CIRCUIT_CARD) {
+            request.setPosMode(ElavonPosMode.CT_ONLY);
+            request.setEntryMode(ElavonEntryMode.EMV_WITH_CVV);
+        }
         request.setFirstName(t.getFundingSource().getCard().getCardHolderFirstName());
         request.setLastName(t.getFundingSource().getCard().getCardHolderLastName());
         request.setEncryptedTrackData(t.getFundingSource().getCard().getTrack2data());
