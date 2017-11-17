@@ -3,11 +3,11 @@ package com.elavon.converge.model.mapper;
 import android.util.Base64;
 
 import com.elavon.converge.exception.ConvergeMapperException;
-import com.elavon.converge.model.ElavonResponse;
 import com.elavon.converge.model.ElavonTransactionRequest;
 import com.elavon.converge.model.ElavonTransactionResponse;
 import com.elavon.converge.model.ElavonTransactionSearchRequest;
 import com.elavon.converge.model.type.ElavonTransactionType;
+import com.elavon.converge.model.type.ResponseCodes;
 import com.elavon.converge.model.type.SignatureImageType;
 import com.elavon.converge.util.CurrencyUtil;
 
@@ -19,12 +19,16 @@ import java.util.UUID;
 import javax.inject.Inject;
 
 import co.poynt.api.model.AdjustTransactionRequest;
+import co.poynt.api.model.EMVTag;
 import co.poynt.api.model.EntryMode;
 import co.poynt.api.model.Processor;
 import co.poynt.api.model.ProcessorResponse;
 import co.poynt.api.model.ProcessorStatus;
 import co.poynt.api.model.Transaction;
 import co.poynt.api.model.TransactionStatus;
+
+import static android.bluetooth.BluetoothClass.Service.CAPTURE;
+import static com.elavon.converge.model.type.ElavonTransactionType.SALE;
 
 public class ConvergeMapper {
 
@@ -131,37 +135,35 @@ public class ConvergeMapper {
         processorResponse.setProcessor(Processor.ELAVON);
         processorResponse.setAcquirer(Processor.ELAVON);
 
+
         if (etResponse.isSuccess()) {
             processorResponse.setStatus(ProcessorStatus.Successful);
-            processorResponse.setStatusCode(etResponse.getResult());
+        } else {
+            processorResponse.setStatus(ProcessorStatus.Failure);
+        }
+        processorResponse.setStatusCode(etResponse.getResult());
+        if (etResponse.getResultMessage() != null) {
+            processorResponse.setStatusMessage(etResponse.getResultMessage());
+        } else if (etResponse.getErrorMessage() != null) {
+            processorResponse.setStatusMessage(etResponse.getErrorMessage());
+        } else {
+            processorResponse.setStatusMessage(Integer.toString(etResponse.getErrorCode()));
+        }
 
-            // TODO currently there is issue with processor response transaction id overwritten
-            // TODO with transaction id. using retrieval ref num to store converge transaction id
-            processorResponse.setTransactionId(etResponse.getTxnId());
-            processorResponse.setRetrievalRefNum(etResponse.getTxnId());
-
-            processorResponse.setApprovalCode(etResponse.getApprovalCode());
-            processorResponse.setApprovedAmount(CurrencyUtil.getAmount(etResponse.getAmount(), transaction.getAmounts().getCurrency()));
-            transaction.setProcessorResponse(processorResponse);
-
-            // TODO temporary fix
-            if (transaction.getId() == null) {
-                transaction.setId(UUID.randomUUID());
-            }
-            if (transaction.isSignatureCaptured() == null) {
-                transaction.setSignatureCaptured(false);
-            }
-
+        if (etResponse.getResponseCode() == ResponseCodes.AA) {
             switch (transaction.getAction()) {
                 case AUTHORIZE:
+                    transaction.setStatus(TransactionStatus.AUTHORIZED);
+                    break;
                 case SALE:
+                case CAPTURE:
                     transaction.setStatus(TransactionStatus.CAPTURED);
                     break;
-                case CAPTURE:
-                    break;
                 case VOID:
+                    transaction.setStatus(TransactionStatus.VOIDED);
                     break;
                 case OFFLINE_AUTHORIZE:
+                    transaction.setStatus(TransactionStatus.AUTHORIZED);
                     break;
                 case REFUND:
                     transaction.setStatus(TransactionStatus.REFUNDED);
@@ -171,15 +173,177 @@ public class ConvergeMapper {
                 default:
                     throw new ConvergeMapperException("Invalid transaction action found");
             }
-        } else if (ElavonResponse.RESULT_MESSAGE.PARTIAL_APPROVAL.equals(etResponse.getResultMessage())) {
-            // TODO implement
-        } else { // DECLINE
-            if (etResponse.getErrorCode() != 0) {
-                transaction.setStatus(TransactionStatus.DECLINED);
-                processorResponse.setStatus(ProcessorStatus.Failure);
-                processorResponse.setStatusMessage(etResponse.getErrorName());
-                transaction.setProcessorResponse(processorResponse);
+        } else if (etResponse.getResponseCode() == ResponseCodes.AP) {
+            switch (transaction.getAction()) {
+                case AUTHORIZE:
+                    transaction.setStatus(TransactionStatus.AUTHORIZED);
+                    break;
+                case SALE:
+                case CAPTURE:
+                    transaction.setStatus(TransactionStatus.PARTIALLY_CAPTURED);
+                    break;
+                case VOID:
+                    transaction.setStatus(TransactionStatus.VOIDED);
+                    break;
+                case OFFLINE_AUTHORIZE:
+                    transaction.setStatus(TransactionStatus.AUTHORIZED);
+                    break;
+                case REFUND:
+                    transaction.setStatus(TransactionStatus.PARTIALLY_REFUNDED);
+                    break;
+                case VERIFY:
+                    break;
+                default:
+                    throw new ConvergeMapperException("Invalid transaction action found");
+            }
+        } else if (etResponse.getResponseCode() == ResponseCodes.NR) {
+            // TODO : when referral is required what's the status should be
+            switch (transaction.getAction()) {
+                case AUTHORIZE:
+                    transaction.setStatus(TransactionStatus.AUTHORIZED);
+                    break;
+                case SALE:
+                case CAPTURE:
+                    transaction.setStatus(TransactionStatus.CAPTURED);
+                    break;
+                case VOID:
+                    transaction.setStatus(TransactionStatus.VOIDED);
+                    break;
+                case OFFLINE_AUTHORIZE:
+                    transaction.setStatus(TransactionStatus.AUTHORIZED);
+                    break;
+                case REFUND:
+                    transaction.setStatus(TransactionStatus.REFUNDED);
+                    break;
+                case VERIFY:
+                    break;
+                default:
+                    throw new ConvergeMapperException("Invalid transaction action found");
+            }
+        } else {
+            // decline
+            switch (transaction.getAction()) {
+                case AUTHORIZE:
+                    transaction.setStatus(TransactionStatus.DECLINED);
+                    break;
+                case SALE:
+                case CAPTURE:
+                    transaction.setStatus(TransactionStatus.DECLINED);
+                    break;
+                case VOID:
+                    transaction.setStatus(TransactionStatus.DECLINED);
+                    break;
+                case OFFLINE_AUTHORIZE:
+                    transaction.setStatus(TransactionStatus.DECLINED);
+                    break;
+                case REFUND:
+                    transaction.setStatus(TransactionStatus.DECLINED);
+                    break;
+                case VERIFY:
+                    break;
+                default:
+                    throw new ConvergeMapperException("Invalid transaction action found");
             }
         }
+
+        // TODO currently there is issue with processor response transaction id overwritten
+        // TODO with transaction id. using retrieval ref num to store converge transaction id
+        if (etResponse.getTxnId() != null) {
+            processorResponse.setTransactionId(etResponse.getTxnId());
+        }
+//        if (etResponse.getRetrievalRefNum() != null) {
+//            processorResponse.setRetrievalRefNum(etResponse.getTxnId());
+//        }
+
+        if (etResponse.getApprovalCode() != null) {
+            processorResponse.setApprovalCode(etResponse.getApprovalCode());
+        }
+
+        if (etResponse.getResponseCode() == ResponseCodes.AA
+                || etResponse.getResponseCode() == ResponseCodes.AP) {
+            processorResponse.setApprovedAmount(CurrencyUtil.getAmount(etResponse.getAmount(),
+                    transaction.getAmounts().getCurrency()));
+        }
+        // set  EMV response tags
+        Map<String, String> emvTags = new HashMap<>();
+
+        // csn
+        if (etResponse.getCsn() != null) {
+            emvTags.put("0x5F34", etResponse.getCsn());
+        }
+
+        // atc
+        if (etResponse.getAtc() != null) {
+            emvTags.put("0x9F36", etResponse.getAtc());
+        }
+
+        // arpc
+        if (etResponse.getArpc() != null) {
+            emvTags.put("0x91", etResponse.getArpc());
+        }
+
+//            if (er.hasField("ICCIssuerScript") && er.getField("ICCIssuerScript") != null
+//                    && er.getField("ICCIssuerScript").length() >= 4) {
+//                String fullField = er.getField("ICCIssuerScript");
+//                String tagNo = fullField.substring(0, 2);
+//                String scriptFieldLength = fullField.substring(2, 4);
+//                emvTags.put("0x" + tagNo, fullField.substring(4));
+//            } else {
+//                // emvTags.put("0x71", "");
+//            }
+
+        if (etResponse.getArc() != null) {
+            emvTags.put(EMVTag.RESPONSE_AUTHORIZATION_RESPONSE_CODE.tag(),
+                    numberToAsciiHex(etResponse.getArc().toCharArray()));
+            if (etResponse.getIssuerResponse() != null) {
+                emvTags.put("0xDFD9", numberToAsciiHex(etResponse.getIssuerResponse().toCharArray()));
+            }
+        } else {
+            if (etResponse.getResponseCode() == ResponseCodes.AA) {
+                // Create TLV for Referral Code 8A023032
+                emvTags.put(EMVTag.RESPONSE_AUTHORIZATION_RESPONSE_CODE.tag(), "3030");
+                if (etResponse.getIssuerResponse() != null) {
+                    emvTags.put("0xDFD9", numberToAsciiHex(etResponse.getIssuerResponse().toCharArray()));
+                }
+            } else if (etResponse.getResponseCode() == ResponseCodes.AP) {
+                // for partial approval, firmware team wants us to pass Approval..
+                emvTags.put("0xDFD9", "3030");
+                emvTags.put(EMVTag.RESPONSE_AUTHORIZATION_RESPONSE_CODE.tag(), "3030");
+            } else if (etResponse.getResponseCode() == ResponseCodes.NR) {
+                emvTags.put(EMVTag.RESPONSE_AUTHORIZATION_RESPONSE_CODE.tag(), "3031");
+                emvTags.put("0xDFD9", "3031");
+            } else {
+                emvTags.put(EMVTag.RESPONSE_AUTHORIZATION_RESPONSE_CODE.tag(), "3035");
+                if (etResponse.getIssuerResponse() != null) {
+                    emvTags.put("0xDFD9", numberToAsciiHex(etResponse.getIssuerResponse().toCharArray()));
+                }
+            }
+        }
+
+        processorResponse.setEmvTags(emvTags);
+        transaction.setProcessorResponse(processorResponse);
+
+        // TODO temporary fix
+        if (transaction.getId() == null) {
+            transaction.setId(UUID.randomUUID());
+        }
+        if (transaction.isSignatureCaptured() == null) {
+            transaction.setSignatureCaptured(false);
+        }
+
+    }
+
+    private String numberToAsciiHex(char[] numberChars) {
+        String result = "";
+
+        for (char c : numberChars) {
+            try {
+                result += Integer.toHexString((int) c);
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+                return "3030";
+            }
+        }
+        return result;
     }
 }

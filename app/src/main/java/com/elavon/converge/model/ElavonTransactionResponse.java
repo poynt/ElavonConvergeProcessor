@@ -15,32 +15,32 @@ import java.util.Date;
 /**
  * Sample Response:
  * <txn>
- *   <ssl_card_short_description>MC</ssl_card_short_description>
- *   <ssl_cvv2_response />
- *   <ssl_account_balance>10.00</ssl_account_balance>
- *   <ssl_result_message>APPROVAL</ssl_result_message>
- *   <ssl_invoice_number />
- *   <ssl_promo_code />
- *   <ssl_result>0</ssl_result>
- *   <ssl_txn_id>231017A15-67ADEA9E-4E0D-410A-B11C-61B0BE82DEB9</ssl_txn_id>
- *   <ssl_completion_date />
- *   <ssl_transaction_type>SALE</ssl_transaction_type>
- *   <ssl_avs_response />
- *   <ssl_account_status />
- *   <ssl_approval_code>CMC345</ssl_approval_code>
- *   <ssl_enrollment />
- *   <ssl_exp_date>1225</ssl_exp_date>
- *   <ssl_loyalty_program />
- *   <ssl_tender_amount />
- *   <ssl_departure_date />
- *   <ssl_card_type>CREDITCARD</ssl_card_type>
- *   <ssl_loyalty_account_balance />
- *   <ssl_salestax />
- *   <ssl_amount>10.00</ssl_amount>
- *   <ssl_card_number>54**********3330</ssl_card_number>
- *   <ssl_issue_points />
- *   <ssl_txn_time>10/23/2017 06:12:25 PM</ssl_txn_time>
- *   <ssl_access_code />
+ * <ssl_card_short_description>MC</ssl_card_short_description>
+ * <ssl_cvv2_response />
+ * <ssl_account_balance>10.00</ssl_account_balance>
+ * <ssl_result_message>APPROVAL</ssl_result_message>
+ * <ssl_invoice_number />
+ * <ssl_promo_code />
+ * <ssl_result>0</ssl_result>
+ * <ssl_txn_id>231017A15-67ADEA9E-4E0D-410A-B11C-61B0BE82DEB9</ssl_txn_id>
+ * <ssl_completion_date />
+ * <ssl_transaction_type>SALE</ssl_transaction_type>
+ * <ssl_avs_response />
+ * <ssl_account_status />
+ * <ssl_approval_code>CMC345</ssl_approval_code>
+ * <ssl_enrollment />
+ * <ssl_exp_date>1225</ssl_exp_date>
+ * <ssl_loyalty_program />
+ * <ssl_tender_amount />
+ * <ssl_departure_date />
+ * <ssl_card_type>CREDITCARD</ssl_card_type>
+ * <ssl_loyalty_account_balance />
+ * <ssl_salestax />
+ * <ssl_amount>10.00</ssl_amount>
+ * <ssl_card_number>54**********3330</ssl_card_number>
+ * <ssl_issue_points />
+ * <ssl_txn_time>10/23/2017 06:12:25 PM</ssl_txn_time>
+ * <ssl_access_code />
  * </txn>
  */
 @Root(name = "txn")
@@ -79,7 +79,7 @@ public class ElavonTransactionResponse extends ElavonResponse {
     private CVV2Response cvv2Response;
 
     @Element(name = "ssl_card_number", required = false)
-    private CVV2Response cardNumberMasked;
+    private String cardNumberMasked;
 
     @Element(name = "ssl_invoice_number", required = false)
     private String invoiceNumber;
@@ -134,6 +134,74 @@ public class ElavonTransactionResponse extends ElavonResponse {
     // Returned only if storing token is requested in a terminal that setup for Tokenization.
     @Element(name = "ssl_add_token_response", required = false)
     private String addTokenResponse;
+
+
+    @Element(name = "ssl_account_type", required = false)
+    private int accountType;
+
+    @Element(name = "ssl_icc_issuerscript", required = false)
+    private String issuerScript;
+
+    @Element(name = "ssl_icc_csn", required = false)
+    private String csn;
+
+    @Element(name = "ssl_icc_atc", required = false)
+    private String atc;
+
+    @Element(name = "ssl_issuer_response", required = false)
+    private String issuerResponse;
+
+    @Element(name = "ssl_icc_arpc", required = false)
+    private String arpc;
+
+    @Element(name = "ssl_update_emv_keys", required = false)
+    private boolean updateEmvKeys;
+
+    @Element(name = "ssl_icc_cardtype", required = false)
+    private String iccCardType;
+
+    @Element(name = "ssl_icc_cvmr", required = false)
+    private String cvmr;
+
+    @Element(name = "ssl_icc_aid", required = false)
+    private String aid;
+
+    @Element(name = "ssl_icc_tvr", required = false)
+    private String tvr;
+
+    @Element(name = "ssl_icc_tsi", required = false)
+    private String tsi;
+
+    @Element(name = "ssl_icc_app_arc", required = false)
+    private String arc;
+
+    @Element(name = "ssl_icc_app_name", required = false)
+    private String appName;
+
+    @Element(name = "ssl_card_scheme", required = false)
+    private String cardScheme;
+
+    @Element(name = "ssl_debit_response_code", required = false)
+    private String debitResponseCode;
+
+    @Element(name = "ssl_mac_key", required = false)
+    private String interacMacKey;
+
+    @Element(name = "ssl_pin_key", required = false)
+    private String interacPinKey;
+
+    @Element(name = "ssl_mac_value", required = false)
+    private String interacMacValue;
+
+    @Element(name = "ssl_mac_amount", required = false)
+    private String interacMacAmount;
+
+    @Element(name = "ssl_sys_trace_audit_no", required = false)
+    private String interacSTAN;
+
+    @Element(name = "ssl_processing_code", required = false)
+    private String interacProcessingCode;
+
 
     public String getTxnId() {
         return txnId;
@@ -207,13 +275,6 @@ public class ElavonTransactionResponse extends ElavonResponse {
         this.cvv2Response = cvv2Response;
     }
 
-    public CVV2Response getCardNumberMasked() {
-        return cardNumberMasked;
-    }
-
-    public void setCardNumberMasked(CVV2Response cardNumberMasked) {
-        this.cardNumberMasked = cardNumberMasked;
-    }
 
     public String getInvoiceNumber() {
         return invoiceNumber;
@@ -325,5 +386,190 @@ public class ElavonTransactionResponse extends ElavonResponse {
 
     public void setAddTokenResponse(String addTokenResponse) {
         this.addTokenResponse = addTokenResponse;
+    }
+
+    public int getAccountType() {
+        return accountType;
+    }
+
+    public void setAccountType(int accountType) {
+        this.accountType = accountType;
+    }
+
+    public String getAid() {
+        return aid;
+    }
+
+    public void setAid(String aid) {
+        this.aid = aid;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
+    }
+
+    public String getArc() {
+        return arc;
+    }
+
+    public void setArc(String arc) {
+        this.arc = arc;
+    }
+
+    public String getArpc() {
+        return arpc;
+    }
+
+    public void setArpc(String arpc) {
+        this.arpc = arpc;
+    }
+
+    public String getAtc() {
+        return atc;
+    }
+
+    public void setAtc(String atc) {
+        this.atc = atc;
+    }
+
+    public void setCardNumberMasked(String cardNumberMasked) {
+        this.cardNumberMasked = cardNumberMasked;
+    }
+
+    public String getCardScheme() {
+        return cardScheme;
+    }
+
+    public String getCsn() {
+        return csn;
+    }
+
+    public void setCsn(String csn) {
+        this.csn = csn;
+    }
+
+    public String getCvmr() {
+        return cvmr;
+    }
+
+    public void setCvmr(String cvmr) {
+        this.cvmr = cvmr;
+    }
+
+    public String getDebitResponseCode() {
+        return debitResponseCode;
+    }
+
+    public void setDebitResponseCode(String debitResponseCode) {
+        this.debitResponseCode = debitResponseCode;
+    }
+
+
+    public String getInteracMacAmount() {
+        return interacMacAmount;
+    }
+
+    public void setInteracMacAmount(String interacMacAmount) {
+        this.interacMacAmount = interacMacAmount;
+    }
+
+    public String getInteracMacKey() {
+        return interacMacKey;
+    }
+
+    public void setInteracMacKey(String interacMacKey) {
+        this.interacMacKey = interacMacKey;
+    }
+
+    public String getInteracMacValue() {
+        return interacMacValue;
+    }
+
+    public void setInteracMacValue(String interacMacValue) {
+        this.interacMacValue = interacMacValue;
+    }
+
+    public String getInteracPinKey() {
+        return interacPinKey;
+    }
+
+    public void setInteracPinKey(String interacPinKey) {
+        this.interacPinKey = interacPinKey;
+    }
+
+    public String getInteracProcessingCode() {
+        return interacProcessingCode;
+    }
+
+    public void setInteracProcessingCode(String interacProcessingCode) {
+        this.interacProcessingCode = interacProcessingCode;
+    }
+
+    public String getInteracSTAN() {
+        return interacSTAN;
+    }
+
+    public void setInteracSTAN(String interacSTAN) {
+        this.interacSTAN = interacSTAN;
+    }
+
+    public String getIssuerResponse() {
+        return issuerResponse;
+    }
+
+    public void setIssuerResponse(String issuerResponse) {
+        this.issuerResponse = issuerResponse;
+    }
+
+    public String getIssuerScript() {
+        return issuerScript;
+    }
+
+    public void setIssuerScript(String issuerScript) {
+        this.issuerScript = issuerScript;
+    }
+
+    public String getTsi() {
+        return tsi;
+    }
+
+    public void setTsi(String tsi) {
+        this.tsi = tsi;
+    }
+
+    public String getTvr() {
+        return tvr;
+    }
+
+    public void setTvr(String tvr) {
+        this.tvr = tvr;
+    }
+
+    public boolean isUpdateEmvKeys() {
+        return updateEmvKeys;
+    }
+
+    public void setUpdateEmvKeys(boolean updateEmvKeys) {
+        this.updateEmvKeys = updateEmvKeys;
+    }
+
+    public String getCardNumberMasked() {
+        return cardNumberMasked;
+    }
+
+    public void setCardScheme(String cardScheme) {
+        this.cardScheme = cardScheme;
+    }
+
+    public String getIccCardType() {
+        return iccCardType;
+    }
+
+    public void setIccCardType(String iccCardType) {
+        this.iccCardType = iccCardType;
     }
 }
