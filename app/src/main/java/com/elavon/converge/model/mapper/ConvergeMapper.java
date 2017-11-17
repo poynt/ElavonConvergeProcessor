@@ -3,6 +3,7 @@ package com.elavon.converge.model.mapper;
 import android.util.Base64;
 
 import com.elavon.converge.exception.ConvergeMapperException;
+import com.elavon.converge.model.ElavonResponse;
 import com.elavon.converge.model.ElavonTransactionRequest;
 import com.elavon.converge.model.ElavonTransactionResponse;
 import com.elavon.converge.model.ElavonTransactionSearchRequest;
@@ -147,7 +148,8 @@ public class ConvergeMapper {
             processorResponse.setStatusMessage(Integer.toString(etResponse.getErrorCode()));
         }
 
-        if (etResponse.getResponseCode() == ResponseCodes.AA) {
+        if (etResponse.getResponseCode() == ResponseCodes.AA
+                || ElavonResponse.RESULT_MESSAGE.APPROVAL.equals(etResponse.getResultMessage())) {
             switch (transaction.getAction()) {
                 case AUTHORIZE:
                     transaction.setStatus(TransactionStatus.AUTHORIZED);
@@ -170,7 +172,8 @@ public class ConvergeMapper {
                 default:
                     throw new ConvergeMapperException("Invalid transaction action found");
             }
-        } else if (etResponse.getResponseCode() == ResponseCodes.AP) {
+        } else if (etResponse.getResponseCode() == ResponseCodes.AP
+                || ElavonResponse.RESULT_MESSAGE.PARTIAL_APPROVAL.equals(etResponse.getResultMessage())) {
             switch (transaction.getAction()) {
                 case AUTHORIZE:
                     transaction.setStatus(TransactionStatus.AUTHORIZED);
@@ -193,7 +196,8 @@ public class ConvergeMapper {
                 default:
                     throw new ConvergeMapperException("Invalid transaction action found");
             }
-        } else if (etResponse.getResponseCode() == ResponseCodes.NR) {
+        } else if (etResponse.getResponseCode() == ResponseCodes.NR
+                || ElavonResponse.RESULT_MESSAGE.CALL_AUTH_CENTER.equals(etResponse.getResultMessage())) {
             // TODO : when referral is required what's the status should be
             switch (transaction.getAction()) {
                 case AUTHORIZE:
@@ -257,7 +261,9 @@ public class ConvergeMapper {
         }
 
         if (etResponse.getResponseCode() == ResponseCodes.AA
-                || etResponse.getResponseCode() == ResponseCodes.AP) {
+                || etResponse.getResponseCode() == ResponseCodes.AP
+                || ElavonResponse.RESULT_MESSAGE.APPROVAL.equals(etResponse.getResultMessage())
+                || ElavonResponse.RESULT_MESSAGE.PARTIAL_APPROVAL.equals(etResponse.getResultMessage())) {
             processorResponse.setApprovedAmount(CurrencyUtil.getAmount(etResponse.getAmount(),
                     transaction.getAmounts().getCurrency()));
         }
