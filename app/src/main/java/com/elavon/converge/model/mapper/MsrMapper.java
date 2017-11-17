@@ -163,6 +163,10 @@ public class MsrMapper implements InterfaceMapper {
         request.setKsn(t.getFundingSource().getCard().getKeySerialNumber());
         request.setExpDate(CardUtil.getCardExpiry(t.getFundingSource().getCard()));
         request.setCardLast4(t.getFundingSource().getCard().getNumberLast4());
+        if (t.getFundingSource().getVerificationData() != null) {
+            request.setPinBlock(t.getFundingSource().getVerificationData().getPin());
+            request.setPinKsn(t.getFundingSource().getVerificationData().getKeySerialNumber());
+        }
         return request;
     }
 }
