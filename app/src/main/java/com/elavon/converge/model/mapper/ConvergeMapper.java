@@ -27,9 +27,6 @@ import co.poynt.api.model.ProcessorStatus;
 import co.poynt.api.model.Transaction;
 import co.poynt.api.model.TransactionStatus;
 
-import static android.bluetooth.BluetoothClass.Service.CAPTURE;
-import static com.elavon.converge.model.type.ElavonTransactionType.SALE;
-
 public class ConvergeMapper {
 
     private final Map<EntryMode, InterfaceMapper> interfaceMappers;
@@ -132,7 +129,7 @@ public class ConvergeMapper {
     public void mapTransactionResponse(final ElavonTransactionResponse etResponse, final Transaction transaction) {
 
         final ProcessorResponse processorResponse = new ProcessorResponse();
-        processorResponse.setProcessor(Processor.ELAVON);
+        processorResponse.setProcessor(Processor.CONVERGE);
         processorResponse.setAcquirer(Processor.ELAVON);
 
 
