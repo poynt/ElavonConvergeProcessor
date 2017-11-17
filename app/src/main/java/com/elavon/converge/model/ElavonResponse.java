@@ -1,5 +1,8 @@
 package com.elavon.converge.model;
 
+import com.elavon.converge.model.type.ElavonTransactionType;
+import com.elavon.converge.model.type.ResponseCodes;
+
 import org.simpleframework.xml.Element;
 
 public abstract class ElavonResponse {
@@ -60,6 +63,13 @@ public abstract class ElavonResponse {
     @Element(name = "errorMessage", required = false)
     private String errorMessage;
 
+    @Element(name = "ssl_transaction_type", required = false)
+    private ElavonTransactionType transactionType;
+
+    @Element(name = "ssl_response_code", required = false)
+    private ResponseCodes responseCode;
+
+
     public String getResult() {
         return result;
     }
@@ -102,5 +112,21 @@ public abstract class ElavonResponse {
 
     public boolean isSuccess() {
         return RESULT_SUCCESS.equals(result);
+    }
+
+    public ElavonTransactionType getTransactionType() {
+        return transactionType;
+    }
+
+    public void setTransactionType(ElavonTransactionType transactionType) {
+        this.transactionType = transactionType;
+    }
+
+    public ResponseCodes getResponseCode() {
+        return responseCode;
+    }
+
+    public void setResponseCode(ResponseCodes responseCode) {
+        this.responseCode = responseCode;
     }
 }
