@@ -16,13 +16,23 @@ public class MockObjectFactory {
         txn.setTestMode("false");
         txn.setTransactionType(ElavonTransactionType.SALE);
         txn.setCardNumber("5472063333333330");
+        txn.setCvv2("123");
         txn.setExpDate("1225");
 //        txn.setCardNumber("4124939999999990");
 //        txn.setExpDate("1219");
         txn.setAmount(new BigDecimal(16.50).setScale(2, BigDecimal.ROUND_HALF_UP));
-        txn.setFirstName("Rando");
+        txn.setFirstName("Poynt");
+        txn.setLastName("Boynt");
         txn.setDescription("tables & chairs");
         txn.setInvoiceNumber(UUID.randomUUID().toString().replace("-", "").substring(0, 25));
+        return txn;
+    }
+
+    public static ElavonTransactionRequest getElavonTransactionUpdateRequest(final String transactionId) {
+        final ElavonTransactionRequest txn = new ElavonTransactionRequest();
+        txn.setTransactionType(ElavonTransactionType.UPDATE_TIP);
+        txn.setTxnId(transactionId);
+        txn.setTipAmount(BigDecimal.ONE);
         return txn;
     }
 

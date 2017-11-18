@@ -6,6 +6,7 @@ import com.elavon.converge.config.Config;
 import com.elavon.converge.config.ConfigLoader;
 import com.elavon.converge.core.TransactionManager;
 import com.elavon.converge.exception.AppInitException;
+import com.elavon.converge.model.mapper.ContactlessMapper;
 import com.elavon.converge.model.mapper.ConvergeMapper;
 import com.elavon.converge.model.mapper.EmvMapper;
 import com.elavon.converge.model.mapper.MsrMapper;
@@ -56,6 +57,7 @@ public class AppModule {
     public MsrMapper provideMsrMapper() {
         return new MsrMapper();
     }
+
     @Provides
     @Singleton
     public EmvMapper provideEmvMapper() {
@@ -64,8 +66,14 @@ public class AppModule {
 
     @Provides
     @Singleton
-    public ConvergeMapper provideConvergeMapper(final MsrMapper msrMapper, final EmvMapper emvMapper) {
-        return new ConvergeMapper(msrMapper, emvMapper);
+    public ContactlessMapper provideContactlessMapper() {
+        return new ContactlessMapper();
+    }
+
+    @Provides
+    @Singleton
+    public ConvergeMapper provideConvergeMapper(final MsrMapper msrMapper, final EmvMapper emvMapper, final ContactlessMapper contactlessMapper) {
+        return new ConvergeMapper(msrMapper, emvMapper, contactlessMapper);
     }
 
     @Provides

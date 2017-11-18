@@ -4,6 +4,8 @@
 
     <uses-permission android:name="poynt.permission.SECURITY_SERVICE" />
     <uses-permission android:name="poynt.permission.CONFIGURATION_SERVICE" />
+    <uses-permission android:name="poynt.permission.TRANSACTION_SERVICE" />
+    <uses-permission android:name="co.poynt.orders.ACCESS_ORDERS" />
     <uses-permission android:name="co.poynt.business.ACCESS_BUSINESS" />
     <uses-permission android:name="poynt.permission.SECOND_SCREEN_SERVICE" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -34,6 +36,7 @@
             android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>

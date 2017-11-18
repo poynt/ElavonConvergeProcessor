@@ -1,13 +1,16 @@
 package com.elavon.converge.model.mapper;
 
 import com.elavon.converge.model.ElavonTransactionRequest;
+import com.elavon.converge.model.type.ElavonEntryMode;
 import com.elavon.converge.model.type.ElavonPosMode;
 import com.elavon.converge.model.type.ElavonTransactionType;
-
-import java.math.BigDecimal;
+import com.elavon.converge.util.CardUtil;
+import com.elavon.converge.util.CurrencyUtil;
 
 import javax.inject.Inject;
 
+import co.poynt.api.model.EntryMode;
+import co.poynt.api.model.FundingSourceEntryDetails;
 import co.poynt.api.model.Transaction;
 
 public class MsrMapper implements InterfaceMapper {
@@ -18,7 +21,9 @@ public class MsrMapper implements InterfaceMapper {
 
     @Override
     public ElavonTransactionRequest createAuth(final Transaction transaction) {
-        return createAuthOrSale(transaction, true);
+        final ElavonTransactionRequest request = createRequest(transaction);
+        request.setTransactionType(ElavonTransactionType.AUTH_ONLY);
+        return request;
     }
 
     @Override
@@ -28,7 +33,9 @@ public class MsrMapper implements InterfaceMapper {
 
     @Override
     public ElavonTransactionRequest createVoid(final Transaction transaction) {
-        throw new RuntimeException("Please implement");
+        final ElavonTransactionRequest request = createRequest(transaction);
+        request.setTransactionType(ElavonTransactionType.VOID);
+        return request;
     }
 
     @Override
@@ -38,12 +45,23 @@ public class MsrMapper implements InterfaceMapper {
 
     @Override
     public ElavonTransactionRequest createRefund(final Transaction transaction) {
-        throw new RuntimeException("Please implement");
+        final ElavonTransactionRequest request = createRequest(transaction);
+        request.setTransactionType(ElavonTransactionType.CREDIT);
+        return request;
     }
 
     @Override
     public ElavonTransactionRequest createSale(final Transaction transaction) {
-        return createAuthOrSale(transaction, false);
+        final ElavonTransactionRequest request = createRequest(transaction);
+        request.setTransactionType(ElavonTransactionType.SALE);
+        return request;
+    }
+
+    @Override
+    public ElavonTransactionRequest createVerify(final Transaction transaction) {
+        final ElavonTransactionRequest request = createRequest(transaction);
+        request.setTransactionType(ElavonTransactionType.VERIFY);
+        return request;
     }
 
     /**
@@ -126,24 +144,29 @@ public class MsrMapper implements InterfaceMapper {
      * }
      * </code></pre>
      */
-    private ElavonTransactionRequest createAuthOrSale(final Transaction t, final boolean isAuthOnly) {
-        System.out.println("@#$@#$#@$@#$@#$#@$");
-        //TODO handle tip
+    private ElavonTransactionRequest createRequest(final Transaction t) {
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
-        request.setTransactionType(isAuthOnly ? ElavonTransactionType.AUTH_ONLY : ElavonTransactionType.SALE);
-        request.setPosMode(ElavonPosMode.SWIPE_CAPABLE);
-        request.setAmount(BigDecimal.valueOf((double) t.getAmounts().getTransactionAmount() / 100.0));
-        request.setFirstName(t.getFundingSource().getCard().getCardHolderFirstName());
-        request.setEncryptedTrackData(t.getFundingSource().getCard().getTrack2data());
-        final String expiration = "" + t.getFundingSource().getCard().getExpirationMonth() + t.getFundingSource().getCard().getExpirationYear() % 100;
-        request.setKsn(t.getFundingSource().getCard().getKeySerialNumber());
-        request.setExpDate(expiration);
-        request.setCardLast4(t.getFundingSource().getCard().getNumberLast4());
-        return request;
-    }
+        FundingSourceEntryDetails entryDetails = t.getFundingSource().getEntryDetails();
 
-    @Override
-    public ElavonTransactionRequest createVerify(final Transaction transaction) {
-        throw new RuntimeException("Please implement");
+        if (entryDetails.getEntryMode() == EntryMode.CONTACTLESS_INTEGRATED_CIRCUIT_CARD
+                || entryDetails.getEntryMode() == EntryMode.CONTACTLESS_MAGSTRIPE) {
+            request.setPosMode(ElavonPosMode.CL_CAPABLE);
+            request.setEntryMode(ElavonEntryMode.CONTACTLESS);
+        } else if (entryDetails.getEntryMode() == EntryMode.TRACK_DATA_FROM_MAGSTRIPE) {
+            request.setPosMode(ElavonPosMode.SWIPE_CAPABLE);
+            request.setEntryMode(ElavonEntryMode.SWIPED);
+        }
+        request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getTransactionAmount(), t.getAmounts().getCurrency()));
+        request.setFirstName(t.getFundingSource().getCard().getCardHolderFirstName());
+        request.setLastName(t.getFundingSource().getCard().getCardHolderLastName());
+        request.setEncryptedTrackData(t.getFundingSource().getCard().getTrack2data());
+        request.setKsn(t.getFundingSource().getCard().getKeySerialNumber());
+        request.setExpDate(CardUtil.getCardExpiry(t.getFundingSource().getCard()));
+        request.setCardLast4(t.getFundingSource().getCard().getNumberLast4());
+        if (t.getFundingSource().getVerificationData() != null) {
+            request.setPinBlock(t.getFundingSource().getVerificationData().getPin());
+            request.setPinKsn(t.getFundingSource().getVerificationData().getKeySerialNumber());
+        }
+        return request;
     }
 }

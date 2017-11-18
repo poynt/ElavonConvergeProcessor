@@ -15,80 +15,36 @@ import java.util.Date;
 /**
  * Sample Response:
  * <txn>
- *   <ssl_card_short_description>MC</ssl_card_short_description>
- *   <ssl_cvv2_response />
- *   <ssl_account_balance>10.00</ssl_account_balance>
- *   <ssl_result_message>APPROVAL</ssl_result_message>
- *   <ssl_invoice_number />
- *   <ssl_promo_code />
- *   <ssl_result>0</ssl_result>
- *   <ssl_txn_id>231017A15-67ADEA9E-4E0D-410A-B11C-61B0BE82DEB9</ssl_txn_id>
- *   <ssl_completion_date />
- *   <ssl_transaction_type>SALE</ssl_transaction_type>
- *   <ssl_avs_response />
- *   <ssl_account_status />
- *   <ssl_approval_code>CMC345</ssl_approval_code>
- *   <ssl_enrollment />
- *   <ssl_exp_date>1225</ssl_exp_date>
- *   <ssl_loyalty_program />
- *   <ssl_tender_amount />
- *   <ssl_departure_date />
- *   <ssl_card_type>CREDITCARD</ssl_card_type>
- *   <ssl_loyalty_account_balance />
- *   <ssl_salestax />
- *   <ssl_amount>10.00</ssl_amount>
- *   <ssl_card_number>54**********3330</ssl_card_number>
- *   <ssl_issue_points />
- *   <ssl_txn_time>10/23/2017 06:12:25 PM</ssl_txn_time>
- *   <ssl_access_code />
+ * <ssl_card_short_description>MC</ssl_card_short_description>
+ * <ssl_cvv2_response />
+ * <ssl_account_balance>10.00</ssl_account_balance>
+ * <ssl_result_message>APPROVAL</ssl_result_message>
+ * <ssl_invoice_number />
+ * <ssl_promo_code />
+ * <ssl_result>0</ssl_result>
+ * <ssl_txn_id>231017A15-67ADEA9E-4E0D-410A-B11C-61B0BE82DEB9</ssl_txn_id>
+ * <ssl_completion_date />
+ * <ssl_transaction_type>SALE</ssl_transaction_type>
+ * <ssl_avs_response />
+ * <ssl_account_status />
+ * <ssl_approval_code>CMC345</ssl_approval_code>
+ * <ssl_enrollment />
+ * <ssl_exp_date>1225</ssl_exp_date>
+ * <ssl_loyalty_program />
+ * <ssl_tender_amount />
+ * <ssl_departure_date />
+ * <ssl_card_type>CREDITCARD</ssl_card_type>
+ * <ssl_loyalty_account_balance />
+ * <ssl_salestax />
+ * <ssl_amount>10.00</ssl_amount>
+ * <ssl_card_number>54**********3330</ssl_card_number>
+ * <ssl_issue_points />
+ * <ssl_txn_time>10/23/2017 06:12:25 PM</ssl_txn_time>
+ * <ssl_access_code />
  * </txn>
  */
 @Root(name = "txn")
 public class ElavonTransactionResponse extends ElavonResponse {
-    public static final String RESULT_SUCCESS = "0";
-
-    public static class RESULT_MESSAGE {
-        public static final String APPROVAL = "APPROVAL";// Approved
-        public static final String PARTIAL_APPROVAL = "PARTIAL APPROVAL";// Approved for a Partial Amount
-        public static final String DECLINE_CVV2 = "DECLINE CVV2";// Do not honor due to CVV2 mismatchfailure
-        public static final String PICK_UP_CARD = "PICK UP CARD";// Pick up card
-        public static final String AMOUNT_ERROR = "AMOUNT ERROR";// Tran Amount Error
-        public static final String AMT_OVER_SVC_LMT = "AMT OVER SVC LMT";// Amount is more than established service limit
-        public static final String APPL_TYPE_ERROR = "APPL TYPE ERROR";// Call for Assistance
-        public static final String CANNOT_CONVERT = "CANNOT CONVERT";// Check is ok, but cannot be converted. Do Not Honor
-        public static final String DECLINED = "DECLINED";// Do Not Honor
-        public static final String DECLINED_T4 = "DECLINED T4";// Do Not Honor. Failed negative check, unpaid items
-        public static final String DECLINED_HELP_9999 = "DECLINED-HELP 9999";// System Error
-        public static final String DUP_CHECK_NBR = "DUP CHECK NBR";// Duplicate Check Number
-        public static final String EXPIRED_CARD = "EXPIRED CARD";// Expired Card
-        public static final String INCORRECT_PIN = "INCORRECT PIN";// Invalid PIN
-        public static final String INVALID_CARD = "INVALID CARD";// Invalid Card
-        public static final String INVALID_CAVV = "INVALID CAVV";// Invalid Cardholder Authentication Verification Value
-        public static final String INVALID_TERM_ID = "INVALID TERM ID";// Invalid Terminal ID
-        public static final String INVLD_RT_NBR = "INVLD R/T NBR";// Invalid Routing/Transit Number
-        public static final String INVLD_TERM_ID1 = "INVLD TERM ID 1";// Invalid Merchant Number
-        public static final String INVLD_TERM_ID2 = "INVLD TERM ID 2";// Invalid SE Number Note:AMEX Only
-        public static final String INVLD_VOID_DATA = "INVLD VOID DATA";// Invalid Data Submitted for Void Transaction
-        public static final String MAX_MONTHLY_VOL = "MAX MONTHLY VOL";// The maximum monthly volume has been reached
-        public static final String MICR_ERROR_MICR = "MICR ERROR MICR";// Read Error
-        public static final String MUST_SETTLE_MMDD = "MUST SETTLE MMDD";// Must settle, open batch is over 7 days old Note: Best Practice is to settle within 24 hours. Batch will be Auto Settled after 10 days
-        public static final String NETWORK_ERROR = "NETWORK ERROR";// General System Error
-        public static final String PLEASE_RETRY = "PLEASE RETRY";// Please Retry/Reenter Transaction
-        public static final String RECORD_NOT_FOUND = "RECORD NOT FOUND";// Record not on the network
-        public static final String REQ_EXCEEDS_BAL = "REQ. EXCEEDS BAL.";// Req. exceeds balance
-        public static final String SEQ_ERR_PLS_CALL = "SEQ ERR PLS CALL";// Call for Assistance
-        public static final String SERV_NOT_ALLOWED = "SERV NOT ALLOWED";// Invalid request
-        public static final String TOO_MANY_CHECKS = "TOO MANY CHECKS";// Too Many Checks (Over Limit)
-        public static final String CALL_AUTH_CENTER = "CALL AUTH. CENTER";// Refer to Issuer
-        public static final String SUCCESS = "SUCCESS";// For successfully added, updated, deleted recurring or installment transactions
-        public static final String ERROR = "ERROR";// For recurring or installment transactions that failed to be added, deleted or updated
-    }
-
-    @Element(name = "ssl_result", required = false)
-    private String result;
-
-    @Element(name = "ssl_result_message", required = false)
-    private String resultMessage;
 
     @Element(name = "ssl_txn_id", required = false)
     private String txnId;
@@ -123,7 +79,7 @@ public class ElavonTransactionResponse extends ElavonResponse {
     private CVV2Response cvv2Response;
 
     @Element(name = "ssl_card_number", required = false)
-    private CVV2Response cardNumberMasked;
+    private String cardNumberMasked;
 
     @Element(name = "ssl_invoice_number", required = false)
     private String invoiceNumber;
@@ -179,37 +135,73 @@ public class ElavonTransactionResponse extends ElavonResponse {
     @Element(name = "ssl_add_token_response", required = false)
     private String addTokenResponse;
 
-    // Error code returned only if an error occurred. Typically, when the transaction failed validation or the request is
-    // incorrect. This will prevent the transaction from going to authorization.
-    @Element(name = "errorCode", required = false)
-    private int errorCode;
 
-    @Element(name = "errorName", required = false)
-    private String errorName;
+    @Element(name = "ssl_account_type", required = false)
+    private int accountType;
 
-    @Element(name = "errorMessage", required = false)
-    private String errorMessage;
+    @Element(name = "ssl_icc_issuerscript", required = false)
+    private String issuerScript;
 
+    @Element(name = "ssl_icc_csn", required = false)
+    private String csn;
 
-    public static String getResultSuccess() {
-        return RESULT_SUCCESS;
-    }
+    @Element(name = "ssl_icc_atc", required = false)
+    private String atc;
 
-    public String getResult() {
-        return result;
-    }
+    @Element(name = "ssl_issuer_response", required = false)
+    private String issuerResponse;
 
-    public void setResult(String result) {
-        this.result = result;
-    }
+    @Element(name = "ssl_icc_arpc", required = false)
+    private String arpc;
 
-    public String getResultMessage() {
-        return resultMessage;
-    }
+    @Element(name = "ssl_update_emv_keys", required = false)
+    private boolean updateEmvKeys;
 
-    public void setResultMessage(String resultMessage) {
-        this.resultMessage = resultMessage;
-    }
+    @Element(name = "ssl_icc_cardtype", required = false)
+    private String iccCardType;
+
+    @Element(name = "ssl_icc_cvmr", required = false)
+    private String cvmr;
+
+    @Element(name = "ssl_icc_aid", required = false)
+    private String aid;
+
+    @Element(name = "ssl_icc_tvr", required = false)
+    private String tvr;
+
+    @Element(name = "ssl_icc_tsi", required = false)
+    private String tsi;
+
+    @Element(name = "ssl_icc_app_arc", required = false)
+    private String arc;
+
+    @Element(name = "ssl_icc_app_name", required = false)
+    private String appName;
+
+    @Element(name = "ssl_card_scheme", required = false)
+    private String cardScheme;
+
+    @Element(name = "ssl_debit_response_code", required = false)
+    private String debitResponseCode;
+
+    @Element(name = "ssl_mac_key", required = false)
+    private String interacMacKey;
+
+    @Element(name = "ssl_pin_key", required = false)
+    private String interacPinKey;
+
+    @Element(name = "ssl_mac_value", required = false)
+    private String interacMacValue;
+
+    @Element(name = "ssl_mac_amount", required = false)
+    private String interacMacAmount;
+
+    @Element(name = "ssl_sys_trace_audit_no", required = false)
+    private String interacSTAN;
+
+    @Element(name = "ssl_processing_code", required = false)
+    private String interacProcessingCode;
+
 
     public String getTxnId() {
         return txnId;
@@ -283,13 +275,6 @@ public class ElavonTransactionResponse extends ElavonResponse {
         this.cvv2Response = cvv2Response;
     }
 
-    public CVV2Response getCardNumberMasked() {
-        return cardNumberMasked;
-    }
-
-    public void setCardNumberMasked(CVV2Response cardNumberMasked) {
-        this.cardNumberMasked = cardNumberMasked;
-    }
 
     public String getInvoiceNumber() {
         return invoiceNumber;
@@ -403,27 +388,188 @@ public class ElavonTransactionResponse extends ElavonResponse {
         this.addTokenResponse = addTokenResponse;
     }
 
-    public int getErrorCode() {
-        return errorCode;
+    public int getAccountType() {
+        return accountType;
     }
 
-    public void setErrorCode(int errorCode) {
-        this.errorCode = errorCode;
+    public void setAccountType(int accountType) {
+        this.accountType = accountType;
     }
 
-    public String getErrorName() {
-        return errorName;
+    public String getAid() {
+        return aid;
     }
 
-    public void setErrorName(String errorName) {
-        this.errorName = errorName;
+    public void setAid(String aid) {
+        this.aid = aid;
     }
 
-    public String getErrorMessage() {
-        return errorMessage;
+    public String getAppName() {
+        return appName;
     }
 
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
+    public void setAppName(String appName) {
+        this.appName = appName;
+    }
+
+    public String getArc() {
+        return arc;
+    }
+
+    public void setArc(String arc) {
+        this.arc = arc;
+    }
+
+    public String getArpc() {
+        return arpc;
+    }
+
+    public void setArpc(String arpc) {
+        this.arpc = arpc;
+    }
+
+    public String getAtc() {
+        return atc;
+    }
+
+    public void setAtc(String atc) {
+        this.atc = atc;
+    }
+
+    public void setCardNumberMasked(String cardNumberMasked) {
+        this.cardNumberMasked = cardNumberMasked;
+    }
+
+    public String getCardScheme() {
+        return cardScheme;
+    }
+
+    public String getCsn() {
+        return csn;
+    }
+
+    public void setCsn(String csn) {
+        this.csn = csn;
+    }
+
+    public String getCvmr() {
+        return cvmr;
+    }
+
+    public void setCvmr(String cvmr) {
+        this.cvmr = cvmr;
+    }
+
+    public String getDebitResponseCode() {
+        return debitResponseCode;
+    }
+
+    public void setDebitResponseCode(String debitResponseCode) {
+        this.debitResponseCode = debitResponseCode;
+    }
+
+
+    public String getInteracMacAmount() {
+        return interacMacAmount;
+    }
+
+    public void setInteracMacAmount(String interacMacAmount) {
+        this.interacMacAmount = interacMacAmount;
+    }
+
+    public String getInteracMacKey() {
+        return interacMacKey;
+    }
+
+    public void setInteracMacKey(String interacMacKey) {
+        this.interacMacKey = interacMacKey;
+    }
+
+    public String getInteracMacValue() {
+        return interacMacValue;
+    }
+
+    public void setInteracMacValue(String interacMacValue) {
+        this.interacMacValue = interacMacValue;
+    }
+
+    public String getInteracPinKey() {
+        return interacPinKey;
+    }
+
+    public void setInteracPinKey(String interacPinKey) {
+        this.interacPinKey = interacPinKey;
+    }
+
+    public String getInteracProcessingCode() {
+        return interacProcessingCode;
+    }
+
+    public void setInteracProcessingCode(String interacProcessingCode) {
+        this.interacProcessingCode = interacProcessingCode;
+    }
+
+    public String getInteracSTAN() {
+        return interacSTAN;
+    }
+
+    public void setInteracSTAN(String interacSTAN) {
+        this.interacSTAN = interacSTAN;
+    }
+
+    public String getIssuerResponse() {
+        return issuerResponse;
+    }
+
+    public void setIssuerResponse(String issuerResponse) {
+        this.issuerResponse = issuerResponse;
+    }
+
+    public String getIssuerScript() {
+        return issuerScript;
+    }
+
+    public void setIssuerScript(String issuerScript) {
+        this.issuerScript = issuerScript;
+    }
+
+    public String getTsi() {
+        return tsi;
+    }
+
+    public void setTsi(String tsi) {
+        this.tsi = tsi;
+    }
+
+    public String getTvr() {
+        return tvr;
+    }
+
+    public void setTvr(String tvr) {
+        this.tvr = tvr;
+    }
+
+    public boolean isUpdateEmvKeys() {
+        return updateEmvKeys;
+    }
+
+    public void setUpdateEmvKeys(boolean updateEmvKeys) {
+        this.updateEmvKeys = updateEmvKeys;
+    }
+
+    public String getCardNumberMasked() {
+        return cardNumberMasked;
+    }
+
+    public void setCardScheme(String cardScheme) {
+        this.cardScheme = cardScheme;
+    }
+
+    public String getIccCardType() {
+        return iccCardType;
+    }
+
+    public void setIccCardType(String iccCardType) {
+        this.iccCardType = iccCardType;
     }
 }

@@ -1,9 +1,5 @@
 package com.elavon.converge.model.type;
 
-/**
- * Created by dennis on 10/24/17.
- */
-
 public enum CardShortDescription {
     AMEX("AMEX"),
     UNIONPAY("CUP"),
