@@ -70,12 +70,11 @@ public class EmvMapper implements InterfaceMapper {
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
         request.setTlvEnc(getTlvTags(t));
         FundingSourceEntryDetails entryDetails = t.getFundingSource().getEntryDetails();
+        request.setPosMode(ElavonPosMode.ICC_DUAL);
         if (entryDetails.getEntryMode() == EntryMode.CONTACTLESS_INTEGRATED_CIRCUIT_CARD
                 || entryDetails.getEntryMode() == EntryMode.CONTACTLESS_MAGSTRIPE) {
-            request.setPosMode(ElavonPosMode.CL_CAPABLE);
-            request.setEntryMode(ElavonEntryMode.CONTACTLESS);
+            request.setEntryMode(ElavonEntryMode.EMV_PROXIMITY_READ);
         } else if (entryDetails.getEntryMode() == EntryMode.INTEGRATED_CIRCUIT_CARD) {
-            request.setPosMode(ElavonPosMode.CT_ONLY);
             request.setEntryMode(ElavonEntryMode.EMV_WITH_CVV);
         }
         request.setFirstName(t.getFundingSource().getCard().getCardHolderFirstName());
@@ -123,6 +122,13 @@ public class EmvMapper implements InterfaceMapper {
             builder.append(lHex);
             builder.append(tag.getValue());
             Log.d(TAG, MessageFormat.format("T:{0}, L:{1}, V:{2}", kHex, lHex, tag.getValue()));
+        }
+
+        // HACK - add 9F03 if it doesn't exist
+        if (!t.getFundingSource().getEmvData().getEmvTags().containsKey("0x9F03")) {
+            builder.append("9F03");
+            builder.append("01");
+            builder.append("00");
         }
 
         /**

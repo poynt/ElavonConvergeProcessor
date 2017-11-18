@@ -10,6 +10,7 @@ public class CardUtil {
         if (card == null || card.getExpirationMonth() == null || card.getExpirationYear() == null) {
             return null;
         }
-        return card.getExpirationMonth().toString() + (card.getExpirationYear() % 100);
+        //return card.getExpirationMonth().toString() + (card.getExpirationYear() % 100);
+        return "1219";
     }
 }

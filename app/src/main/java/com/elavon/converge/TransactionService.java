@@ -9,10 +9,10 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 
+import com.elavon.converge.core.TransactionManager;
 import com.elavon.converge.inject.AppComponent;
 import com.elavon.converge.inject.AppModule;
 import com.elavon.converge.inject.DaggerAppComponent;
-import com.elavon.converge.core.TransactionManager;
 
 import java.util.Map;
 
@@ -189,7 +189,10 @@ public class TransactionService extends Service {
         }
 
         @Override
-        public void reverseTransaction(String originalRequestId, String originalTransactionId, EMVData emvData, String requestId) throws RemoteException {
+        public void reverseTransaction(final String originalRequestId,
+                                       final String originalTransactionId,
+                                       final EMVData emvData,
+                                       final String requestId) throws RemoteException {
             Log.d(TAG, "reverseTransaction: " + originalRequestId);
             if (emvData != null) {
                 Log.d(TAG, "emvData received");
@@ -199,6 +202,25 @@ public class TransactionService extends Service {
                     }
                 }
             }
+
+            // get transaction from poynt service first
+            mPoyntTransactionService.getTransaction(originalTransactionId, requestId, new IPoyntTransactionServiceListener.Stub() {
+                @Override
+                public void onResponse(final Transaction transaction, final String requestId, final PoyntError poyntError) throws RemoteException {
+                    // update in converge
+                    transactionManager.reverseTransaction(transaction, emvData, requestId);
+                }
+
+                @Override
+                public void onLoginRequired() throws RemoteException {
+                    Log.e(TAG, "Failed to get transaction:" + originalTransactionId);
+                }
+
+                @Override
+                public void onLaunchActivity(final Intent intent, final String s) throws RemoteException {
+                    Log.e(TAG, "Failed to get transaction:" + originalTransactionId);
+                }
+            });
         }
 
         @Override

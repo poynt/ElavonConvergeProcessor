@@ -572,4 +572,56 @@ public class ElavonTransactionResponse extends ElavonResponse {
     public void setIccCardType(String iccCardType) {
         this.iccCardType = iccCardType;
     }
+
+    @Override
+    public String toString() {
+        return "ElavonTransactionResponse{" +
+                "accountBalance=" + accountBalance +
+                ", txnId='" + txnId + '\'' +
+                ", txnTime=" + txnTime +
+                ", approvalCode='" + approvalCode + '\'' +
+                ", amount=" + amount +
+                ", requestedAmount=" + requestedAmount +
+                ", balanceDue=" + balanceDue +
+                ", avsResponse=" + avsResponse +
+                ", cvv2Response=" + cvv2Response +
+                ", cardNumberMasked='" + cardNumberMasked + '\'' +
+                ", invoiceNumber='" + invoiceNumber + '\'' +
+                ", conversionRate=" + conversionRate +
+                ", cardCurrency='" + cardCurrency + '\'' +
+                ", cardholderAmount=" + cardholderAmount +
+                ", cardholderBaseAmount=" + cardholderBaseAmount +
+                ", cardholderTipAmount=" + cardholderTipAmount +
+                ", serverId='" + serverId + '\'' +
+                ", shift='" + shift + '\'' +
+                ", cardShortDescription=" + cardShortDescription +
+                ", cardType=" + cardType +
+                ", transactionCurrency='" + transactionCurrency + '\'' +
+                ", token='" + token + '\'' +
+                ", tokenResponse=" + tokenResponse +
+                ", addTokenResponse='" + addTokenResponse + '\'' +
+                ", accountType=" + accountType +
+                ", issuerScript='" + issuerScript + '\'' +
+                ", csn='" + csn + '\'' +
+                ", atc='" + atc + '\'' +
+                ", issuerResponse='" + issuerResponse + '\'' +
+                ", arpc='" + arpc + '\'' +
+                ", updateEmvKeys=" + updateEmvKeys +
+                ", iccCardType='" + iccCardType + '\'' +
+                ", cvmr='" + cvmr + '\'' +
+                ", aid='" + aid + '\'' +
+                ", tvr='" + tvr + '\'' +
+                ", tsi='" + tsi + '\'' +
+                ", arc='" + arc + '\'' +
+                ", appName='" + appName + '\'' +
+                ", cardScheme='" + cardScheme + '\'' +
+                ", debitResponseCode='" + debitResponseCode + '\'' +
+                ", interacMacKey='" + interacMacKey + '\'' +
+                ", interacPinKey='" + interacPinKey + '\'' +
+                ", interacMacValue='" + interacMacValue + '\'' +
+                ", interacMacAmount='" + interacMacAmount + '\'' +
+                ", interacSTAN='" + interacSTAN + '\'' +
+                ", interacProcessingCode='" + interacProcessingCode + '\'' +
+                '}';
+    }
 }

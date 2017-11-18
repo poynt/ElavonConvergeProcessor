@@ -162,6 +162,7 @@ public class TransactionManager {
             }
         } else {
             final ElavonTransactionRequest request = convergeMapper.getTransactionTipUpdateRequest(
+                    transaction.getFundingSource().getEntryDetails(),
                     transaction.getProcessorResponse().getRetrievalRefNum(),
                     adjustTransactionRequest);
             convergeService.update(request, new ConvergeCallback<ElavonTransactionResponse>() {
@@ -229,5 +230,33 @@ public class TransactionManager {
         } catch (RemoteException e) {
             e.printStackTrace();
         }
+    }
+
+    public void reverseTransaction(
+            final Transaction transaction,
+            final EMVData emvData,
+            final String requestId) {
+        Log.d(TAG, "reverseTransaction: " + transaction.getId());
+
+        final ElavonTransactionRequest request = convergeMapper.getTransactionReversalRequest(
+                transaction.getFundingSource().getEntryDetails(),
+                transaction.getProcessorResponse().getRetrievalRefNum());
+        convergeService.update(request, new ConvergeCallback<ElavonTransactionResponse>() {
+            @Override
+            public void onResponse(final ElavonTransactionResponse elavonResponse) {
+                Log.d(TAG, elavonResponse != null ? elavonResponse.toString() : "n/a");
+                if (elavonResponse.isSuccess()) {
+                    Log.i(TAG, "reverseTransaction: " + transaction.getId() + " SUCCESS");
+                } else {
+                    Log.e(TAG, "reverseTransaction: " + transaction.getId() + " FAILED");
+                }
+            }
+
+            @Override
+            public void onFailure(final Throwable t) {
+                t.printStackTrace();
+                Log.e(TAG, "reverseTransaction: " + transaction.getId() + " FAILED");
+            }
+        });
     }
 }

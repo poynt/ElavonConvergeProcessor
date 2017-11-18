@@ -137,13 +137,21 @@ public class ElavonTransactionRequest extends ElavonRequest {
     private Boolean generateAndStoreToken;
 
     @Element(name = "ssl_image_type", required = false)
-    private SignatureImageType imageType;
+    private SignatureImageType signatureImageType;
 
     /**
      * Base64 encoded image
      */
     @Element(name = "ssl_signature_image", required = false)
     private String signatureImage;
+
+
+    @Element(name = "ssl_icc_isr", required = false)
+    private String issuerScriptResults;
+
+    @Element(name = "ssl_icc_tsi", required = false)
+    private String transactionStatusInformation;
+
 
     // not part of xml
     private String cardLast4;
@@ -348,12 +356,12 @@ public class ElavonTransactionRequest extends ElavonRequest {
         this.tlvEnc = tlvEnc;
     }
 
-    public SignatureImageType getImageType() {
-        return imageType;
+    public SignatureImageType getSignatureImageType() {
+        return signatureImageType;
     }
 
-    public void setImageType(SignatureImageType imageType) {
-        this.imageType = imageType;
+    public void setSignatureImageType(SignatureImageType signatureImageType) {
+        this.signatureImageType = signatureImageType;
     }
 
     public String getSignatureImage() {
@@ -378,5 +386,21 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     public void setPinKsn(String pinKsn) {
         this.pinKsn = pinKsn;
+    }
+
+    public String getIssuerScriptResults() {
+        return issuerScriptResults;
+    }
+
+    public void setIssuerScriptResults(String issuerScriptResults) {
+        this.issuerScriptResults = issuerScriptResults;
+    }
+
+    public String getTransactionStatusInformation() {
+        return transactionStatusInformation;
+    }
+
+    public void setTransactionStatusInformation(String transactionStatusInformation) {
+        this.transactionStatusInformation = transactionStatusInformation;
     }
 }

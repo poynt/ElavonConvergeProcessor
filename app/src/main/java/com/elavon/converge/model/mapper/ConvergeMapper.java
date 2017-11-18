@@ -1,6 +1,7 @@
 package com.elavon.converge.model.mapper;
 
 import android.util.Base64;
+import android.util.Log;
 
 import com.elavon.converge.exception.ConvergeMapperException;
 import com.elavon.converge.model.ElavonResponse;
@@ -20,8 +21,10 @@ import java.util.UUID;
 import javax.inject.Inject;
 
 import co.poynt.api.model.AdjustTransactionRequest;
+import co.poynt.api.model.EMVData;
 import co.poynt.api.model.EMVTag;
 import co.poynt.api.model.EntryMode;
+import co.poynt.api.model.FundingSourceEntryDetails;
 import co.poynt.api.model.Processor;
 import co.poynt.api.model.ProcessorResponse;
 import co.poynt.api.model.ProcessorStatus;
@@ -30,10 +33,11 @@ import co.poynt.api.model.TransactionStatus;
 
 public class ConvergeMapper {
 
+    private static final String TAG = ConvergeMapper.class.getSimpleName();
     private final Map<EntryMode, InterfaceMapper> interfaceMappers;
 
     @Inject
-    public ConvergeMapper(final MsrMapper msrMapper, final EmvMapper emvMapper, final ContactlessMapper contactlessMapper) {
+    public ConvergeMapper(final MsrMapper msrMapper, final EmvMapper emvMapper) {
         interfaceMappers = new HashMap<>();
         interfaceMappers.put(EntryMode.KEYED, null);
         interfaceMappers.put(EntryMode.TRACK_DATA_FROM_MAGSTRIPE, msrMapper);
@@ -68,11 +72,45 @@ public class ConvergeMapper {
         }
     }
 
-    public ElavonTransactionRequest getTransactionTipUpdateRequest(final String transactionId, final AdjustTransactionRequest adjustTransactionRequest) {
+    public ElavonTransactionRequest getTransactionTipUpdateRequest(FundingSourceEntryDetails entryDetails,
+                                                                   final String transactionId,
+                                                                   final AdjustTransactionRequest adjustTransactionRequest) {
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
-        request.setTransactionType(ElavonTransactionType.UPDATE_TIP);
+        if (entryDetails != null
+                && (entryDetails.getEntryMode() == EntryMode.INTEGRATED_CIRCUIT_CARD
+                || entryDetails.getEntryMode() == EntryMode.CONTACTLESS_INTEGRATED_CIRCUIT_CARD)) {
+            request.setTransactionType(ElavonTransactionType.EMV_CT_UPDATE);
+        } else {
+            request.setTransactionType(ElavonTransactionType.UPDATE_TIP);
+        }
+        // elavon transactionId
         request.setTxnId(transactionId);
         request.setTipAmount(CurrencyUtil.getAmount(adjustTransactionRequest.getAmounts().getTipAmount(), adjustTransactionRequest.getAmounts().getCurrency()));
+        // add emv tags
+        if (adjustTransactionRequest.getEmvData() != null) {
+            EMVData emvData = adjustTransactionRequest.getEmvData();
+            Map<String, String> emvTags = emvData.getEmvTags();
+            for (final Map.Entry<String, String> tag : emvTags.entrySet()) {
+                Log.d(TAG, String.format("%s=%s", tag.getKey(), tag.getValue()));
+            }
+
+            if (emvTags != null && emvTags.size() > 0) {
+                if (emvTags.containsKey("0xE012")) {
+                    request.setIssuerScriptResults(emvTags.get("0xE012"));
+                }
+                if (emvTags.containsKey("0x9B")) {
+                    request.setTransactionStatusInformation(emvTags.get("0x9B"));
+                }
+            }
+        }
+
+        // add signature
+        if (adjustTransactionRequest.getSignature() != null) {
+            request.setSignatureImage(Base64.encodeToString(
+                    adjustTransactionRequest.getSignature(), Base64.DEFAULT));
+            request.setSignatureImageType(SignatureImageType.PNG);
+        }
+
         return request;
     }
 
@@ -80,7 +118,7 @@ public class ConvergeMapper {
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
         request.setTransactionType(ElavonTransactionType.SIGNATURE);
         request.setTxnId(transactionId);
-        request.setImageType(SignatureImageType.PNG);
+        request.setSignatureImageType(SignatureImageType.PNG);
         request.setSignatureImage(Base64.encodeToString(adjustTransactionRequest.getSignature(), Base64.DEFAULT));
         return request;
     }
@@ -92,6 +130,21 @@ public class ConvergeMapper {
         search.setCardSuffix(cardLast4);
         search.setSearchStartDate(searchStartDate);
         return search;
+    }
+
+    public ElavonTransactionRequest getTransactionReversalRequest(final FundingSourceEntryDetails entryDetails,
+                                                                  final String transactionId) {
+        final ElavonTransactionRequest request = new ElavonTransactionRequest();
+        if (entryDetails != null
+                && (entryDetails.getEntryMode() == EntryMode.INTEGRATED_CIRCUIT_CARD
+                || entryDetails.getEntryMode() == EntryMode.CONTACTLESS_INTEGRATED_CIRCUIT_CARD)) {
+            request.setTransactionType(ElavonTransactionType.EMV_REVERSAL);
+        } else {
+            request.setTransactionType(ElavonTransactionType.VOID);
+        }
+        // elavon transactionId
+        request.setTxnId(transactionId);
+        return request;
     }
 
     /**
@@ -251,10 +304,13 @@ public class ConvergeMapper {
         // TODO with transaction id. using retrieval ref num to store converge transaction id
         if (etResponse.getTxnId() != null) {
             processorResponse.setTransactionId(etResponse.getTxnId());
+            processorResponse.setRetrievalRefNum(etResponse.getTxnId());
+        } else {
+            //TODO - our API Service requires a processor transactionId even for declines
+            processorResponse.setTransactionId(UUID.randomUUID().toString());
+            //TODO - what do we do for retrieval reference number
+            // may be when it doesn't exist we can block the call here
         }
-//        if (etResponse.getRetrievalRefNum() != null) {
-//            processorResponse.setRetrievalRefNum(etResponse.getTxnId());
-//        }
 
         if (etResponse.getApprovalCode() != null) {
             processorResponse.setApprovalCode(etResponse.getApprovalCode());
