@@ -1,6 +1,7 @@
 package com.elavon.converge.model.mapper;
 
 import android.util.Base64;
+import android.util.Log;
 
 import com.elavon.converge.exception.ConvergeMapperException;
 import com.elavon.converge.model.ElavonResponse;
@@ -11,7 +12,11 @@ import com.elavon.converge.model.type.ElavonTransactionType;
 import com.elavon.converge.model.type.ResponseCodes;
 import com.elavon.converge.model.type.SignatureImageType;
 import com.elavon.converge.util.CurrencyUtil;
+import com.elavon.converge.util.HexDump;
 
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,8 +25,10 @@ import java.util.UUID;
 import javax.inject.Inject;
 
 import co.poynt.api.model.AdjustTransactionRequest;
+import co.poynt.api.model.EMVData;
 import co.poynt.api.model.EMVTag;
 import co.poynt.api.model.EntryMode;
+import co.poynt.api.model.FundingSourceEntryDetails;
 import co.poynt.api.model.Processor;
 import co.poynt.api.model.ProcessorResponse;
 import co.poynt.api.model.ProcessorStatus;
@@ -30,10 +37,11 @@ import co.poynt.api.model.TransactionStatus;
 
 public class ConvergeMapper {
 
+    private static final String TAG = ConvergeMapper.class.getSimpleName();
     private final Map<EntryMode, InterfaceMapper> interfaceMappers;
 
     @Inject
-    public ConvergeMapper(final MsrMapper msrMapper, final EmvMapper emvMapper, final ContactlessMapper contactlessMapper) {
+    public ConvergeMapper(final MsrMapper msrMapper, final EmvMapper emvMapper) {
         interfaceMappers = new HashMap<>();
         interfaceMappers.put(EntryMode.KEYED, null);
         interfaceMappers.put(EntryMode.TRACK_DATA_FROM_MAGSTRIPE, msrMapper);
@@ -43,6 +51,7 @@ public class ConvergeMapper {
     }
 
     public ElavonTransactionRequest getTransactionRequest(final Transaction transaction) {
+        Log.d(TAG, "Transaction Request:" + transaction);
         final InterfaceMapper mapper = interfaceMappers.get(transaction.getFundingSource().getEntryDetails().getEntryMode());
         if (mapper == null) {
             throw new ConvergeMapperException("Invalid entry mode found");
@@ -51,38 +60,70 @@ public class ConvergeMapper {
         switch (transaction.getAction()) {
             case AUTHORIZE:
                 return mapper.createAuth(transaction);
-            case CAPTURE:
-                return mapper.createCapture(transaction);
-            case VOID:
-                return mapper.createVoid(transaction);
-            case OFFLINE_AUTHORIZE:
-                return mapper.createOfflineAuth(transaction);
             case REFUND:
                 return mapper.createRefund(transaction);
             case SALE:
                 return mapper.createSale(transaction);
-            case VERIFY:
-                return mapper.createVerify(transaction);
             default:
                 throw new ConvergeMapperException("Invalid transaction action found");
         }
     }
 
-    public ElavonTransactionRequest getTransactionTipUpdateRequest(final String transactionId, final AdjustTransactionRequest adjustTransactionRequest) {
+    public ElavonTransactionRequest getTransactionUpdateRequest(FundingSourceEntryDetails entryDetails,
+                                                                final String transactionId,
+                                                                final AdjustTransactionRequest adjustTransactionRequest) {
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
-        request.setTransactionType(ElavonTransactionType.UPDATE_TIP);
+        if (entryDetails != null
+                && (entryDetails.getEntryMode() == EntryMode.INTEGRATED_CIRCUIT_CARD
+                || entryDetails.getEntryMode() == EntryMode.CONTACTLESS_INTEGRATED_CIRCUIT_CARD)) {
+            request.setTransactionType(ElavonTransactionType.EMV_CT_UPDATE);
+        } else {
+            request.setTransactionType(ElavonTransactionType.UPDATE_TIP);
+        }
+        // elavon transactionId
         request.setTxnId(transactionId);
-        request.setTipAmount(CurrencyUtil.getAmount(adjustTransactionRequest.getAmounts().getTipAmount(), adjustTransactionRequest.getAmounts().getCurrency()));
+        // update tip if customer did not opted No Tip
+        if (adjustTransactionRequest.getAmounts() != null
+                && adjustTransactionRequest.getAmounts().isCustomerOptedNoTip() != Boolean.TRUE) {
+            request.setTipAmount(CurrencyUtil.getAmount(adjustTransactionRequest.getAmounts().getTipAmount(),
+                    adjustTransactionRequest.getAmounts().getCurrency()));
+        }
+        // add emv tags
+        if (adjustTransactionRequest.getEmvData() != null) {
+            EMVData emvData = adjustTransactionRequest.getEmvData();
+            Map<String, String> emvTags = emvData.getEmvTags();
+            for (final Map.Entry<String, String> tag : emvTags.entrySet()) {
+                Log.d(TAG, String.format("%s=%s", tag.getKey(), tag.getValue()));
+            }
+
+            if (emvTags != null && emvTags.size() > 0) {
+                if (emvTags.containsKey("0xE012")) {
+                    request.setIssuerScriptResults(emvTags.get("0xE012"));
+                }
+                if (emvTags.containsKey("0x9B")) {
+                    request.setTransactionStatusInformation(emvTags.get("0x9B"));
+                }
+            }
+        }
+
+        // add signature
+        if (adjustTransactionRequest.getSignature() != null) {
+            request.setSignatureImage(Base64.encodeToString(
+                    adjustTransactionRequest.getSignature(), Base64.DEFAULT));
+            request.setSignatureImageType(SignatureImageType.PNG);
+        }
+
         return request;
     }
 
-    public ElavonTransactionRequest getTransactionSignatureUpdateRequest(final String transactionId, final AdjustTransactionRequest adjustTransactionRequest) {
-        final ElavonTransactionRequest request = new ElavonTransactionRequest();
-        request.setTransactionType(ElavonTransactionType.SIGNATURE);
-        request.setTxnId(transactionId);
-        request.setImageType(SignatureImageType.PNG);
-        request.setSignatureImage(Base64.encodeToString(adjustTransactionRequest.getSignature(), Base64.DEFAULT));
-        return request;
+    public ElavonTransactionRequest getTransactionCompleteRequest(final FundingSourceEntryDetails entryDetails,
+                                                                  final String transactionId,
+                                                                  final AdjustTransactionRequest adjustTransactionRequest) {
+        final InterfaceMapper mapper = interfaceMappers.get(entryDetails.getEntryMode());
+        if (mapper == null) {
+            throw new ConvergeMapperException("Invalid entry mode found");
+        }
+        return mapper.createCapture(transactionId, adjustTransactionRequest);
     }
 
     public ElavonTransactionSearchRequest getSearchRequest(final String cardLast4, final Date searchStartDate) {
@@ -92,6 +133,26 @@ public class ConvergeMapper {
         search.setCardSuffix(cardLast4);
         search.setSearchStartDate(searchStartDate);
         return search;
+    }
+
+    public ElavonTransactionRequest getTransactionReversalRequest(final FundingSourceEntryDetails entryDetails,
+                                                                  final String transactionId) {
+        final InterfaceMapper mapper = interfaceMappers.get(entryDetails.getEntryMode());
+        if (mapper == null) {
+            throw new ConvergeMapperException("Invalid entry mode found");
+        }
+
+        return mapper.createReverse(transactionId);
+    }
+
+    public ElavonTransactionRequest getTransactionVoidRequest(final FundingSourceEntryDetails entryDetails,
+                                                              final String transactionId) {
+        final InterfaceMapper mapper = interfaceMappers.get(entryDetails.getEntryMode());
+        if (mapper == null) {
+            throw new ConvergeMapperException("Invalid entry mode found");
+        }
+
+        return mapper.createVoid(transactionId);
     }
 
     /**
@@ -133,6 +194,15 @@ public class ConvergeMapper {
         processorResponse.setProcessor(Processor.CONVERGE);
         processorResponse.setAcquirer(Processor.ELAVON);
 
+        // always generate a hash of the card info
+        if (transaction.getFundingSource() != null && transaction.getFundingSource().getCard() != null) {
+            transaction.getFundingSource().getCard().setNumberHashed(
+                    generateHash(transaction.getFundingSource().getCard().getCardHolderFullName(),
+                            transaction.getFundingSource().getCard().getNumberFirst6(),
+                            transaction.getFundingSource().getCard().getNumberLast4(),
+                            transaction.getFundingSource().getCard().getEncryptedExpirationDate())
+            );
+        }
 
         if (etResponse.isSuccess()) {
             processorResponse.setStatus(ProcessorStatus.Successful);
@@ -251,10 +321,13 @@ public class ConvergeMapper {
         // TODO with transaction id. using retrieval ref num to store converge transaction id
         if (etResponse.getTxnId() != null) {
             processorResponse.setTransactionId(etResponse.getTxnId());
+            processorResponse.setRetrievalRefNum(etResponse.getTxnId());
+        } else {
+            //TODO - our API Service requires a processor transactionId even for declines
+            processorResponse.setTransactionId(UUID.randomUUID().toString());
+            //TODO - what do we do for retrieval reference number
+            // may be when it doesn't exist we can block the call here
         }
-//        if (etResponse.getRetrievalRefNum() != null) {
-//            processorResponse.setRetrievalRefNum(etResponse.getTxnId());
-//        }
 
         if (etResponse.getApprovalCode() != null) {
             processorResponse.setApprovalCode(etResponse.getApprovalCode());
@@ -348,5 +421,32 @@ public class ConvergeMapper {
             }
         }
         return result;
+    }
+
+    private String generateHash(String name, String first6, String last4, String expiry) {
+        String hash = null;
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            if (name != null) {
+                md.update(name.getBytes("UTF-8"));
+            }
+            if (first6 != null) {
+                md.update(first6.getBytes("UTF-8"));
+            }
+            if (last4 != null) {
+                md.update(last4.getBytes("UTF-8"));
+            }
+            if (expiry != null) {
+                md.update(expiry.getBytes("UTF-8"));
+            }
+            hash = HexDump.toHexString(md.digest());
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            Log.e(TAG, "couldn't make hash of card");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            Log.e(TAG, "couldn't make hash of card");
+        }
+        return hash;
     }
 }
