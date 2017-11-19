@@ -1,10 +1,7 @@
 package com.elavon.converge;
 
 import android.app.Service;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
@@ -14,15 +11,12 @@ import com.elavon.converge.inject.AppComponent;
 import com.elavon.converge.inject.AppModule;
 import com.elavon.converge.inject.DaggerAppComponent;
 
-import java.util.Map;
-
 import javax.inject.Inject;
 
 import co.poynt.api.model.AdjustTransactionRequest;
 import co.poynt.api.model.BalanceInquiry;
 import co.poynt.api.model.EMVData;
 import co.poynt.api.model.Transaction;
-import co.poynt.os.model.Intents;
 import co.poynt.os.model.Payment;
 import co.poynt.os.model.PoyntError;
 import co.poynt.os.services.v1.IPoyntCheckCardListener;
@@ -54,30 +48,15 @@ public class TransactionService extends Service {
             return null;
         }
     };
-    private final ServiceConnection mTransactionServiceConnection = new ServiceConnection() {
-        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-            mPoyntTransactionService = IPoyntTransactionService.Stub.asInterface(iBinder);
-        }
 
-        public void onServiceDisconnected(ComponentName componentName) {
-            mPoyntTransactionService = null;
-        }
-    };
 
     @Inject
     protected TransactionManager transactionManager;
-    private IPoyntTransactionService mPoyntTransactionService;
 
     @Override
     public void onCreate() {
         final AppComponent component = DaggerAppComponent.builder().appModule(new AppModule(this.getApplicationContext())).build();
         component.inject(this);
-        bindService(Intents.getComponentIntent(Intents.COMPONENT_POYNT_TRANSACTION_SERVICE), mTransactionServiceConnection, Context.BIND_AUTO_CREATE);
-    }
-
-    @Override
-    public void onDestroy() {
-        unbindService(mTransactionServiceConnection);
     }
 
     @Override
@@ -96,28 +75,63 @@ public class TransactionService extends Service {
         public void processTransaction(final Transaction transaction, final String requestId, final IPoyntTransactionServiceListener listener) throws RemoteException {
             Log.d(TAG, "processTransaction: " + requestId);
             Log.d(TAG, "Transaction:" + transaction.toString());
-            // if you want to collect a new pin after processing a card
-            //transactionManager.collectNewPin(transaction, requestId, listener);
-
-            // if you want to collect MSR
-            // otherwise just process as usual
             transactionManager.processTransaction(transaction, requestId, listener);
         }
 
         @Override
-        public void voidTransaction(String transactionId, EMVData emvData, String requestId, IPoyntTransactionServiceListener listener) throws RemoteException {
+        public void voidTransaction(String transactionId, final EMVData emvData, String requestId, IPoyntTransactionServiceListener listener) throws RemoteException {
             Log.d(TAG, "voidTransaction: " + requestId);
-            transactionManager.voidTransaction(transactionId, emvData, requestId, listener);
+
+            final IPoyntTransactionServiceListener originalListener = listener == null ? EMPTY_LISTENER : listener;
+
+            transactionManager.voidTransaction(transactionId, emvData, requestId, new IPoyntTransactionServiceListener.Stub() {
+                @Override
+                public void onResponse(final Transaction transaction, final String requestId, final PoyntError poyntError) throws RemoteException {
+                    // update in poynt service
+                    //mPoyntTransactionService.updateTransaction(transactionId, adjustTransactionRequest, requestId, null);
+                    originalListener.onResponse(transaction, requestId, null);
+                }
+
+                @Override
+                public void onLoginRequired() throws RemoteException {
+                    originalListener.onLoginRequired();
+                }
+
+                @Override
+                public void onLaunchActivity(final Intent intent, final String s) throws RemoteException {
+                    originalListener.onLaunchActivity(intent, s);
+                }
+            });
         }
 
         @Override
-        public void captureTransaction(String transactionId,
-                                       AdjustTransactionRequest transaction,
+        public void captureTransaction(final String transactionId,
+                                       final AdjustTransactionRequest adjustTransactionRequest,
                                        String requestId,
-                                       IPoyntTransactionServiceListener listener) throws RemoteException {
+                                       final IPoyntTransactionServiceListener listener) throws RemoteException {
             Log.d(TAG, "captureTransaction: " + requestId);
-            transactionManager.captureTransaction(transactionId, transaction, requestId, listener);
+            final IPoyntTransactionServiceListener originalListener = listener == null ? EMPTY_LISTENER : listener;
+            transactionManager.captureTransaction(transactionId,
+                    adjustTransactionRequest,
+                    requestId,
+                    new IPoyntTransactionServiceListener.Stub() {
+                        @Override
+                        public void onResponse(final Transaction transaction, final String requestId, final PoyntError poyntError) throws RemoteException {
+                            // update in poynt service
+                            //mPoyntTransactionService.captureTransaction(transactionId, adjustTransactionRequest, requestId, null);
+                            originalListener.onResponse(transaction, requestId, null);
+                        }
 
+                        @Override
+                        public void onLoginRequired() throws RemoteException {
+                            originalListener.onLoginRequired();
+                        }
+
+                        @Override
+                        public void onLaunchActivity(final Intent intent, final String s) throws RemoteException {
+                            originalListener.onLaunchActivity(intent, s);
+                        }
+                    });
         }
 
         @Override
@@ -135,29 +149,12 @@ public class TransactionService extends Service {
             Log.d(TAG, "updateTransaction: " + requestId);
             final IPoyntTransactionServiceListener originalListener = listener == null ? EMPTY_LISTENER : listener;
 
-            // get transaction from poynt service first
-            mPoyntTransactionService.getTransaction(transactionId, requestId, new IPoyntTransactionServiceListener.Stub() {
+            transactionManager.updateTransaction(transactionId, adjustTransactionRequest, requestId, new IPoyntTransactionServiceListener.Stub() {
                 @Override
                 public void onResponse(final Transaction transaction, final String requestId, final PoyntError poyntError) throws RemoteException {
-                    // update in converge
-                    transactionManager.updateTransaction(transaction, adjustTransactionRequest, requestId, new IPoyntTransactionServiceListener.Stub() {
-                        @Override
-                        public void onResponse(final Transaction transaction, final String requestId, final PoyntError poyntError) throws RemoteException {
-                            // update in poynt service
-                            mPoyntTransactionService.updateTransaction(transactionId, adjustTransactionRequest, requestId, null);
-                            originalListener.onResponse(transaction, requestId, null);
-                        }
-
-                        @Override
-                        public void onLoginRequired() throws RemoteException {
-                            originalListener.onLoginRequired();
-                        }
-
-                        @Override
-                        public void onLaunchActivity(final Intent intent, final String s) throws RemoteException {
-                            originalListener.onLaunchActivity(intent, s);
-                        }
-                    });
+                    // update in poynt service
+                    //mPoyntTransactionService.updateTransaction(transactionId, adjustTransactionRequest, requestId, null);
+                    originalListener.onResponse(transaction, requestId, null);
                 }
 
                 @Override
@@ -173,13 +170,10 @@ public class TransactionService extends Service {
         }
 
         @Override
-        public void captureEmvData(String transactionId, EMVData emvData, String requestId) throws RemoteException {
+        public void captureEmvData(final String transactionId, final EMVData emvData, String requestId) throws RemoteException {
             Log.d(TAG, "capture EMV Data: " + transactionId);
             if (emvData != null) {
-                Map<String, String> tags = emvData.getEmvTags();
-                for (Map.Entry entry : tags.entrySet()) {
-                    Log.d(TAG, "Tag " + entry.getKey() + " : " + entry.getValue());
-                }
+                transactionManager.captureEMVData(transactionId, emvData, requestId);
             }
         }
 
@@ -194,33 +188,7 @@ public class TransactionService extends Service {
                                        final EMVData emvData,
                                        final String requestId) throws RemoteException {
             Log.d(TAG, "reverseTransaction: " + originalRequestId);
-            if (emvData != null) {
-                Log.d(TAG, "emvData received");
-                if (emvData.getEmvTags() != null) {
-                    for (Map.Entry entry : emvData.getEmvTags().entrySet()) {
-                        Log.d(TAG, "tag:" + entry.getKey() + " value:" + entry.getValue());
-                    }
-                }
-            }
-
-            // get transaction from poynt service first
-            mPoyntTransactionService.getTransaction(originalTransactionId, requestId, new IPoyntTransactionServiceListener.Stub() {
-                @Override
-                public void onResponse(final Transaction transaction, final String requestId, final PoyntError poyntError) throws RemoteException {
-                    // update in converge
-                    transactionManager.reverseTransaction(transaction, emvData, requestId);
-                }
-
-                @Override
-                public void onLoginRequired() throws RemoteException {
-                    Log.e(TAG, "Failed to get transaction:" + originalTransactionId);
-                }
-
-                @Override
-                public void onLaunchActivity(final Intent intent, final String s) throws RemoteException {
-                    Log.e(TAG, "Failed to get transaction:" + originalTransactionId);
-                }
-            });
+            transactionManager.reverseTransaction(originalTransactionId, emvData, requestId);
         }
 
         @Override
