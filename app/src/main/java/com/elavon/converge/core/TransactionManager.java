@@ -21,6 +21,7 @@ import javax.inject.Inject;
 
 import co.poynt.api.model.AdjustTransactionRequest;
 import co.poynt.api.model.EMVData;
+import co.poynt.api.model.EntryMode;
 import co.poynt.api.model.Transaction;
 import co.poynt.api.model.TransactionAction;
 import co.poynt.os.model.Intents;
@@ -243,7 +244,14 @@ public class TransactionManager {
                     public void onResponse(final ElavonTransactionResponse elavonResponse) {
                         try {
                             if (elavonResponse.isSuccess()) {
-                                listener.onResponse(transaction, requestId, null);
+                                // if it's MSR and if we have signature it's a separate call
+                                if (transaction.getFundingSource().getEntryDetails().getEntryMode()
+                                        == EntryMode.TRACK_DATA_FROM_MAGSTRIPE
+                                        && adjustTransactionRequest.getSignature() != null) {
+                                    updateSignature(transaction, adjustTransactionRequest, requestId, listener);
+                                } else {
+                                    listener.onResponse(transaction, requestId, null);
+                                }
                             } else {
                                 listener.onResponse(transaction, requestId, new PoyntError(PoyntError.CODE_API_ERROR));
                             }
@@ -279,8 +287,43 @@ public class TransactionManager {
                 }
             }
         });
+    }
 
+    public void updateSignature(final Transaction transaction,
+                                final AdjustTransactionRequest adjustTransactionRequest,
+                                final String requestId,
+                                final IPoyntTransactionServiceListener listener) throws RemoteException {
+        Log.d(TAG, "updateSignature: " + transaction.getId());
+        // if it's MSR - signature goes in as a separate ccsignature request
+        final ElavonTransactionRequest request = convergeMapper.getUpdateSignatureRequest(
+                transaction.getFundingSource().getEntryDetails(),
+                transaction.getProcessorResponse().getRetrievalRefNum(),
+                adjustTransactionRequest);
+        convergeService.update(request, new ConvergeCallback<ElavonTransactionResponse>() {
+            @Override
+            public void onResponse(final ElavonTransactionResponse elavonResponse) {
+                try {
+                    if (elavonResponse.isSuccess()) {
+                        listener.onResponse(transaction, requestId, null);
+                    } else {
+                        listener.onResponse(transaction, requestId, new PoyntError(PoyntError.CODE_API_ERROR));
+                    }
+                } catch (final RemoteException e) {
+                    Log.e(TAG, "Failed to respond", e);
+                }
+            }
 
+            @Override
+            public void onFailure(final Throwable t) {
+                final PoyntError error = new PoyntError(PoyntError.CODE_API_ERROR);
+                error.setThrowable(t);
+                try {
+                    listener.onResponse(transaction, requestId, error);
+                } catch (final RemoteException e) {
+                    Log.e(TAG, "Failed to respond", e);
+                }
+            }
+        });
     }
 
     /**

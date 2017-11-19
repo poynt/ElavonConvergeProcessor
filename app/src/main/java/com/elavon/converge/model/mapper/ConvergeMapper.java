@@ -77,9 +77,50 @@ public class ConvergeMapper {
                 && (entryDetails.getEntryMode() == EntryMode.INTEGRATED_CIRCUIT_CARD
                 || entryDetails.getEntryMode() == EntryMode.CONTACTLESS_INTEGRATED_CIRCUIT_CARD)) {
             request.setTransactionType(ElavonTransactionType.EMV_CT_UPDATE);
+            // add signature - only for emv update
+            if (adjustTransactionRequest.getSignature() != null) {
+                request.setSignatureImage(Base64.encodeToString(
+                        adjustTransactionRequest.getSignature(), Base64.DEFAULT));
+                request.setSignatureImageType(SignatureImageType.PNG);
+            }
         } else {
             request.setTransactionType(ElavonTransactionType.UPDATE_TIP);
+            // no signature for ccupdatetip
         }
+        // elavon transactionId
+        request.setTxnId(transactionId);
+        // update tip if customer did not opted No Tip
+        if (adjustTransactionRequest.getAmounts() != null
+                && adjustTransactionRequest.getAmounts().isCustomerOptedNoTip() != Boolean.TRUE) {
+            request.setTipAmount(CurrencyUtil.getAmount(adjustTransactionRequest.getAmounts().getTipAmount(),
+                    adjustTransactionRequest.getAmounts().getCurrency()));
+        }
+        // add emv tags
+        if (adjustTransactionRequest.getEmvData() != null) {
+            EMVData emvData = adjustTransactionRequest.getEmvData();
+            Map<String, String> emvTags = emvData.getEmvTags();
+            for (final Map.Entry<String, String> tag : emvTags.entrySet()) {
+                Log.d(TAG, String.format("%s=%s", tag.getKey(), tag.getValue()));
+            }
+
+            if (emvTags != null && emvTags.size() > 0) {
+                if (emvTags.containsKey("0xE012")) {
+                    request.setIssuerScriptResults(emvTags.get("0xE012"));
+                }
+                if (emvTags.containsKey("0x9B")) {
+                    request.setTransactionStatusInformation(emvTags.get("0x9B"));
+                }
+            }
+        }
+        return request;
+    }
+
+    public ElavonTransactionRequest getUpdateSignatureRequest(FundingSourceEntryDetails entryDetails,
+                                                              final String transactionId,
+                                                              final AdjustTransactionRequest adjustTransactionRequest) {
+        final ElavonTransactionRequest request = new ElavonTransactionRequest();
+        request.setTransactionType(ElavonTransactionType.SIGNATURE);
+
         // elavon transactionId
         request.setTxnId(transactionId);
         // update tip if customer did not opted No Tip
