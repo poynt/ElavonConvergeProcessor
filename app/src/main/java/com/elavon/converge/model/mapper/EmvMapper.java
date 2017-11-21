@@ -7,6 +7,7 @@ import com.elavon.converge.model.type.ElavonEntryMode;
 import com.elavon.converge.model.type.ElavonPosMode;
 import com.elavon.converge.model.type.ElavonTransactionType;
 import com.elavon.converge.util.CardUtil;
+import com.elavon.converge.util.CurrencyUtil;
 import com.elavon.converge.util.HexDump;
 
 import java.text.MessageFormat;
@@ -18,7 +19,7 @@ import co.poynt.api.model.EntryMode;
 import co.poynt.api.model.FundingSourceEntryDetails;
 import co.poynt.api.model.Transaction;
 
-public class EmvMapper implements InterfaceMapper {
+public class EmvMapper extends InterfaceMapper {
 
     private static final String TAG = "EmvMapper";
 
@@ -34,23 +35,21 @@ public class EmvMapper implements InterfaceMapper {
     }
 
     @Override
-    public ElavonTransactionRequest createCapture(final Transaction transaction) {
-        throw new RuntimeException("Please implement");
+    public ElavonTransactionRequest createRefund(final Transaction t) {
+        final ElavonTransactionRequest request = new ElavonTransactionRequest();
+        request.setTransactionType(ElavonTransactionType.RETURN);
+        request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getTransactionAmount(), t.getAmounts().getCurrency()));
+        request.setTxnId(t.getProcessorResponse().getRetrievalRefNum());
+        return request;
     }
 
     @Override
-    public ElavonTransactionRequest createVoid(final Transaction transaction) {
-        throw new RuntimeException("Please implement");
-    }
-
-    @Override
-    public ElavonTransactionRequest createOfflineAuth(final Transaction transaction) {
-        throw new RuntimeException("Please implement");
-    }
-
-    @Override
-    public ElavonTransactionRequest createRefund(final Transaction transaction) {
-        throw new RuntimeException("Please implement");
+    public ElavonTransactionRequest createReverse(String transactionId) {
+        final ElavonTransactionRequest request = new ElavonTransactionRequest();
+        request.setTransactionType(ElavonTransactionType.EMV_REVERSAL);
+        // elavon transactionId
+        request.setTxnId(transactionId);
+        return request;
     }
 
     @Override
@@ -70,12 +69,11 @@ public class EmvMapper implements InterfaceMapper {
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
         request.setTlvEnc(getTlvTags(t));
         FundingSourceEntryDetails entryDetails = t.getFundingSource().getEntryDetails();
+        request.setPosMode(ElavonPosMode.ICC_DUAL);
         if (entryDetails.getEntryMode() == EntryMode.CONTACTLESS_INTEGRATED_CIRCUIT_CARD
                 || entryDetails.getEntryMode() == EntryMode.CONTACTLESS_MAGSTRIPE) {
-            request.setPosMode(ElavonPosMode.CL_CAPABLE);
-            request.setEntryMode(ElavonEntryMode.CONTACTLESS);
+            request.setEntryMode(ElavonEntryMode.EMV_PROXIMITY_READ);
         } else if (entryDetails.getEntryMode() == EntryMode.INTEGRATED_CIRCUIT_CARD) {
-            request.setPosMode(ElavonPosMode.CT_ONLY);
             request.setEntryMode(ElavonEntryMode.EMV_WITH_CVV);
         }
         request.setFirstName(t.getFundingSource().getCard().getCardHolderFirstName());
@@ -123,6 +121,13 @@ public class EmvMapper implements InterfaceMapper {
             builder.append(lHex);
             builder.append(tag.getValue());
             Log.d(TAG, MessageFormat.format("T:{0}, L:{1}, V:{2}", kHex, lHex, tag.getValue()));
+        }
+
+        // HACK - add 9F03 if it doesn't exist
+        if (!t.getFundingSource().getEmvData().getEmvTags().containsKey("0x9F03")) {
+            builder.append("9F03");
+            builder.append("06");
+            builder.append("000000000000");
         }
 
         /**

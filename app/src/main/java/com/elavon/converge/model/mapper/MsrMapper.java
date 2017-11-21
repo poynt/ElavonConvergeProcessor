@@ -13,7 +13,9 @@ import co.poynt.api.model.EntryMode;
 import co.poynt.api.model.FundingSourceEntryDetails;
 import co.poynt.api.model.Transaction;
 
-public class MsrMapper implements InterfaceMapper {
+import static com.elavon.converge.model.type.ElavonTransactionType.VOID;
+
+public class MsrMapper extends InterfaceMapper {
 
     @Inject
     public MsrMapper() {
@@ -22,38 +24,43 @@ public class MsrMapper implements InterfaceMapper {
     @Override
     public ElavonTransactionRequest createAuth(final Transaction transaction) {
         final ElavonTransactionRequest request = createRequest(transaction);
-        request.setTransactionType(ElavonTransactionType.AUTH_ONLY);
+        if (transaction.getFundingSource().getEntryDetails().isIccFallback()
+                == Boolean.TRUE) {
+            request.setTransactionType(ElavonTransactionType.EMV_SWIPE_AUTH_ONLY);
+        } else {
+            request.setTransactionType(ElavonTransactionType.AUTH_ONLY);
+        }
         return request;
     }
 
     @Override
-    public ElavonTransactionRequest createCapture(final Transaction transaction) {
-        throw new RuntimeException("Please implement");
-    }
-
-    @Override
-    public ElavonTransactionRequest createVoid(final Transaction transaction) {
-        final ElavonTransactionRequest request = createRequest(transaction);
-        request.setTransactionType(ElavonTransactionType.VOID);
+    public ElavonTransactionRequest createReverse(String transactionId) {
+        final ElavonTransactionRequest request = new ElavonTransactionRequest();
+        request.setTransactionType(VOID);
+        // elavon transactionId
+        request.setTxnId(transactionId);
         return request;
     }
 
     @Override
-    public ElavonTransactionRequest createOfflineAuth(final Transaction transaction) {
-        throw new RuntimeException("Please implement");
-    }
-
-    @Override
-    public ElavonTransactionRequest createRefund(final Transaction transaction) {
-        final ElavonTransactionRequest request = createRequest(transaction);
-        request.setTransactionType(ElavonTransactionType.CREDIT);
+    public ElavonTransactionRequest createRefund(final Transaction t) {
+        final ElavonTransactionRequest request = new ElavonTransactionRequest();
+        request.setTransactionType(ElavonTransactionType.RETURN);
+        request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getTransactionAmount(), t.getAmounts().getCurrency()));
+        request.setTxnId(t.getProcessorResponse().getRetrievalRefNum());
         return request;
     }
 
     @Override
     public ElavonTransactionRequest createSale(final Transaction transaction) {
         final ElavonTransactionRequest request = createRequest(transaction);
-        request.setTransactionType(ElavonTransactionType.SALE);
+        if (transaction.getFundingSource().getEntryDetails().isIccFallback()
+                == Boolean.TRUE) {
+            request.setTransactionType(ElavonTransactionType.EMV_SWIPE_SALE);
+        } else {
+            request.setTransactionType(ElavonTransactionType.SALE);
+        }
+
         return request;
     }
 
