@@ -24,6 +24,7 @@ public class MockObjectFactory {
         txn.setFirstName("Poynt");
         txn.setLastName("Boynt");
         txn.setDescription("tables & chairs");
+        txn.setMerchantTxnId(UUID.randomUUID().toString());
         txn.setInvoiceNumber(UUID.randomUUID().toString().replace("-", "").substring(0, 25));
         return txn;
     }

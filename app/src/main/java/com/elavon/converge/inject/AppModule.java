@@ -8,6 +8,8 @@ import com.elavon.converge.core.TransactionManager;
 import com.elavon.converge.exception.AppInitException;
 import com.elavon.converge.model.mapper.ConvergeMapper;
 import com.elavon.converge.model.mapper.EmvMapper;
+import com.elavon.converge.model.mapper.MsrDebitMapper;
+import com.elavon.converge.model.mapper.MsrEbtMapper;
 import com.elavon.converge.model.mapper.MsrMapper;
 import com.elavon.converge.processor.ConvergeClient;
 import com.elavon.converge.processor.ConvergeService;
@@ -59,14 +61,30 @@ public class AppModule {
 
     @Provides
     @Singleton
+    public MsrDebitMapper provideMsrDebitMapper() {
+        return new MsrDebitMapper();
+    }
+
+    @Provides
+    @Singleton
+    public MsrEbtMapper provideMsrEbtMapper() {
+        return new MsrEbtMapper();
+    }
+
+    @Provides
+    @Singleton
     public EmvMapper provideEmvMapper() {
         return new EmvMapper();
     }
 
     @Provides
     @Singleton
-    public ConvergeMapper provideConvergeMapper(final MsrMapper msrMapper, final EmvMapper emvMapper) {
-        return new ConvergeMapper(msrMapper, emvMapper);
+    public ConvergeMapper provideConvergeMapper(
+            final MsrMapper msrMapper,
+            final MsrDebitMapper msrDebitMapper,
+            final MsrEbtMapper msrEbtMapper,
+            final EmvMapper emvMapper) {
+        return new ConvergeMapper(msrMapper, msrDebitMapper, msrEbtMapper, emvMapper);
     }
 
     @Provides

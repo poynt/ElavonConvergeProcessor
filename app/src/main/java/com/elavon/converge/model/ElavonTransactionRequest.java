@@ -29,6 +29,9 @@ public class ElavonTransactionRequest extends ElavonRequest {
     @Element(name = "ssl_txn_id", required = false)
     private String txnId;
 
+    @Element(name = "ssl_merchant_txn_id", required = false)
+    private String merchantTxnId;
+
     @Element(name = "ssl_card_number", required = false)
     private String cardNumber;
 
@@ -152,7 +155,6 @@ public class ElavonTransactionRequest extends ElavonRequest {
     @Element(name = "ssl_icc_tsi", required = false)
     private String transactionStatusInformation;
 
-
     // not part of xml
     private String cardLast4;
 
@@ -162,6 +164,14 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     public void setTxnId(String txnId) {
         this.txnId = txnId;
+    }
+
+    public String getMerchantTxnId() {
+        return merchantTxnId;
+    }
+
+    public void setMerchantTxnId(String merchantTxnId) {
+        this.merchantTxnId = merchantTxnId;
     }
 
     public ElavonEntryMode getEntryMode() {
