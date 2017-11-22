@@ -163,7 +163,7 @@ public class TransactionManager {
             public void onResponse(final Transaction transaction, final String requestId, final PoyntError poyntError) throws RemoteException {
 
                 final ElavonTransactionRequest request = convergeMapper.getTransactionCompleteRequest(
-                        transaction.getFundingSource().getEntryDetails(),
+                        transaction.getFundingSource(),
                         transaction.getProcessorResponse().getRetrievalRefNum(),
                         adjustTransactionRequest);
                 convergeService.update(request, new ConvergeCallback<ElavonTransactionResponse>() {
@@ -425,7 +425,7 @@ public class TransactionManager {
                         transaction.setAction(TransactionAction.VOID);
 
                         final ElavonTransactionRequest request = convergeMapper.getTransactionVoidRequest(
-                                transaction.getFundingSource().getEntryDetails(),
+                                transaction.getFundingSource(),
                                 transaction.getProcessorResponse().getRetrievalRefNum());
                         convergeService.update(request, new ConvergeCallback<ElavonTransactionResponse>() {
                             @Override
@@ -545,7 +545,7 @@ public class TransactionManager {
             public void onResponse(final Transaction transaction, final String requestId, final PoyntError poyntError) throws RemoteException {
                 // update in converge
                 final ElavonTransactionRequest request = convergeMapper.getTransactionReversalRequest(
-                        transaction.getFundingSource().getEntryDetails(),
+                        transaction.getFundingSource(),
                         transaction.getProcessorResponse().getRetrievalRefNum());
                 convergeService.update(request, new ConvergeCallback<ElavonTransactionResponse>() {
                     @Override
