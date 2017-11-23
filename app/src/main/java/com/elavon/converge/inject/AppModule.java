@@ -1,6 +1,7 @@
 package com.elavon.converge.inject;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.elavon.converge.config.Config;
 import com.elavon.converge.config.ConfigLoader;
@@ -8,6 +9,8 @@ import com.elavon.converge.core.TransactionManager;
 import com.elavon.converge.exception.AppInitException;
 import com.elavon.converge.model.mapper.ConvergeMapper;
 import com.elavon.converge.model.mapper.EmvMapper;
+import com.elavon.converge.model.mapper.KeyedEbtMapper;
+import com.elavon.converge.model.mapper.KeyedMapper;
 import com.elavon.converge.model.mapper.MsrDebitMapper;
 import com.elavon.converge.model.mapper.MsrEbtMapper;
 import com.elavon.converge.model.mapper.MsrMapper;
@@ -79,12 +82,26 @@ public class AppModule {
 
     @Provides
     @Singleton
+    public KeyedMapper provideKeyedMapper() {
+        return new KeyedMapper();
+    }
+
+    @Provides
+    @Singleton
+    public KeyedEbtMapper provideKeyedEbtMapper() {
+        return new KeyedEbtMapper();
+    }
+
+    @Provides
+    @Singleton
     public ConvergeMapper provideConvergeMapper(
             final MsrMapper msrMapper,
             final MsrDebitMapper msrDebitMapper,
             final MsrEbtMapper msrEbtMapper,
-            final EmvMapper emvMapper) {
-        return new ConvergeMapper(msrMapper, msrDebitMapper, msrEbtMapper, emvMapper);
+            final EmvMapper emvMapper,
+            final KeyedMapper keyedMapper,
+            final KeyedEbtMapper keyedEbtMapper) {
+        return new ConvergeMapper(msrMapper, msrDebitMapper, msrEbtMapper, emvMapper, keyedMapper, keyedEbtMapper);
     }
 
     @Provides
@@ -109,7 +126,11 @@ public class AppModule {
 
         // add logging interceptor
         if (Boolean.TRUE.equals(config.getLog().getEnableHttpTracing())) {
-            final HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+            final HttpLoggingInterceptor logging = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
+                @Override public void log(String message) {
+                    Log.i("OkHttp", message);
+                }
+            });
             logging.setLevel(HttpLoggingInterceptor.Level.BODY);
             clientBuilder.addInterceptor(logging);
         }

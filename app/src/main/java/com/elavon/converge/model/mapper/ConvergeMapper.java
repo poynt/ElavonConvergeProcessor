@@ -44,17 +44,23 @@ public class ConvergeMapper {
     private final MsrDebitMapper msrDebitMapper;
     private final MsrEbtMapper msrEbtMapper;
     private final EmvMapper emvMapper;
+    private final KeyedMapper keyedMapper;
+    private final KeyedEbtMapper keyedEbtMapper;
 
     @Inject
     public ConvergeMapper(
             final MsrMapper msrMapper,
             final MsrDebitMapper msrDebitMapper,
             final MsrEbtMapper msrEbtMapper,
-            final EmvMapper emvMapper) {
+            final EmvMapper emvMapper,
+            final KeyedMapper keyedMapper,
+            final KeyedEbtMapper keyedEbtMapper) {
         this.msrMapper = msrMapper;
         this.msrDebitMapper = msrDebitMapper;
         this.msrEbtMapper = msrEbtMapper;
         this.emvMapper = emvMapper;
+        this.keyedMapper = keyedMapper;
+        this.keyedEbtMapper = keyedEbtMapper;
     }
 
     private InterfaceMapper getMapper(final FundingSource fundingSource) {
@@ -72,6 +78,11 @@ public class ConvergeMapper {
             case CONTACTLESS_INTEGRATED_CIRCUIT_CARD:
                 return emvMapper;
             case KEYED:
+                if (fundingSource.getAccountType() == FundingSourceAccountType.EBT) {
+                    return keyedEbtMapper;
+                } else {
+                    return keyedMapper;
+                }
             default:
                 throw new ConvergeMapperException("Invalid entry mode found");
         }

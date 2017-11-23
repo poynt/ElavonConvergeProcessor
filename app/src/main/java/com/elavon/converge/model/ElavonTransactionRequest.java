@@ -125,6 +125,9 @@ public class ElavonTransactionRequest extends ElavonRequest {
     @Element(name = "ssl_pin_block", required = false)
     private String pinBlock;
 
+    @Element(name = "ssl_key_pointer", required = false)
+    private String keyPointer;
+
     @Element(name = "ssl_dukpt", required = false)
     private String pinKsn;
 
@@ -154,6 +157,12 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     @Element(name = "ssl_icc_tsi", required = false)
     private String transactionStatusInformation;
+
+    @Element(name = "ssl_approval_code", required = false)
+    private String approvalCode;
+
+    @Element(name = "ssl_voucher_number", required = false)
+    private String voucherNumber;
 
     // not part of xml
     private String cardLast4;
@@ -382,6 +391,14 @@ public class ElavonTransactionRequest extends ElavonRequest {
         this.signatureImage = signatureImage;
     }
 
+    public String getKeyPointer() {
+        return keyPointer;
+    }
+
+    public void setKeyPointer(String keyPointer) {
+        this.keyPointer = keyPointer;
+    }
+
     public String getPinBlock() {
         return pinBlock;
     }
@@ -412,5 +429,21 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     public void setTransactionStatusInformation(String transactionStatusInformation) {
         this.transactionStatusInformation = transactionStatusInformation;
+    }
+
+    public String getApprovalCode() {
+        return approvalCode;
+    }
+
+    public void setApprovalCode(String approvalCode) {
+        this.approvalCode = approvalCode;
+    }
+
+    public String getVoucherNumber() {
+        return voucherNumber;
+    }
+
+    public void setVoucherNumber(String voucherNumber) {
+        this.voucherNumber = voucherNumber;
     }
 }
