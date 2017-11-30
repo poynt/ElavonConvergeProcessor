@@ -14,9 +14,12 @@ import co.poynt.api.model.Transaction;
 
 public class KeyedEbtMapper extends InterfaceMapper {
 
-    private static final Map<EBTType, ElavonTransactionType> EBT_TYPES_MAP = new HashMap<EBTType, ElavonTransactionType>() {{
-        put(EBTType.FOOD_STAMP_ELECTRONIC_VOUCHER,ElavonTransactionType.EBT_FORCE_SALE);
-        put(EBTType.CASH_BENEFIT,ElavonTransactionType.EBT_CASH_SALE);
+    private static final Map<EBTType, ElavonTransactionType> EBT_SALE_TYPES_MAP = new HashMap<EBTType, ElavonTransactionType>() {{
+        put(EBTType.FOOD_STAMP_ELECTRONIC_VOUCHER, ElavonTransactionType.EBT_FORCE_SALE);
+        put(EBTType.CASH_BENEFIT, ElavonTransactionType.EBT_CASH_SALE);
+    }};
+    private static final Map<EBTType, ElavonTransactionType> EBT_REFUND_TYPES_MAP = new HashMap<EBTType, ElavonTransactionType>() {{
+        put(EBTType.FOOD_STAMP_ELECTRONIC_VOUCHER, ElavonTransactionType.EBT_FORCE_RETURN);
     }};
 
     @Override
@@ -26,18 +29,37 @@ public class KeyedEbtMapper extends InterfaceMapper {
 
     @Override
     ElavonTransactionRequest createRefund(final Transaction t) {
-        throw new ConvergeMapperException("Please implement");
+        final EBTType ebtType = t.getFundingSource().getEbtDetails().getType();
+        if (!EBT_REFUND_TYPES_MAP.containsKey(ebtType)) {
+            throw new ConvergeMapperException("Not supported EBT type for keyed entry: " + ebtType);
+        }
+
+        final ElavonTransactionRequest request = new ElavonTransactionRequest();
+        request.setTransactionType(EBT_REFUND_TYPES_MAP.get(ebtType));
+        // TODO need unencrypted card number
+        request.setCardNumber(t.getFundingSource().getCard().getNumber());
+        request.setExpDate(CardUtil.getCardExpiry(t.getFundingSource().getCard()));
+        request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getTransactionAmount(), t.getAmounts().getCurrency()));
+        if (ebtType == EBTType.FOOD_STAMP_ELECTRONIC_VOUCHER) {
+            request.setApprovalCode(t.getFundingSource().getEbtDetails().getElectronicVoucherApprovalCode());
+            request.setVoucherNumber(t.getFundingSource().getEbtDetails().getElectronicVoucherSerialNumber());
+        } else {
+            request.setPinKsn(t.getFundingSource().getVerificationData().getKeySerialNumber());
+            request.setKeyPointer("T");
+            request.setPinBlock(t.getFundingSource().getVerificationData().getPin());
+        }
+        return request;
     }
 
     @Override
     ElavonTransactionRequest createSale(final Transaction t) {
         final EBTType ebtType = t.getFundingSource().getEbtDetails().getType();
-        if (!EBT_TYPES_MAP.containsKey(ebtType)) {
+        if (!EBT_SALE_TYPES_MAP.containsKey(ebtType)) {
             throw new ConvergeMapperException("Not supported EBT type for keyed entry: " + ebtType);
         }
 
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
-        request.setTransactionType(EBT_TYPES_MAP.get(ebtType));
+        request.setTransactionType(EBT_SALE_TYPES_MAP.get(ebtType));
         // TODO need unencrypted card number
         request.setCardNumber(t.getFundingSource().getCard().getNumber());
         request.setExpDate(CardUtil.getCardExpiry(t.getFundingSource().getCard()));
@@ -53,7 +75,6 @@ public class KeyedEbtMapper extends InterfaceMapper {
             request.setKeyPointer("T");
             request.setPinBlock(t.getFundingSource().getVerificationData().getPin());
         }
-
         return request;
     }
 
