@@ -5,10 +5,19 @@ import com.elavon.converge.model.ElavonTransactionRequest;
 import com.elavon.converge.model.type.ElavonTransactionType;
 import com.elavon.converge.util.CurrencyUtil;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import co.poynt.api.model.EBTType;
 import co.poynt.api.model.Transaction;
 
 public class MsrEbtMapper extends InterfaceMapper {
+
+    private static final Map<EBTType, ElavonTransactionType> EBT_TYPES_MAP = new HashMap<EBTType, ElavonTransactionType>() {{
+        put(EBTType.FOOD_STAMP,ElavonTransactionType.EBT_SALE);
+        put(EBTType.CASH_BENEFIT,ElavonTransactionType.EBT_CASH_SALE);
+    }};
+
     @Override
     ElavonTransactionRequest createAuth(final Transaction t) {
         throw new ConvergeMapperException("Auth not allowed in EBT transaction");
@@ -21,15 +30,19 @@ public class MsrEbtMapper extends InterfaceMapper {
 
     @Override
     ElavonTransactionRequest createSale(final Transaction t) {
-        // converge api only allows msr for food stamp
-        if (t.getFundingSource().getEbtDetails().getType() != EBTType.FOOD_STAMP) {
-            throw new ConvergeMapperException("Only food stamp allowed for MSR EBT");
+        final EBTType ebtType = t.getFundingSource().getEbtDetails().getType();
+        if (!EBT_TYPES_MAP.containsKey(ebtType)) {
+            throw new ConvergeMapperException("Not supported EBT type for MSR: " + ebtType);
         }
 
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
-        request.setTransactionType(ElavonTransactionType.EBT_SALE);
+        request.setTransactionType(EBT_TYPES_MAP.get(ebtType));
         request.setEncryptedTrackData(t.getFundingSource().getCard().getTrack2data());
+        request.setKsn(t.getFundingSource().getCard().getKeySerialNumber());
         request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getTransactionAmount(), t.getAmounts().getCurrency()));
+        if (t.getAmounts().getCashbackAmount() != null) {
+            request.setCashbackAmount(CurrencyUtil.getAmount(t.getAmounts().getCashbackAmount(), t.getAmounts().getCurrency()));
+        }
         request.setPinKsn(t.getFundingSource().getVerificationData().getKeySerialNumber());
         request.setKeyPointer("T");
         request.setPinBlock(t.getFundingSource().getVerificationData().getPin());

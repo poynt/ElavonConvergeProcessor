@@ -57,6 +57,9 @@ public class ElavonTransactionRequest extends ElavonRequest {
     @Element(name = "ssl_amount", required = false)
     private BigDecimal amount;
 
+    @Element(name = "ssl_cashback_amount", required = false)
+    private BigDecimal cashbackAmount;
+
     @Element(name = "ssl_cvv2cvc2_indicator", required = false)
     private String cvv2Indicator;
 
@@ -325,6 +328,14 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     public void setAmount(BigDecimal amount) {
         this.amount = amount;
+    }
+
+    public BigDecimal getCashbackAmount() {
+        return cashbackAmount;
+    }
+
+    public void setCashbackAmount(BigDecimal cashbackAmount) {
+        this.cashbackAmount = cashbackAmount;
     }
 
     public String getCvv2Indicator() {
