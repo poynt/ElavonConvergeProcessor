@@ -43,18 +43,30 @@ public class ConvergeMapper {
     private final MsrMapper msrMapper;
     private final MsrDebitMapper msrDebitMapper;
     private final MsrEbtMapper msrEbtMapper;
+    private final MsrGiftcardMapper msrGiftcardMapper;
     private final EmvMapper emvMapper;
+    private final KeyedMapper keyedMapper;
+    private final KeyedEbtMapper keyedEbtMapper;
+    private final KeyedGiftcardMapper keyedGiftcardMapper;
 
     @Inject
     public ConvergeMapper(
             final MsrMapper msrMapper,
             final MsrDebitMapper msrDebitMapper,
             final MsrEbtMapper msrEbtMapper,
-            final EmvMapper emvMapper) {
+            final MsrGiftcardMapper msrGiftcardMapper,
+            final EmvMapper emvMapper,
+            final KeyedMapper keyedMapper,
+            final KeyedEbtMapper keyedEbtMapper,
+            final KeyedGiftcardMapper keyedGiftcardMapper) {
         this.msrMapper = msrMapper;
         this.msrDebitMapper = msrDebitMapper;
         this.msrEbtMapper = msrEbtMapper;
+        this.msrGiftcardMapper = msrGiftcardMapper;
         this.emvMapper = emvMapper;
+        this.keyedMapper = keyedMapper;
+        this.keyedEbtMapper = keyedEbtMapper;
+        this.keyedGiftcardMapper = keyedGiftcardMapper;
     }
 
     private InterfaceMapper getMapper(final FundingSource fundingSource) {
@@ -65,6 +77,8 @@ public class ConvergeMapper {
                     return msrDebitMapper;
                 } else if (fundingSource.getAccountType() == FundingSourceAccountType.EBT) {
                     return msrEbtMapper;
+                } else if (isGiftCard(fundingSource)) {
+                    return msrGiftcardMapper;
                 } else {
                     return msrMapper;
                 }
@@ -72,9 +86,21 @@ public class ConvergeMapper {
             case CONTACTLESS_INTEGRATED_CIRCUIT_CARD:
                 return emvMapper;
             case KEYED:
+                if (fundingSource.getAccountType() == FundingSourceAccountType.EBT) {
+                    return keyedEbtMapper;
+                } else if (isGiftCard(fundingSource)) {
+                    return keyedGiftcardMapper;
+                } else {
+                    return keyedMapper;
+                }
             default:
                 throw new ConvergeMapperException("Invalid entry mode found");
         }
+    }
+
+    private boolean isGiftCard(final FundingSource fundingSource) {
+        // TODO need to implement this
+        return false;
     }
 
     public ElavonTransactionRequest getTransactionRequest(final Transaction transaction) {
@@ -244,7 +270,7 @@ public class ConvergeMapper {
     public void mapTransactionResponse(final ElavonTransactionResponse etResponse, final Transaction transaction) {
 
         final ProcessorResponse processorResponse = new ProcessorResponse();
-        processorResponse.setProcessor(Processor.CONVERGE);
+        processorResponse.setProcessor(Processor.ELAVON);
         processorResponse.setAcquirer(Processor.ELAVON);
 
         // always generate a hash of the card info
@@ -262,6 +288,7 @@ public class ConvergeMapper {
         } else {
             processorResponse.setStatus(ProcessorStatus.Failure);
         }
+
         processorResponse.setStatusCode(etResponse.getResult());
         if (etResponse.getResultMessage() != null) {
             processorResponse.setStatusMessage(etResponse.getResultMessage());
@@ -459,7 +486,6 @@ public class ConvergeMapper {
         if (transaction.isSignatureCaptured() == null) {
             transaction.setSignatureCaptured(false);
         }
-
     }
 
     private String numberToAsciiHex(char[] numberChars) {

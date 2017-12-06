@@ -28,7 +28,11 @@ public class ConvergeServiceTest extends BaseTest {
                         appModule.provideMsrMapper(),
                         appModule.provideMsrDebitMapper(),
                         appModule.provideMsrEbtMapper(),
-                        appModule.provideEmvMapper()),
+                        appModule.provideMsrGiftcardMapper(),
+                        appModule.provideEmvMapper(),
+                        appModule.provideKeyedMapper(),
+                        appModule.provideKeyedEbtMapper(),
+                        appModule.provideKeyedGiftcardMapper()),
                 appModule.provideConvergeClient(appModule.provideXmlMapper())
         );
     }
