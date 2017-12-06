@@ -10,9 +10,11 @@ import com.elavon.converge.exception.AppInitException;
 import com.elavon.converge.model.mapper.ConvergeMapper;
 import com.elavon.converge.model.mapper.EmvMapper;
 import com.elavon.converge.model.mapper.KeyedEbtMapper;
+import com.elavon.converge.model.mapper.KeyedGiftcardMapper;
 import com.elavon.converge.model.mapper.KeyedMapper;
 import com.elavon.converge.model.mapper.MsrDebitMapper;
 import com.elavon.converge.model.mapper.MsrEbtMapper;
+import com.elavon.converge.model.mapper.MsrGiftcardMapper;
 import com.elavon.converge.model.mapper.MsrMapper;
 import com.elavon.converge.processor.ConvergeClient;
 import com.elavon.converge.processor.ConvergeService;
@@ -76,6 +78,12 @@ public class AppModule {
 
     @Provides
     @Singleton
+    public MsrGiftcardMapper provideMsrGiftcardMapper() {
+        return new MsrGiftcardMapper();
+    }
+
+    @Provides
+    @Singleton
     public EmvMapper provideEmvMapper() {
         return new EmvMapper();
     }
@@ -94,14 +102,23 @@ public class AppModule {
 
     @Provides
     @Singleton
+    public KeyedGiftcardMapper provideKeyedGiftcardMapper() {
+        return new KeyedGiftcardMapper();
+    }
+
+    @Provides
+    @Singleton
     public ConvergeMapper provideConvergeMapper(
             final MsrMapper msrMapper,
             final MsrDebitMapper msrDebitMapper,
             final MsrEbtMapper msrEbtMapper,
+            final MsrGiftcardMapper msrGiftcardMapper,
             final EmvMapper emvMapper,
             final KeyedMapper keyedMapper,
-            final KeyedEbtMapper keyedEbtMapper) {
-        return new ConvergeMapper(msrMapper, msrDebitMapper, msrEbtMapper, emvMapper, keyedMapper, keyedEbtMapper);
+            final KeyedEbtMapper keyedEbtMapper,
+            final KeyedGiftcardMapper keyedGiftcardMapper) {
+        return new ConvergeMapper(msrMapper, msrDebitMapper, msrEbtMapper, msrGiftcardMapper,
+                emvMapper, keyedMapper, keyedEbtMapper, keyedGiftcardMapper);
     }
 
     @Provides

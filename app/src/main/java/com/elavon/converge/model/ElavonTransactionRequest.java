@@ -41,6 +41,9 @@ public class ElavonTransactionRequest extends ElavonRequest {
     @Element(name = "ssl_exp_date", required = false)
     private String expDate;
 
+    @Element(name = "ssl_track_data", required = false)
+    private String trackData;
+
     @Element(name = "ssl_enc_track_data", required = false)
     private String encryptedTrackData;
 
@@ -166,6 +169,9 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     @Element(name = "ssl_voucher_number", required = false)
     private String voucherNumber;
+
+    @Element(name = "ssl_egc_tender_type", required = false)
+    private String giftcardTenderType;
 
     // not part of xml
     private String cardLast4;
@@ -304,6 +310,14 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     public void setExpDate(String expDate) {
         this.expDate = expDate;
+    }
+
+    public String getTrackData() {
+        return trackData;
+    }
+
+    public void setTrackData(String trackData) {
+        this.trackData = trackData;
     }
 
     public String getEncryptedTrackData() {
@@ -456,5 +470,13 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     public void setVoucherNumber(String voucherNumber) {
         this.voucherNumber = voucherNumber;
+    }
+
+    public String getGiftcardTenderType() {
+        return giftcardTenderType;
+    }
+
+    public void setGiftcardTenderType(String giftcardTenderType) {
+        this.giftcardTenderType = giftcardTenderType;
     }
 }
