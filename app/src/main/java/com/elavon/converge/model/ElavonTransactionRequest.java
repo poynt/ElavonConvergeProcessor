@@ -29,6 +29,9 @@ public class ElavonTransactionRequest extends ElavonRequest {
     @Element(name = "ssl_txn_id", required = false)
     private String txnId;
 
+    @Element(name = "ssl_merchant_txn_id", required = false)
+    private String merchantTxnId;
+
     @Element(name = "ssl_card_number", required = false)
     private String cardNumber;
 
@@ -37,6 +40,9 @@ public class ElavonTransactionRequest extends ElavonRequest {
      */
     @Element(name = "ssl_exp_date", required = false)
     private String expDate;
+
+    @Element(name = "ssl_track_data", required = false)
+    private String trackData;
 
     @Element(name = "ssl_enc_track_data", required = false)
     private String encryptedTrackData;
@@ -53,6 +59,9 @@ public class ElavonTransactionRequest extends ElavonRequest {
      */
     @Element(name = "ssl_amount", required = false)
     private BigDecimal amount;
+
+    @Element(name = "ssl_cashback_amount", required = false)
+    private BigDecimal cashbackAmount;
 
     @Element(name = "ssl_cvv2cvc2_indicator", required = false)
     private String cvv2Indicator;
@@ -122,6 +131,9 @@ public class ElavonTransactionRequest extends ElavonRequest {
     @Element(name = "ssl_pin_block", required = false)
     private String pinBlock;
 
+    @Element(name = "ssl_key_pointer", required = false)
+    private String keyPointer;
+
     @Element(name = "ssl_dukpt", required = false)
     private String pinKsn;
 
@@ -152,6 +164,14 @@ public class ElavonTransactionRequest extends ElavonRequest {
     @Element(name = "ssl_icc_tsi", required = false)
     private String transactionStatusInformation;
 
+    @Element(name = "ssl_approval_code", required = false)
+    private String approvalCode;
+
+    @Element(name = "ssl_voucher_number", required = false)
+    private String voucherNumber;
+
+    @Element(name = "ssl_egc_tender_type", required = false)
+    private String giftcardTenderType;
 
     // not part of xml
     private String cardLast4;
@@ -162,6 +182,14 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     public void setTxnId(String txnId) {
         this.txnId = txnId;
+    }
+
+    public String getMerchantTxnId() {
+        return merchantTxnId;
+    }
+
+    public void setMerchantTxnId(String merchantTxnId) {
+        this.merchantTxnId = merchantTxnId;
     }
 
     public ElavonEntryMode getEntryMode() {
@@ -284,6 +312,14 @@ public class ElavonTransactionRequest extends ElavonRequest {
         this.expDate = expDate;
     }
 
+    public String getTrackData() {
+        return trackData;
+    }
+
+    public void setTrackData(String trackData) {
+        this.trackData = trackData;
+    }
+
     public String getEncryptedTrackData() {
         return encryptedTrackData;
     }
@@ -306,6 +342,14 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     public void setAmount(BigDecimal amount) {
         this.amount = amount;
+    }
+
+    public BigDecimal getCashbackAmount() {
+        return cashbackAmount;
+    }
+
+    public void setCashbackAmount(BigDecimal cashbackAmount) {
+        this.cashbackAmount = cashbackAmount;
     }
 
     public String getCvv2Indicator() {
@@ -372,6 +416,14 @@ public class ElavonTransactionRequest extends ElavonRequest {
         this.signatureImage = signatureImage;
     }
 
+    public String getKeyPointer() {
+        return keyPointer;
+    }
+
+    public void setKeyPointer(String keyPointer) {
+        this.keyPointer = keyPointer;
+    }
+
     public String getPinBlock() {
         return pinBlock;
     }
@@ -402,5 +454,29 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     public void setTransactionStatusInformation(String transactionStatusInformation) {
         this.transactionStatusInformation = transactionStatusInformation;
+    }
+
+    public String getApprovalCode() {
+        return approvalCode;
+    }
+
+    public void setApprovalCode(String approvalCode) {
+        this.approvalCode = approvalCode;
+    }
+
+    public String getVoucherNumber() {
+        return voucherNumber;
+    }
+
+    public void setVoucherNumber(String voucherNumber) {
+        this.voucherNumber = voucherNumber;
+    }
+
+    public String getGiftcardTenderType() {
+        return giftcardTenderType;
+    }
+
+    public void setGiftcardTenderType(String giftcardTenderType) {
+        this.giftcardTenderType = giftcardTenderType;
     }
 }

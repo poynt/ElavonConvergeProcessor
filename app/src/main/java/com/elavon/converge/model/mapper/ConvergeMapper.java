@@ -28,6 +28,8 @@ import co.poynt.api.model.AdjustTransactionRequest;
 import co.poynt.api.model.EMVData;
 import co.poynt.api.model.EMVTag;
 import co.poynt.api.model.EntryMode;
+import co.poynt.api.model.FundingSource;
+import co.poynt.api.model.FundingSourceAccountType;
 import co.poynt.api.model.FundingSourceEntryDetails;
 import co.poynt.api.model.Processor;
 import co.poynt.api.model.ProcessorResponse;
@@ -38,25 +40,72 @@ import co.poynt.api.model.TransactionStatus;
 public class ConvergeMapper {
 
     private static final String TAG = ConvergeMapper.class.getSimpleName();
-    private final Map<EntryMode, InterfaceMapper> interfaceMappers;
+    private final MsrMapper msrMapper;
+    private final MsrDebitMapper msrDebitMapper;
+    private final MsrEbtMapper msrEbtMapper;
+    private final MsrGiftcardMapper msrGiftcardMapper;
+    private final EmvMapper emvMapper;
+    private final KeyedMapper keyedMapper;
+    private final KeyedEbtMapper keyedEbtMapper;
+    private final KeyedGiftcardMapper keyedGiftcardMapper;
 
     @Inject
-    public ConvergeMapper(final MsrMapper msrMapper, final EmvMapper emvMapper) {
-        interfaceMappers = new HashMap<>();
-        interfaceMappers.put(EntryMode.KEYED, null);
-        interfaceMappers.put(EntryMode.TRACK_DATA_FROM_MAGSTRIPE, msrMapper);
-        interfaceMappers.put(EntryMode.CONTACTLESS_MAGSTRIPE, msrMapper);
-        interfaceMappers.put(EntryMode.INTEGRATED_CIRCUIT_CARD, emvMapper);
-        interfaceMappers.put(EntryMode.CONTACTLESS_INTEGRATED_CIRCUIT_CARD, emvMapper);
+    public ConvergeMapper(
+            final MsrMapper msrMapper,
+            final MsrDebitMapper msrDebitMapper,
+            final MsrEbtMapper msrEbtMapper,
+            final MsrGiftcardMapper msrGiftcardMapper,
+            final EmvMapper emvMapper,
+            final KeyedMapper keyedMapper,
+            final KeyedEbtMapper keyedEbtMapper,
+            final KeyedGiftcardMapper keyedGiftcardMapper) {
+        this.msrMapper = msrMapper;
+        this.msrDebitMapper = msrDebitMapper;
+        this.msrEbtMapper = msrEbtMapper;
+        this.msrGiftcardMapper = msrGiftcardMapper;
+        this.emvMapper = emvMapper;
+        this.keyedMapper = keyedMapper;
+        this.keyedEbtMapper = keyedEbtMapper;
+        this.keyedGiftcardMapper = keyedGiftcardMapper;
+    }
+
+    private InterfaceMapper getMapper(final FundingSource fundingSource) {
+        switch (fundingSource.getEntryDetails().getEntryMode()) {
+            case TRACK_DATA_FROM_MAGSTRIPE:
+            case CONTACTLESS_MAGSTRIPE:
+                if (Boolean.TRUE.equals(fundingSource.isDebit())) {
+                    return msrDebitMapper;
+                } else if (fundingSource.getAccountType() == FundingSourceAccountType.EBT) {
+                    return msrEbtMapper;
+                } else if (isGiftCard(fundingSource)) {
+                    return msrGiftcardMapper;
+                } else {
+                    return msrMapper;
+                }
+            case INTEGRATED_CIRCUIT_CARD:
+            case CONTACTLESS_INTEGRATED_CIRCUIT_CARD:
+                return emvMapper;
+            case KEYED:
+                if (fundingSource.getAccountType() == FundingSourceAccountType.EBT) {
+                    return keyedEbtMapper;
+                } else if (isGiftCard(fundingSource)) {
+                    return keyedGiftcardMapper;
+                } else {
+                    return keyedMapper;
+                }
+            default:
+                throw new ConvergeMapperException("Invalid entry mode found");
+        }
+    }
+
+    private boolean isGiftCard(final FundingSource fundingSource) {
+        // TODO need to implement this
+        return false;
     }
 
     public ElavonTransactionRequest getTransactionRequest(final Transaction transaction) {
         Log.d(TAG, "Transaction Request:" + transaction);
-        final InterfaceMapper mapper = interfaceMappers.get(transaction.getFundingSource().getEntryDetails().getEntryMode());
-        if (mapper == null) {
-            throw new ConvergeMapperException("Invalid entry mode found");
-        }
-
+        final InterfaceMapper mapper = getMapper(transaction.getFundingSource());
         switch (transaction.getAction()) {
             case AUTHORIZE:
                 return mapper.createAuth(transaction);
@@ -157,13 +206,10 @@ public class ConvergeMapper {
         return request;
     }
 
-    public ElavonTransactionRequest getTransactionCompleteRequest(final FundingSourceEntryDetails entryDetails,
+    public ElavonTransactionRequest getTransactionCompleteRequest(final FundingSource fundingSource,
                                                                   final String transactionId,
                                                                   final AdjustTransactionRequest adjustTransactionRequest) {
-        final InterfaceMapper mapper = interfaceMappers.get(entryDetails.getEntryMode());
-        if (mapper == null) {
-            throw new ConvergeMapperException("Invalid entry mode found");
-        }
+        final InterfaceMapper mapper = getMapper(fundingSource);
         return mapper.createCapture(transactionId, adjustTransactionRequest);
     }
 
@@ -176,23 +222,15 @@ public class ConvergeMapper {
         return search;
     }
 
-    public ElavonTransactionRequest getTransactionReversalRequest(final FundingSourceEntryDetails entryDetails,
+    public ElavonTransactionRequest getTransactionReversalRequest(final FundingSource fundingSource,
                                                                   final String transactionId) {
-        final InterfaceMapper mapper = interfaceMappers.get(entryDetails.getEntryMode());
-        if (mapper == null) {
-            throw new ConvergeMapperException("Invalid entry mode found");
-        }
-
+        final InterfaceMapper mapper = getMapper(fundingSource);
         return mapper.createReverse(transactionId);
     }
 
-    public ElavonTransactionRequest getTransactionVoidRequest(final FundingSourceEntryDetails entryDetails,
+    public ElavonTransactionRequest getTransactionVoidRequest(final FundingSource fundingSource,
                                                               final String transactionId) {
-        final InterfaceMapper mapper = interfaceMappers.get(entryDetails.getEntryMode());
-        if (mapper == null) {
-            throw new ConvergeMapperException("Invalid entry mode found");
-        }
-
+        final InterfaceMapper mapper = getMapper(fundingSource);
         return mapper.createVoid(transactionId);
     }
 
@@ -232,7 +270,7 @@ public class ConvergeMapper {
     public void mapTransactionResponse(final ElavonTransactionResponse etResponse, final Transaction transaction) {
 
         final ProcessorResponse processorResponse = new ProcessorResponse();
-        processorResponse.setProcessor(Processor.CONVERGE);
+        processorResponse.setProcessor(Processor.ELAVON);
         processorResponse.setAcquirer(Processor.ELAVON);
 
         // always generate a hash of the card info
@@ -250,6 +288,7 @@ public class ConvergeMapper {
         } else {
             processorResponse.setStatus(ProcessorStatus.Failure);
         }
+
         processorResponse.setStatusCode(etResponse.getResult());
         if (etResponse.getResultMessage() != null) {
             processorResponse.setStatusMessage(etResponse.getResultMessage());
@@ -447,7 +486,6 @@ public class ConvergeMapper {
         if (transaction.isSignatureCaptured() == null) {
             transaction.setSignatureCaptured(false);
         }
-
     }
 
     private String numberToAsciiHex(char[] numberChars) {

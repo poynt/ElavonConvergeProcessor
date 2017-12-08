@@ -1,6 +1,7 @@
 package com.elavon.converge.inject;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.elavon.converge.config.Config;
 import com.elavon.converge.config.ConfigLoader;
@@ -8,6 +9,12 @@ import com.elavon.converge.core.TransactionManager;
 import com.elavon.converge.exception.AppInitException;
 import com.elavon.converge.model.mapper.ConvergeMapper;
 import com.elavon.converge.model.mapper.EmvMapper;
+import com.elavon.converge.model.mapper.KeyedEbtMapper;
+import com.elavon.converge.model.mapper.KeyedGiftcardMapper;
+import com.elavon.converge.model.mapper.KeyedMapper;
+import com.elavon.converge.model.mapper.MsrDebitMapper;
+import com.elavon.converge.model.mapper.MsrEbtMapper;
+import com.elavon.converge.model.mapper.MsrGiftcardMapper;
 import com.elavon.converge.model.mapper.MsrMapper;
 import com.elavon.converge.processor.ConvergeClient;
 import com.elavon.converge.processor.ConvergeService;
@@ -59,14 +66,59 @@ public class AppModule {
 
     @Provides
     @Singleton
+    public MsrDebitMapper provideMsrDebitMapper() {
+        return new MsrDebitMapper();
+    }
+
+    @Provides
+    @Singleton
+    public MsrEbtMapper provideMsrEbtMapper() {
+        return new MsrEbtMapper();
+    }
+
+    @Provides
+    @Singleton
+    public MsrGiftcardMapper provideMsrGiftcardMapper() {
+        return new MsrGiftcardMapper();
+    }
+
+    @Provides
+    @Singleton
     public EmvMapper provideEmvMapper() {
         return new EmvMapper();
     }
 
     @Provides
     @Singleton
-    public ConvergeMapper provideConvergeMapper(final MsrMapper msrMapper, final EmvMapper emvMapper) {
-        return new ConvergeMapper(msrMapper, emvMapper);
+    public KeyedMapper provideKeyedMapper() {
+        return new KeyedMapper();
+    }
+
+    @Provides
+    @Singleton
+    public KeyedEbtMapper provideKeyedEbtMapper() {
+        return new KeyedEbtMapper();
+    }
+
+    @Provides
+    @Singleton
+    public KeyedGiftcardMapper provideKeyedGiftcardMapper() {
+        return new KeyedGiftcardMapper();
+    }
+
+    @Provides
+    @Singleton
+    public ConvergeMapper provideConvergeMapper(
+            final MsrMapper msrMapper,
+            final MsrDebitMapper msrDebitMapper,
+            final MsrEbtMapper msrEbtMapper,
+            final MsrGiftcardMapper msrGiftcardMapper,
+            final EmvMapper emvMapper,
+            final KeyedMapper keyedMapper,
+            final KeyedEbtMapper keyedEbtMapper,
+            final KeyedGiftcardMapper keyedGiftcardMapper) {
+        return new ConvergeMapper(msrMapper, msrDebitMapper, msrEbtMapper, msrGiftcardMapper,
+                emvMapper, keyedMapper, keyedEbtMapper, keyedGiftcardMapper);
     }
 
     @Provides
@@ -91,7 +143,11 @@ public class AppModule {
 
         // add logging interceptor
         if (Boolean.TRUE.equals(config.getLog().getEnableHttpTracing())) {
-            final HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+            final HttpLoggingInterceptor logging = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
+                @Override public void log(String message) {
+                    Log.i("OkHttp", message);
+                }
+            });
             logging.setLevel(HttpLoggingInterceptor.Level.BODY);
             clientBuilder.addInterceptor(logging);
         }

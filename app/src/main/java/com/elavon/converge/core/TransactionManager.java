@@ -32,12 +32,13 @@ import co.poynt.os.services.v1.IPoyntTransactionServiceListener;
 public class TransactionManager {
 
     private static final String TAG = "TransactionManager";
+    private static final int CACHE_SIZE = 100; // 100 transactions
+
     private IPoyntTransactionService mPoyntTransactionService;
 
     protected Context context;
     protected ConvergeService convergeService;
     protected ConvergeMapper convergeMapper;
-    int cacheSize = 100; // 100 transactions
     private LruCache<String, Transaction> transactionCache;
     private LruCache<String, EMVData> emvDataCache;
 
@@ -49,8 +50,8 @@ public class TransactionManager {
         this.convergeService = convergeService;
         this.convergeMapper = convergeMapper;
 
-        transactionCache = new LruCache<>(cacheSize);
-        emvDataCache = new LruCache<>(cacheSize);
+        transactionCache = new LruCache<>(CACHE_SIZE);
+        emvDataCache = new LruCache<>(CACHE_SIZE);
         bindToPoyntServices();
     }
 
@@ -62,7 +63,6 @@ public class TransactionManager {
     public void disconnectFromPoyntServices() {
         context.unbindService(mTransactionServiceConnection);
     }
-
 
     /**
      * Class for interacting with poynt transaction service
@@ -85,13 +85,10 @@ public class TransactionManager {
      * @param requestId
      * @param listener
      */
-
     public void processTransaction(final Transaction transaction,
                                    final String requestId,
                                    final IPoyntTransactionServiceListener listener) throws RemoteException {
         Log.d(TAG, "processTransaction");
-
-
         // if the transaction action is REFUND and if it has a parentId - let's get it first
         if (transaction.getAction() == TransactionAction.REFUND) {
             // get parent transaction from poynt service first
@@ -163,7 +160,7 @@ public class TransactionManager {
             public void onResponse(final Transaction transaction, final String requestId, final PoyntError poyntError) throws RemoteException {
 
                 final ElavonTransactionRequest request = convergeMapper.getTransactionCompleteRequest(
-                        transaction.getFundingSource().getEntryDetails(),
+                        transaction.getFundingSource(),
                         transaction.getProcessorResponse().getRetrievalRefNum(),
                         adjustTransactionRequest);
                 convergeService.update(request, new ConvergeCallback<ElavonTransactionResponse>() {
@@ -425,7 +422,7 @@ public class TransactionManager {
                         transaction.setAction(TransactionAction.VOID);
 
                         final ElavonTransactionRequest request = convergeMapper.getTransactionVoidRequest(
-                                transaction.getFundingSource().getEntryDetails(),
+                                transaction.getFundingSource(),
                                 transaction.getProcessorResponse().getRetrievalRefNum());
                         convergeService.update(request, new ConvergeCallback<ElavonTransactionResponse>() {
                             @Override
@@ -545,7 +542,7 @@ public class TransactionManager {
             public void onResponse(final Transaction transaction, final String requestId, final PoyntError poyntError) throws RemoteException {
                 // update in converge
                 final ElavonTransactionRequest request = convergeMapper.getTransactionReversalRequest(
-                        transaction.getFundingSource().getEntryDetails(),
+                        transaction.getFundingSource(),
                         transaction.getProcessorResponse().getRetrievalRefNum());
                 convergeService.update(request, new ConvergeCallback<ElavonTransactionResponse>() {
                     @Override

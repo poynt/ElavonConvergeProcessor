@@ -22,6 +22,9 @@ public class ElavonTransactionSearchRequest extends ElavonRequest {
     @Element(name = "ssl_txn_id", required = false)
     private String transactionId;
 
+    @Element(name = "ssl_merchant_txn_id", required = false)
+    private String merchantTxnId;
+
     @Element(name = "ssl_card_number", required = false)
     private String cardNumber;
 
@@ -43,6 +46,14 @@ public class ElavonTransactionSearchRequest extends ElavonRequest {
 
     public void setTransactionId(String transactionId) {
         this.transactionId = transactionId;
+    }
+
+    public String getMerchantTxnId() {
+        return merchantTxnId;
+    }
+
+    public void setMerchantTxnId(String merchantTxnId) {
+        this.merchantTxnId = merchantTxnId;
     }
 
     public String getCardNumber() {
