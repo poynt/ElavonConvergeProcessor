@@ -21,7 +21,6 @@ public class MsrEbtMapper extends InterfaceMapper {
         put(EBTType.FOOD_STAMP, ElavonTransactionType.EBT_RETURN);
     }};
 
-
     @Override
     ElavonTransactionRequest createAuth(final Transaction t) {
         throw new ConvergeMapperException("Auth not allowed in EBT transaction");

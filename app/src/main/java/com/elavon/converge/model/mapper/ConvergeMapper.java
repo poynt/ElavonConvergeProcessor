@@ -417,9 +417,13 @@ public class ConvergeMapper {
                 || etResponse.getResponseCode() == ResponseCodes.AP
                 || ElavonResponse.RESULT_MESSAGE.APPROVAL.equals(etResponse.getResultMessage())
                 || ElavonResponse.RESULT_MESSAGE.PARTIAL_APPROVAL.equals(etResponse.getResultMessage())) {
-            processorResponse.setApprovedAmount(CurrencyUtil.getAmount(etResponse.getAmount(),
-                    transaction.getAmounts().getCurrency()));
+            if (etResponse.getAmount() != null) {
+                processorResponse.setApprovedAmount(CurrencyUtil.getAmount(etResponse.getAmount(), transaction.getAmounts().getCurrency()));
+            } else if (etResponse.getBaseAmount() != null) {
+                processorResponse.setApprovedAmount(CurrencyUtil.getAmount(etResponse.getBaseAmount(), transaction.getAmounts().getCurrency()));
+            }
         }
+
         // set  EMV response tags
         Map<String, String> emvTags = new HashMap<>();
 
