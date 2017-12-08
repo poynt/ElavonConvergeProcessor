@@ -1,5 +1,6 @@
 package com.elavon.converge.model;
 
+import com.elavon.converge.model.type.AccountType;
 import com.elavon.converge.model.type.ElavonEntryMode;
 import com.elavon.converge.model.type.ElavonPosMode;
 import com.elavon.converge.model.type.PartialAuthIndicator;
@@ -74,6 +75,9 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     @Element(name = "ssl_last_name", required = false)
     private String lastName;
+
+    @Element(name = "ssl_account_type", required = false)
+    private AccountType accountType;
 
     @Element(name = "ssl_card_present", required = false)
     private Boolean cardPresent;
@@ -382,6 +386,14 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    public AccountType getAccountType() {
+        return accountType;
+    }
+
+    public void setAccountType(AccountType accountType) {
+        this.accountType = accountType;
     }
 
     public String getCardLast4() {

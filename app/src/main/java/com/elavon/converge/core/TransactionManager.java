@@ -78,13 +78,6 @@ public class TransactionManager {
         }
     };
 
-    /**
-     * process transaction
-     *
-     * @param transaction
-     * @param requestId
-     * @param listener
-     */
     public void processTransaction(final Transaction transaction,
                                    final String requestId,
                                    final IPoyntTransactionServiceListener listener) throws RemoteException {
@@ -231,6 +224,13 @@ public class TransactionManager {
         getTransaction(transactionId, requestId, new IPoyntTransactionServiceListener.Stub() {
             @Override
             public void onResponse(final Transaction transaction, final String requestId, final PoyntError poyntError) throws RemoteException {
+
+                // nothing to update for debit
+                if (Boolean.TRUE.equals(transaction.getFundingSource().isDebit())) {
+                    listener.onResponse(transaction, requestId, null);
+                    return;
+                }
+
                 // update in converge
                 final ElavonTransactionRequest request = convergeMapper.getTransactionUpdateRequest(
                         transaction.getFundingSource().getEntryDetails(),
@@ -242,8 +242,7 @@ public class TransactionManager {
                         try {
                             if (elavonResponse.isSuccess()) {
                                 // if it's MSR and if we have signature it's a separate call
-                                if (transaction.getFundingSource().getEntryDetails().getEntryMode()
-                                        == EntryMode.TRACK_DATA_FROM_MAGSTRIPE
+                                if (transaction.getFundingSource().getEntryDetails().getEntryMode() == EntryMode.TRACK_DATA_FROM_MAGSTRIPE
                                         && adjustTransactionRequest.getSignature() != null) {
                                     updateSignature(transaction, adjustTransactionRequest, requestId, listener);
                                 } else {
