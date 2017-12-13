@@ -582,8 +582,10 @@ public class TransactionManager {
                                   final IPoyntTransactionServiceListener listener) {
         Log.d(TAG, "refundTransaction");
 
-        // set the funding source from parent transaction
-        transaction.setFundingSource(parentTransaction.getFundingSource());
+        if (!Boolean.TRUE.equals(transaction.getFundingSource().isDebit())) {
+            // set the funding source from parent transaction
+            transaction.setFundingSource(parentTransaction.getFundingSource());
+        }
         transaction.setProcessorResponse(parentTransaction.getProcessorResponse());
 
         final ElavonTransactionRequest request = convergeMapper.getTransactionRequest(transaction);
