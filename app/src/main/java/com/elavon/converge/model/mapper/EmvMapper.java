@@ -76,6 +76,9 @@ public class EmvMapper extends InterfaceMapper {
         } else if (entryDetails.getEntryMode() == EntryMode.INTEGRATED_CIRCUIT_CARD) {
             request.setEntryMode(ElavonEntryMode.EMV_WITH_CVV);
         }
+        if (t.getAmounts().getTipAmount() != null) {
+            request.setTipAmount((CurrencyUtil.getAmount(t.getAmounts().getTipAmount(), t.getAmounts().getCurrency())));
+        }
         request.setFirstName(t.getFundingSource().getCard().getCardHolderFirstName());
         request.setLastName(t.getFundingSource().getCard().getCardHolderLastName());
         request.setEncryptedTrackData(t.getFundingSource().getCard().getTrack2data());
@@ -95,7 +98,7 @@ public class EmvMapper extends InterfaceMapper {
         for (final Map.Entry<String, String> tag : t.getFundingSource().getEmvData().getEmvTags().entrySet()) {
             final String kHex = tag.getKey().substring(2);
             final String lHex = HexDump.toHexString((byte) (tag.getValue().length() / 2));
-            Log.d(TAG, String.format("%s=%s", kHex, tag.getValue()));
+            Log.i(TAG, String.format("%s=%s", kHex, tag.getValue()));
 
             // maps tags as per converge needs
             // 57 needs to be copied as D0
