@@ -49,7 +49,6 @@ public class TransactionService extends Service {
         }
     };
 
-
     @Inject
     protected TransactionManager transactionManager;
 

@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.elavon.converge.exception.ConvergeMapperException;
 import com.elavon.converge.model.ElavonResponse;
+import com.elavon.converge.model.ElavonSettleRequest;
 import com.elavon.converge.model.ElavonTransactionRequest;
 import com.elavon.converge.model.ElavonTransactionResponse;
 import com.elavon.converge.model.ElavonTransactionSearchRequest;
@@ -19,6 +20,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -531,5 +533,17 @@ public class ConvergeMapper {
             Log.e(TAG, "couldn't make hash of card");
         }
         return hash;
+    }
+
+    public ElavonSettleRequest getSettleRequest(final List<String> transactionIds) {
+        final ElavonSettleRequest request = new ElavonSettleRequest();
+        request.setTransactionType(ElavonTransactionType.SETTLE);
+        // set transaction ids
+        if (transactionIds != null && !transactionIds.isEmpty()) {
+            final ElavonSettleRequest.TransactionGroup tg = new ElavonSettleRequest.TransactionGroup();
+            tg.setTransactionIds(transactionIds);
+            request.setTransactionGroup(tg);
+        }
+        return request;
     }
 }

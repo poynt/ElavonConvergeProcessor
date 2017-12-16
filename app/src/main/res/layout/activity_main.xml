@@ -6,11 +6,42 @@
     android:orientation="vertical"
     tools:context="com.elavon.converge.MainActivity">
 
+    <TextView
+        android:id="@+id/setupTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Setup" />
 
     <Button
         android:id="@+id/setTrackFormats"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="SET TRACK FORMAT" />
+
+    <TextView
+        android:id="@+id/settleTitleTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Settlement" />
+
+    <Button
+        android:id="@+id/settleButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="SETTLE" />
+
+    <EditText
+        android:id="@+id/settleTransactionIds"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text="" />
+
+    <TextView
+        android:id="@+id/settleStatusTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="    Status:" />
 
 </LinearLayout>

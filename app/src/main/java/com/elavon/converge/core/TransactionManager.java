@@ -11,11 +11,17 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.util.LruCache;
 
+import com.elavon.converge.model.ElavonSettleRequest;
+import com.elavon.converge.model.ElavonSettleResponse;
 import com.elavon.converge.model.ElavonTransactionRequest;
 import com.elavon.converge.model.ElavonTransactionResponse;
 import com.elavon.converge.model.mapper.ConvergeMapper;
 import com.elavon.converge.processor.ConvergeCallback;
 import com.elavon.converge.processor.ConvergeService;
+import com.google.gson.Gson;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -612,5 +618,10 @@ public class TransactionManager {
                 }
             }
         });
+    }
+
+    public void settle(final List<String> transactionIdList, final ConvergeCallback<ElavonSettleResponse> callback) {
+        Log.d(TAG, "settle");
+        convergeService.settle(transactionIdList, callback);
     }
 }
