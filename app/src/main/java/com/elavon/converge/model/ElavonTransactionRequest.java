@@ -39,6 +39,9 @@ public class ElavonTransactionRequest extends ElavonRequest {
     @Element(name = "ssl_card_number", required = false)
     private String cardNumber;
 
+    @Element(name = "ssl_token", required = false)
+    private String token;
+
     /**
      * Do not send an expiration date with a token that is stored in the Card Manager.
      */
@@ -323,6 +326,14 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     public void setCardNumber(String cardNumber) {
         this.cardNumber = cardNumber;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 
     public String getExpDate() {

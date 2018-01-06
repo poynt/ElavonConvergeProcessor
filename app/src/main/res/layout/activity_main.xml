@@ -10,6 +10,7 @@
         android:id="@+id/setupTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:paddingTop="5dp"
         android:text="Setup" />
 
     <Button
@@ -22,13 +23,14 @@
         android:id="@+id/settleTitleTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:paddingTop="5dp"
         android:text="Settlement" />
 
-    <Button
-        android:id="@+id/settleButton"
+    <TextView
+        android:id="@+id/settleStatusTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="SETTLE" />
+        android:text="    Status:" />
 
     <EditText
         android:id="@+id/settleTransactionIds"
@@ -38,10 +40,22 @@
         android:inputType="textPersonName"
         android:text="" />
 
-    <TextView
-        android:id="@+id/settleStatusTextView"
+    <Button
+        android:id="@+id/settleButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="    Status:" />
+        android:text="SETTLE" />
+
+    <TextView
+        android:id="@+id/manualEntryTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="5dp"
+        android:text="Manual Entry" />
+
+    <WebView
+        android:id="@+id/manualEntryWebView"
+        android:layout_width="match_parent"
+        android:layout_height="206dp" />
 
 </LinearLayout>

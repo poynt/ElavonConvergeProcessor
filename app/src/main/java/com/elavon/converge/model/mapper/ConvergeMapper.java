@@ -535,6 +535,14 @@ public class ConvergeMapper {
         return hash;
     }
 
+    public ElavonTransactionRequest getGenerateTokenRequest(final String cardNumber, final String expiry) {
+        final ElavonTransactionRequest request = new ElavonTransactionRequest();
+        request.setTransactionType(ElavonTransactionType.GET_TOKEN);
+        request.setCardNumber(cardNumber);
+        request.setExpDate(expiry);
+        return request;
+    }
+
     public ElavonSettleRequest getSettleRequest(final List<String> transactionIds) {
         final ElavonSettleRequest request = new ElavonSettleRequest();
         request.setTransactionType(ElavonTransactionType.SETTLE);
