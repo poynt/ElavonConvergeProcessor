@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <script>
+$(document).ready(function(){
+    $("form").on("submit", function(e){
+        e.preventDefault();
+        updateResult("Processing... $" + $("#amount").val());
+        Converge.processTransaction($("#cardNumber").val(), $("#expiry").val(), $("#amount").val());
+    });
+});
+
+function updateResult(message) {
+    $("#results").text("Result: " + message);
+}
+
+</script>
+    </head>
+
+    <body>
+        <form action="">
+            Card Number: <input type="text" id="cardNumber"><br>
+            Expiry: <input type="text" id="expiry"><br>
+            Amount: <input type="text" id="amount"><br>
+            <input type="submit">
+        </form>
+        <p id="results">Result: </p>
+    </body>
+</html>

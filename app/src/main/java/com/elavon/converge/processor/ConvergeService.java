@@ -12,7 +12,6 @@ import com.elavon.converge.model.mapper.ConvergeMapper;
 
 import java.math.BigDecimal;
 import java.net.SocketTimeoutException;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -142,6 +141,10 @@ public class ConvergeService {
 
         final ElavonTransactionSearchRequest searchRequest = convergeMapper.getSearchRequest(cardLast4, dateAfter);
         convergeClient.call(searchRequest, cb);
+    }
+
+    public void generateToken(final String cardNumber, final String expiry, final ConvergeCallback<ElavonTransactionResponse> callback) {
+        convergeClient.call(convergeMapper.getGenerateTokenRequest(cardNumber, expiry), callback);
     }
 
     /**

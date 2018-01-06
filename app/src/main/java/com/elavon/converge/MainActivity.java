@@ -11,6 +11,8 @@ import android.os.Looper;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -21,6 +23,7 @@ import com.elavon.converge.inject.AppModule;
 import com.elavon.converge.inject.DaggerAppComponent;
 import com.elavon.converge.model.ElavonSettleResponse;
 import com.elavon.converge.processor.ConvergeCallback;
+import com.elavon.converge.util.FileUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -33,7 +36,7 @@ import co.poynt.os.services.v1.IPoyntConfigurationService;
 import co.poynt.os.services.v1.IPoyntConfigurationUpdateListener;
 import fr.devnied.bitlib.BytesUtils;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements VirtualTerminalService.VirtualTerminalListener {
 
     private static final String TAG = "MainActivity";
 
@@ -44,8 +47,11 @@ public class MainActivity extends Activity {
 
     @Inject
     protected TransactionManager transactionManager;
+    @Inject
+    protected VirtualTerminalService virtualTerminalService;
 
     private IPoyntConfigurationService poyntConfigurationService;
+    private WebView manualEntryWebView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +61,12 @@ public class MainActivity extends Activity {
         component.inject(this);
 
         setContentView(R.layout.activity_main);
+        createTrackFormatView();
+        createSettleView();
+        createManualEntryView();
+    }
 
+    private void createTrackFormatView() {
         final Button setTrackFormats = (Button) findViewById(R.id.setTrackFormats);
         setTrackFormats.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -67,7 +78,45 @@ public class MainActivity extends Activity {
                 setTrackDataFormat(INTERFACE_CL);
             }
         });
+    }
 
+    public void setTrackDataFormat(byte interfaceType) {
+        try {
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+            // set the sentinals
+            byte[] tag = BytesUtils.fromString("DFDB");
+            byte trackDataFormat = (byte) 0x02; // SS, ER and LRC included
+            baos.write(tag);
+            baos.write((byte) 0x01); // value length
+            baos.write(trackDataFormat); // value
+
+            // set track data to ascii
+            byte[] trackFormatTag = BytesUtils.fromString("1F8133");
+            baos.write(trackFormatTag);
+            baos.write((byte) 0x01); // length
+            baos.write((byte) 0x01);
+
+            poyntConfigurationService.setTerminalConfiguration(MODE_MODIFY, interfaceType, baos.toByteArray(),
+                    new IPoyntConfigurationUpdateListener.Stub() {
+
+                        @Override
+                        public void onSuccess() throws RemoteException {
+                            Log.i(TAG, "TrackDataFormat update success");
+                        }
+
+                        @Override
+                        public void onFailure() throws RemoteException {
+                            Log.i(TAG, "TrackDataFormat update fail");
+                        }
+                    });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void createSettleView() {
         final TextView settleStatusTextView = (TextView) findViewById(R.id.settleStatusTextView);
         final EditText settleTransactionIds = (EditText) findViewById(R.id.settleTransactionIds);
         final Button settleAll = (Button) findViewById(R.id.settleButton);
@@ -126,40 +175,26 @@ public class MainActivity extends Activity {
         return list;
     }
 
-    public void setTrackDataFormat(byte interfaceType) {
-        try {
+    private void createManualEntryView() {
+        final String manualEntryHtml = FileUtil.readFile(getResources().openRawResource(R.raw.manual_entry));
+        manualEntryWebView = (WebView) findViewById(R.id.manualEntryWebView);
+        manualEntryWebView.getSettings().setJavaScriptEnabled(true);
+        manualEntryWebView.getSettings().setAllowFileAccessFromFileURLs(true); // maybe you don't need this rule
+        manualEntryWebView.getSettings().setAllowUniversalAccessFromFileURLs(true);
+        manualEntryWebView.setWebViewClient(new WebViewClient());
+        manualEntryWebView.addJavascriptInterface(virtualTerminalService, "Converge");
+        manualEntryWebView.loadData(manualEntryHtml, "text/html", "UTF-8");
+        virtualTerminalService.setVirtualTerminalListener(this);
+    }
 
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-            // set the sentinals
-            byte[] tag = BytesUtils.fromString("DFDB");
-            byte trackDataFormat = (byte) 0x02; // SS, ER and LRC included
-            baos.write(tag);
-            baos.write((byte) 0x01); // value length
-            baos.write(trackDataFormat); // value
-
-            // set track data to ascii
-            byte[] trackFormatTag = BytesUtils.fromString("1F8133");
-            baos.write(trackFormatTag);
-            baos.write((byte) 0x01); // length
-            baos.write((byte) 0x01);
-
-            poyntConfigurationService.setTerminalConfiguration(MODE_MODIFY, interfaceType, baos.toByteArray(),
-                    new IPoyntConfigurationUpdateListener.Stub() {
-
-                        @Override
-                        public void onSuccess() throws RemoteException {
-                            Log.i(TAG, "TrackDataFormat update success");
-                        }
-
-                        @Override
-                        public void onFailure() throws RemoteException {
-                            Log.i(TAG, "TrackDataFormat update fail");
-                        }
-                    });
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    @Override
+    public void onProcessed(final String message) {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                manualEntryWebView.evaluateJavascript("updateResult('" + message + "');", null);
+            }
+        });
     }
 
     /**

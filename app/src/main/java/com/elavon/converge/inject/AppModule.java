@@ -3,6 +3,7 @@ package com.elavon.converge.inject;
 import android.content.Context;
 import android.util.Log;
 
+import com.elavon.converge.VirtualTerminalService;
 import com.elavon.converge.config.Config;
 import com.elavon.converge.config.ConfigLoader;
 import com.elavon.converge.core.TransactionManager;
@@ -171,5 +172,11 @@ public class AppModule {
     @Singleton
     public TransactionManager provideTransactionManager(final ConvergeService convergeService, final ConvergeMapper convergeMapper) {
         return new TransactionManager(context, convergeService, convergeMapper);
+    }
+
+    @Provides
+    @Singleton
+    public VirtualTerminalService provideVirtualTerminalService(final TransactionManager transactionManager) {
+        return new VirtualTerminalService(transactionManager);
     }
 }
