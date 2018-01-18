@@ -22,6 +22,7 @@ public class KeyedMapper extends InterfaceMapper {
     @Override
     ElavonTransactionRequest createSale(final Transaction t) {
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
+        request.setPoyntUserId(t.getContext().getEmployeeUserId().toString());
         request.setTransactionType(ElavonTransactionType.SALE);
         request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getTransactionAmount(), t.getAmounts().getCurrency()));
         request.setToken(t.getFundingSource().getCard().getNumberHashed());

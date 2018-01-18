@@ -27,6 +27,9 @@ import java.math.BigDecimal;
 @Root(name = "txn")
 public class ElavonTransactionRequest extends ElavonRequest {
 
+    @Element(name = "poynt_user_id", required = false)
+    private String poyntUserId;
+
     @Element(name = "ssl_txn_id", required = false)
     private String txnId;
 
@@ -191,6 +194,14 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     // not part of xml
     private String cardLast4;
+
+    public String getPoyntUserId() {
+        return poyntUserId;
+    }
+
+    public void setPoyntUserId(String poyntUserId) {
+        this.poyntUserId = poyntUserId;
+    }
 
     public String getTxnId() {
         return txnId;

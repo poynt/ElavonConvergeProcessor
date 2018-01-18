@@ -67,6 +67,7 @@ public class EmvMapper extends InterfaceMapper {
     private ElavonTransactionRequest createRequest(final Transaction t) {
         //TODO handle tip
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
+        request.setPoyntUserId(t.getContext().getEmployeeUserId().toString());
         request.setTlvEnc(getTlvTags(t));
         FundingSourceEntryDetails entryDetails = t.getFundingSource().getEntryDetails();
         request.setPosMode(ElavonPosMode.ICC_DUAL);

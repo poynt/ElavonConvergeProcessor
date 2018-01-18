@@ -59,6 +59,7 @@ public class KeyedEbtMapper extends InterfaceMapper {
         }
 
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
+        request.setPoyntUserId(t.getContext().getEmployeeUserId().toString());
         request.setTransactionType(EBT_SALE_TYPES_MAP.get(ebtType));
         // TODO need unencrypted card number
         request.setCardNumber(t.getFundingSource().getCard().getNumber());

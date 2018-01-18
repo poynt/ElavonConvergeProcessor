@@ -52,6 +52,7 @@ public class MsrEbtMapper extends InterfaceMapper {
         }
 
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
+        request.setPoyntUserId(t.getContext().getEmployeeUserId().toString());
         request.setTransactionType(EBT_SALE_TYPES_MAP.get(ebtType));
         request.setEncryptedTrackData(t.getFundingSource().getCard().getTrack2data());
         request.setKsn(t.getFundingSource().getCard().getKeySerialNumber());

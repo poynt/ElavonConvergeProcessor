@@ -153,6 +153,7 @@ public class MsrMapper extends InterfaceMapper {
      */
     private ElavonTransactionRequest createRequest(final Transaction t) {
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
+        request.setPoyntUserId(t.getContext().getEmployeeUserId().toString());
         FundingSourceEntryDetails entryDetails = t.getFundingSource().getEntryDetails();
 
         if (entryDetails.getEntryMode() == EntryMode.CONTACTLESS_INTEGRATED_CIRCUIT_CARD
