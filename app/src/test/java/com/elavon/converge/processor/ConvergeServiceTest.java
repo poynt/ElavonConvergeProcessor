@@ -116,4 +116,45 @@ public class ConvergeServiceTest extends BaseTest {
         printXml(res.get());
         assertTrue(res.get().getApprovalCode().length() > 0);
     }
+
+    @Test
+    public void createThenFind() throws Exception {
+
+        // SETUP - create
+        final ElavonTransactionRequest txnReq = MockObjectFactory.getElavonTransactionRequest();
+
+        // TEST - create
+        final ElavonTransactionResponse txnRes = callSync(txnReq);
+
+        // VERIFY - create
+        assertTrue(txnRes.isSuccess());
+
+        // SETUP - find
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicBoolean isSuccess = new AtomicBoolean();
+        final AtomicReference<ElavonTransactionResponse> res = new AtomicReference<>();
+
+        // TEST - find
+        convergeService.get(txnRes.getTxnId(), new ConvergeCallback<ElavonTransactionResponse>() {
+            @Override
+            public void onResponse(final ElavonTransactionResponse response) {
+                isSuccess.set(true);
+                res.set(response);
+                latch.countDown();
+            }
+
+            @Override
+            public void onFailure(final Throwable throwable) {
+                latch.countDown();
+                throwable.printStackTrace();
+            }
+        });
+
+        // VERIFY - find
+        assertTrue(latch.await(50000, TimeUnit.MILLISECONDS));
+        assertTrue(isSuccess.get());
+
+        printXml(res.get());
+        assertTrue(res.get().getApprovalCode().length() > 0);
+    }
 }

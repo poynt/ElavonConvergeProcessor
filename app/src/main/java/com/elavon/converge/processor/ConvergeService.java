@@ -108,6 +108,13 @@ public class ConvergeService {
         });
     }
 
+    public void get(
+            final String transactionId,
+            final ConvergeCallback<ElavonTransactionResponse> callback) {
+        final ElavonTransactionSearchRequest searchRequest = convergeMapper.getSearchRequest(transactionId);
+        convergeClient.call(searchRequest, callback);
+    }
+
     public void find(
             final String cardLast4,
             final BigDecimal amount,

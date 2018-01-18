@@ -215,6 +215,14 @@ public class ConvergeMapper {
         return mapper.createCapture(transactionId, adjustTransactionRequest);
     }
 
+    public ElavonTransactionSearchRequest getSearchRequest(final String transactionId) {
+        final ElavonTransactionSearchRequest search = new ElavonTransactionSearchRequest();
+        search.setTestMode("false");
+        search.setTransactionType(ElavonTransactionType.TRANSACTION_QUERY);
+        search.setTransactionId(transactionId);
+        return search;
+    }
+
     public ElavonTransactionSearchRequest getSearchRequest(final String cardLast4, final Date searchStartDate) {
         final ElavonTransactionSearchRequest search = new ElavonTransactionSearchRequest();
         search.setTestMode("false");
