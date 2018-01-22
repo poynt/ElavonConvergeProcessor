@@ -11,11 +11,14 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.util.LruCache;
 
+import com.elavon.converge.model.ElavonSettleResponse;
 import com.elavon.converge.model.ElavonTransactionRequest;
 import com.elavon.converge.model.ElavonTransactionResponse;
 import com.elavon.converge.model.mapper.ConvergeMapper;
 import com.elavon.converge.processor.ConvergeCallback;
 import com.elavon.converge.processor.ConvergeService;
+
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -78,13 +81,6 @@ public class TransactionManager {
         }
     };
 
-    /**
-     * process transaction
-     *
-     * @param transaction
-     * @param requestId
-     * @param listener
-     */
     public void processTransaction(final Transaction transaction,
                                    final String requestId,
                                    final IPoyntTransactionServiceListener listener) throws RemoteException {
@@ -121,6 +117,7 @@ public class TransactionManager {
                     });
         } else {
             final ElavonTransactionRequest request = convergeMapper.getTransactionRequest(transaction);
+
             convergeService.create(request, new ConvergeCallback<ElavonTransactionResponse>() {
                 @Override
                 public void onResponse(final ElavonTransactionResponse elavonResponse) {
@@ -231,6 +228,13 @@ public class TransactionManager {
         getTransaction(transactionId, requestId, new IPoyntTransactionServiceListener.Stub() {
             @Override
             public void onResponse(final Transaction transaction, final String requestId, final PoyntError poyntError) throws RemoteException {
+
+                // nothing to update for debit
+                if (Boolean.TRUE.equals(transaction.getFundingSource().isDebit())) {
+                    listener.onResponse(transaction, requestId, null);
+                    return;
+                }
+
                 // update in converge
                 final ElavonTransactionRequest request = convergeMapper.getTransactionUpdateRequest(
                         transaction.getFundingSource().getEntryDetails(),
@@ -242,8 +246,7 @@ public class TransactionManager {
                         try {
                             if (elavonResponse.isSuccess()) {
                                 // if it's MSR and if we have signature it's a separate call
-                                if (transaction.getFundingSource().getEntryDetails().getEntryMode()
-                                        == EntryMode.TRACK_DATA_FROM_MAGSTRIPE
+                                if (transaction.getFundingSource().getEntryDetails().getEntryMode() == EntryMode.TRACK_DATA_FROM_MAGSTRIPE
                                         && adjustTransactionRequest.getSignature() != null) {
                                     updateSignature(transaction, adjustTransactionRequest, requestId, listener);
                                 } else {
@@ -583,8 +586,10 @@ public class TransactionManager {
                                   final IPoyntTransactionServiceListener listener) {
         Log.d(TAG, "refundTransaction");
 
-        // set the funding source from parent transaction
-        transaction.setFundingSource(parentTransaction.getFundingSource());
+        if (!Boolean.TRUE.equals(transaction.getFundingSource().isDebit())) {
+            // set the funding source from parent transaction
+            transaction.setFundingSource(parentTransaction.getFundingSource());
+        }
         transaction.setProcessorResponse(parentTransaction.getProcessorResponse());
 
         final ElavonTransactionRequest request = convergeMapper.getTransactionRequest(transaction);
@@ -611,5 +616,15 @@ public class TransactionManager {
                 }
             }
         });
+    }
+
+    public void generateToken(final String cardNumber, final String expiry, final ConvergeCallback<ElavonTransactionResponse> callback) {
+        Log.d(TAG, "generateToken");
+        convergeService.generateToken(cardNumber, expiry, callback);
+    }
+
+    public void settle(final List<String> transactionIdList, final ConvergeCallback<ElavonSettleResponse> callback) {
+        Log.d(TAG, "settle");
+        convergeService.settle(transactionIdList, callback);
     }
 }

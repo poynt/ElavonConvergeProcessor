@@ -1,5 +1,6 @@
 package com.elavon.converge.model;
 
+import com.elavon.converge.model.type.AccountType;
 import com.elavon.converge.model.type.ElavonEntryMode;
 import com.elavon.converge.model.type.ElavonPosMode;
 import com.elavon.converge.model.type.PartialAuthIndicator;
@@ -32,8 +33,14 @@ public class ElavonTransactionRequest extends ElavonRequest {
     @Element(name = "ssl_merchant_txn_id", required = false)
     private String merchantTxnId;
 
+    @Element(name = "ssl_reference_number", required = false)
+    private String referenceNumber;
+
     @Element(name = "ssl_card_number", required = false)
     private String cardNumber;
+
+    @Element(name = "ssl_token", required = false)
+    private String token;
 
     /**
      * Do not send an expiration date with a token that is stored in the Card Manager.
@@ -74,6 +81,9 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     @Element(name = "ssl_last_name", required = false)
     private String lastName;
+
+    @Element(name = "ssl_account_type", required = false)
+    private AccountType accountType;
 
     @Element(name = "ssl_card_present", required = false)
     private Boolean cardPresent;
@@ -173,6 +183,12 @@ public class ElavonTransactionRequest extends ElavonRequest {
     @Element(name = "ssl_egc_tender_type", required = false)
     private String giftcardTenderType;
 
+    @Element(name = "ssl_original_date", required = false)
+    private String originalDate;
+
+    @Element(name = "ssl_original_time", required = false)
+    private String originalTime;
+
     // not part of xml
     private String cardLast4;
 
@@ -190,6 +206,14 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     public void setMerchantTxnId(String merchantTxnId) {
         this.merchantTxnId = merchantTxnId;
+    }
+
+    public String getReferenceNumber() {
+        return referenceNumber;
+    }
+
+    public void setReferenceNumber(String referenceNumber) {
+        this.referenceNumber = referenceNumber;
     }
 
     public ElavonEntryMode getEntryMode() {
@@ -304,6 +328,14 @@ public class ElavonTransactionRequest extends ElavonRequest {
         this.cardNumber = cardNumber;
     }
 
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
     public String getExpDate() {
         return expDate;
     }
@@ -382,6 +414,14 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    public AccountType getAccountType() {
+        return accountType;
+    }
+
+    public void setAccountType(AccountType accountType) {
+        this.accountType = accountType;
     }
 
     public String getCardLast4() {
@@ -478,5 +518,21 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     public void setGiftcardTenderType(String giftcardTenderType) {
         this.giftcardTenderType = giftcardTenderType;
+    }
+
+    public String getOriginalDate() {
+        return originalDate;
+    }
+
+    public void setOriginalDate(String originalDate) {
+        this.originalDate = originalDate;
+    }
+
+    public String getOriginalTime() {
+        return originalTime;
+    }
+
+    public void setOriginalTime(String originalTime) {
+        this.originalTime = originalTime;
     }
 }

@@ -59,6 +59,9 @@ public class ElavonTransactionResponse extends ElavonResponse {
     @Element(name = "ssl_amount", required = false)
     private BigDecimal amount;
 
+    @Element(name = "ssl_base_amount", required = false)
+    private BigDecimal baseAmount;
+
     //The amount originally requested on partial approvals only
     @Element(name = "ssl_requested_amount", required = false)
     private BigDecimal requestedAmount;
@@ -137,7 +140,7 @@ public class ElavonTransactionResponse extends ElavonResponse {
 
 
     @Element(name = "ssl_account_type", required = false)
-    private int accountType;
+    private String accountType;
 
     @Element(name = "ssl_icc_issuerscript", required = false)
     private String issuerScript;
@@ -233,6 +236,14 @@ public class ElavonTransactionResponse extends ElavonResponse {
 
     public void setAmount(BigDecimal amount) {
         this.amount = amount;
+    }
+
+    public BigDecimal getBaseAmount() {
+        return baseAmount;
+    }
+
+    public void setBaseAmount(BigDecimal baseAmount) {
+        this.baseAmount = baseAmount;
     }
 
     public BigDecimal getRequestedAmount() {
@@ -388,11 +399,11 @@ public class ElavonTransactionResponse extends ElavonResponse {
         this.addTokenResponse = addTokenResponse;
     }
 
-    public int getAccountType() {
+    public String getAccountType() {
         return accountType;
     }
 
-    public void setAccountType(int accountType) {
+    public void setAccountType(String accountType) {
         this.accountType = accountType;
     }
 
@@ -581,6 +592,7 @@ public class ElavonTransactionResponse extends ElavonResponse {
                 ", txnTime=" + txnTime +
                 ", approvalCode='" + approvalCode + '\'' +
                 ", amount=" + amount +
+                ", baseAmount=" + baseAmount +
                 ", requestedAmount=" + requestedAmount +
                 ", balanceDue=" + balanceDue +
                 ", avsResponse=" + avsResponse +

@@ -5,20 +5,38 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+
+import com.elavon.converge.core.TransactionManager;
+import com.elavon.converge.inject.AppComponent;
+import com.elavon.converge.inject.AppModule;
+import com.elavon.converge.inject.DaggerAppComponent;
+import com.elavon.converge.model.ElavonSettleResponse;
+import com.elavon.converge.processor.ConvergeCallback;
+import com.elavon.converge.util.FileUtil;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.inject.Inject;
 
 import co.poynt.os.model.Intents;
 import co.poynt.os.services.v1.IPoyntConfigurationService;
 import co.poynt.os.services.v1.IPoyntConfigurationUpdateListener;
 import fr.devnied.bitlib.BytesUtils;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements VirtualTerminalService.VirtualTerminalListener {
 
     private static final String TAG = "MainActivity";
 
@@ -27,21 +45,34 @@ public class MainActivity extends Activity {
     private final byte INTERFACE_CL = (byte) 0x02;
     private final byte INTERFACE_MSR = (byte) 0x01;
 
+    @Inject
+    protected TransactionManager transactionManager;
+    @Inject
+    protected VirtualTerminalService virtualTerminalService;
 
     private IPoyntConfigurationService poyntConfigurationService;
+    private WebView manualEntryWebView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        final AppComponent component = DaggerAppComponent.builder().appModule(new AppModule(this.getApplicationContext())).build();
+        component.inject(this);
+
         setContentView(R.layout.activity_main);
+        createTrackFormatView();
+        createSettleView();
+        createManualEntryView();
+    }
 
-
-        Button setTrackFormats = (Button) findViewById(R.id.setTrackFormats);
+    private void createTrackFormatView() {
+        final Button setTrackFormats = (Button) findViewById(R.id.setTrackFormats);
         setTrackFormats.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 byte trackDataFormat = (byte) 0x02;
-//                setTrackDataFormat(trackDataFormat);
+                // setTrackDataFormat(trackDataFormat);
                 setTrackDataFormat(INTERFACE_MSR);
                 setTrackDataFormat(INTERFACE_CT);
                 setTrackDataFormat(INTERFACE_CL);
@@ -85,6 +116,86 @@ public class MainActivity extends Activity {
         }
     }
 
+    private void createSettleView() {
+        final TextView settleStatusTextView = (TextView) findViewById(R.id.settleStatusTextView);
+        final EditText settleTransactionIds = (EditText) findViewById(R.id.settleTransactionIds);
+        final Button settleAll = (Button) findViewById(R.id.settleButton);
+        settleAll.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final List<String> transactionIdList = getTransactionIdList(settleTransactionIds.getText().toString());
+                settleTransactionIds.getText().clear();
+                settleStatusTextView(settleStatusTextView, "");
+                transactionManager.settle(transactionIdList, new ConvergeCallback<ElavonSettleResponse>() {
+                    @Override
+                    public void onResponse(final ElavonSettleResponse elavonResponse) {
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                settleStatusTextView(
+                                        settleStatusTextView,
+                                        "Success! Settled " + elavonResponse.getTxnMainCount()
+                                                + " with amount: " + elavonResponse.getTxnMainAmount());
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFailure(final Throwable t) {
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                settleStatusTextView(settleStatusTextView, "Failed!");
+                            }
+                        });
+                        Log.e(TAG, "Failed to settle", t);
+                    }
+                });
+            }
+        });
+    }
+
+    private void settleStatusTextView(final TextView settleStatusTextView, final String text) {
+        settleStatusTextView.setText("    Status: " + text);
+    }
+
+    private List<String> getTransactionIdList(final String transactionIds) {
+        final List<String> list = new ArrayList<>();
+        for (String id : transactionIds.split(",")) {
+            String trim = id.trim();
+            if (!trim.isEmpty()) {
+
+                if (trim.equals("aaa")) {
+                    list.add("151217A15-459608A6-9B4C-4590-8897-8031B3D64D9F");
+                }
+
+                list.add(trim);
+            }
+        }
+        return list;
+    }
+
+    private void createManualEntryView() {
+        final String manualEntryHtml = FileUtil.readFile(getResources().openRawResource(R.raw.manual_entry));
+        manualEntryWebView = (WebView) findViewById(R.id.manualEntryWebView);
+        manualEntryWebView.getSettings().setJavaScriptEnabled(true);
+        manualEntryWebView.getSettings().setAllowFileAccessFromFileURLs(true); // maybe you don't need this rule
+        manualEntryWebView.getSettings().setAllowUniversalAccessFromFileURLs(true);
+        manualEntryWebView.setWebViewClient(new WebViewClient());
+        manualEntryWebView.addJavascriptInterface(virtualTerminalService, "Converge");
+        manualEntryWebView.loadData(manualEntryHtml, "text/html", "UTF-8");
+        virtualTerminalService.setVirtualTerminalListener(this);
+    }
+
+    @Override
+    public void onProcessed(final String message) {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                manualEntryWebView.evaluateJavascript("updateResult('" + message + "');", null);
+            }
+        });
+    }
 
     /**
      * Class for interacting with the Configuration Service

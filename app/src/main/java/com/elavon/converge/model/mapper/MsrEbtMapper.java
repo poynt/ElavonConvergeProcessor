@@ -21,7 +21,6 @@ public class MsrEbtMapper extends InterfaceMapper {
         put(EBTType.FOOD_STAMP, ElavonTransactionType.EBT_RETURN);
     }};
 
-
     @Override
     ElavonTransactionRequest createAuth(final Transaction t) {
         throw new ConvergeMapperException("Auth not allowed in EBT transaction");
@@ -56,7 +55,7 @@ public class MsrEbtMapper extends InterfaceMapper {
         request.setTransactionType(EBT_SALE_TYPES_MAP.get(ebtType));
         request.setEncryptedTrackData(t.getFundingSource().getCard().getTrack2data());
         request.setKsn(t.getFundingSource().getCard().getKeySerialNumber());
-        request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getTransactionAmount(), t.getAmounts().getCurrency()));
+        request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getOrderAmount(), t.getAmounts().getCurrency()));
         if (t.getAmounts().getCashbackAmount() != null) {
             request.setCashbackAmount(CurrencyUtil.getAmount(t.getAmounts().getCashbackAmount(), t.getAmounts().getCurrency()));
         }

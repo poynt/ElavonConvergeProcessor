@@ -3,12 +3,8 @@ package com.elavon.converge.config;
 import android.content.res.Resources;
 
 import com.elavon.converge.R;
-import com.elavon.converge.exception.AppInitException;
+import com.elavon.converge.util.FileUtil;
 import com.google.gson.Gson;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 
 public class ConfigLoader {
 
@@ -34,29 +30,12 @@ public class ConfigLoader {
                 break;
         }
 
-        final String configText = readFile(resources.openRawResource(configResource));
-        final String credentialText = readFile(resources.openRawResource(R.raw.credential));
+        final String configText = FileUtil.readFile(resources.openRawResource(configResource));
+        final String credentialText = FileUtil.readFile(resources.openRawResource(R.raw.credential));
 
         final Config config = gson.fromJson(configText, Config.class);
         final Config.Credential credential = gson.fromJson(credentialText, Config.Credential.class);
         config.setCredential(credential);
         return config;
-    }
-
-    private String readFile(final InputStream inputStream) {
-        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
-        final byte buf[] = new byte[1024];
-        int len;
-        try {
-            while ((len = inputStream.read(buf)) != -1) {
-                outputStream.write(buf, 0, len);
-            }
-            outputStream.close();
-            inputStream.close();
-        } catch (IOException e) {
-            throw new AppInitException("Failed to read config file");
-        }
-        return outputStream.toString();
     }
 }

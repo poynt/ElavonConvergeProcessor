@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.elavon.converge.exception.ConvergeMapperException;
 import com.elavon.converge.model.ElavonResponse;
+import com.elavon.converge.model.ElavonSettleRequest;
 import com.elavon.converge.model.ElavonTransactionRequest;
 import com.elavon.converge.model.ElavonTransactionResponse;
 import com.elavon.converge.model.ElavonTransactionSearchRequest;
@@ -19,6 +20,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -417,9 +419,13 @@ public class ConvergeMapper {
                 || etResponse.getResponseCode() == ResponseCodes.AP
                 || ElavonResponse.RESULT_MESSAGE.APPROVAL.equals(etResponse.getResultMessage())
                 || ElavonResponse.RESULT_MESSAGE.PARTIAL_APPROVAL.equals(etResponse.getResultMessage())) {
-            processorResponse.setApprovedAmount(CurrencyUtil.getAmount(etResponse.getAmount(),
-                    transaction.getAmounts().getCurrency()));
+            if (etResponse.getAmount() != null) {
+                processorResponse.setApprovedAmount(CurrencyUtil.getAmount(etResponse.getAmount(), transaction.getAmounts().getCurrency()));
+            } else if (etResponse.getBaseAmount() != null) {
+                processorResponse.setApprovedAmount(CurrencyUtil.getAmount(etResponse.getBaseAmount(), transaction.getAmounts().getCurrency()));
+            }
         }
+
         // set  EMV response tags
         Map<String, String> emvTags = new HashMap<>();
 
@@ -527,5 +533,25 @@ public class ConvergeMapper {
             Log.e(TAG, "couldn't make hash of card");
         }
         return hash;
+    }
+
+    public ElavonTransactionRequest getGenerateTokenRequest(final String cardNumber, final String expiry) {
+        final ElavonTransactionRequest request = new ElavonTransactionRequest();
+        request.setTransactionType(ElavonTransactionType.GET_TOKEN);
+        request.setCardNumber(cardNumber);
+        request.setExpDate(expiry);
+        return request;
+    }
+
+    public ElavonSettleRequest getSettleRequest(final List<String> transactionIds) {
+        final ElavonSettleRequest request = new ElavonSettleRequest();
+        request.setTransactionType(ElavonTransactionType.SETTLE);
+        // set transaction ids
+        if (transactionIds != null && !transactionIds.isEmpty()) {
+            final ElavonSettleRequest.TransactionGroup tg = new ElavonSettleRequest.TransactionGroup();
+            tg.setTransactionIds(transactionIds);
+            request.setTransactionGroup(tg);
+        }
+        return request;
     }
 }

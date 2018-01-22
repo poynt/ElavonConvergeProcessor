@@ -3,6 +3,7 @@ package com.elavon.converge.processor;
 import android.util.Log;
 
 import com.elavon.converge.exception.ConvergeClientException;
+import com.elavon.converge.model.ElavonSettleResponse;
 import com.elavon.converge.model.ElavonTransactionRequest;
 import com.elavon.converge.model.ElavonTransactionResponse;
 import com.elavon.converge.model.ElavonTransactionSearchRequest;
@@ -12,6 +13,7 @@ import com.elavon.converge.model.mapper.ConvergeMapper;
 import java.math.BigDecimal;
 import java.net.SocketTimeoutException;
 import java.util.Date;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -139,5 +141,19 @@ public class ConvergeService {
 
         final ElavonTransactionSearchRequest searchRequest = convergeMapper.getSearchRequest(cardLast4, dateAfter);
         convergeClient.call(searchRequest, cb);
+    }
+
+    public void generateToken(final String cardNumber, final String expiry, final ConvergeCallback<ElavonTransactionResponse> callback) {
+        convergeClient.call(convergeMapper.getGenerateTokenRequest(cardNumber, expiry), callback);
+    }
+
+    /**
+     * Settle all or only the transaction ids given
+     *
+     * @param transactionIds list of Converge transaction ids
+     * @param callback
+     */
+    public void settle(final List<String> transactionIds, final ConvergeCallback<ElavonSettleResponse> callback) {
+        convergeClient.call(convergeMapper.getSettleRequest(transactionIds), callback);
     }
 }
