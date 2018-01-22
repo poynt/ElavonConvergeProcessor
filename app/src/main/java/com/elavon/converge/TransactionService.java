@@ -177,8 +177,10 @@ public class TransactionService extends Service {
         }
 
         @Override
-        public void getBalanceInquiry(BalanceInquiry balanceInquiry, String requestId, IPoyntTransactionBalanceInquiryListener iPoyntTransactionBalanceInquiryListener) throws RemoteException {
+        public void getBalanceInquiry(BalanceInquiry balanceInquiry, String requestId, IPoyntTransactionBalanceInquiryListener listener) throws RemoteException {
             Log.d(TAG, "getBalanceInquiry: " + requestId);
+            //TODO Call Converge
+            listener.onResponse(balanceInquiry, null);
         }
 
         @Override

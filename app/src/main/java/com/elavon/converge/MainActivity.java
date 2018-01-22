@@ -3,6 +3,7 @@ package com.elavon.converge;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
@@ -27,11 +28,14 @@ import com.elavon.converge.util.FileUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.Currency;
 import java.util.List;
+import java.util.Locale;
 
 import javax.inject.Inject;
 
 import co.poynt.os.model.Intents;
+import co.poynt.os.model.Payment;
 import co.poynt.os.services.v1.IPoyntConfigurationService;
 import co.poynt.os.services.v1.IPoyntConfigurationUpdateListener;
 import fr.devnied.bitlib.BytesUtils;
@@ -44,6 +48,8 @@ public class MainActivity extends Activity implements VirtualTerminalService.Vir
     private final byte INTERFACE_CT = (byte) 0x04;
     private final byte INTERFACE_CL = (byte) 0x02;
     private final byte INTERFACE_MSR = (byte) 0x01;
+
+    private static final int BALANCE_INQUIRY_REQUEST = 12345;
 
     @Inject
     protected TransactionManager transactionManager;
@@ -64,6 +70,30 @@ public class MainActivity extends Activity implements VirtualTerminalService.Vir
         createTrackFormatView();
         createSettleView();
         createManualEntryView();
+
+        Button balaceInquiryBtn = (Button) findViewById(R.id.balanceInquiry);
+        balaceInquiryBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Payment payment = new Payment();
+                payment.setDisableCash(true);
+                payment.setDisableOther(true);
+                payment.setDisableCheck(true);
+                payment.setDisableTip(true);
+                payment.setDisableEMVCL(true);
+                payment.setDisableManual(true);
+                payment.setBalanceInquiry(true);
+                payment.setCashbackAmount(0);
+                payment.setDisableEbtVoucher(true);
+                payment.setCurrency(Currency.getInstance(Locale.getDefault()).getCurrencyCode());
+                payment.setAmount(0);
+                payment.setActionLabel("Balance Inquiry");
+                String action = Intents.ACTION_COLLECT_PAYMENT;
+                Intent intent = new Intent(action);
+                intent.putExtra(Intents.INTENT_EXTRAS_PAYMENT, payment);
+                startActivityForResult(intent, BALANCE_INQUIRY_REQUEST);
+            }
+        });
     }
 
     private void createTrackFormatView() {
