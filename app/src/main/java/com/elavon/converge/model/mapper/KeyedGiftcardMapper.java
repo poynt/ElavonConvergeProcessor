@@ -30,6 +30,7 @@ public class KeyedGiftcardMapper extends InterfaceMapper {
     @Override
     ElavonTransactionRequest createSale(final Transaction t) {
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
+        request.setPoyntUserId(t.getContext().getEmployeeUserId().toString());
         request.setTransactionType(ElavonTransactionType.GIFT_CARD_SALE);
         // TODO for activation
         // request.setGiftcardTenderType("1");

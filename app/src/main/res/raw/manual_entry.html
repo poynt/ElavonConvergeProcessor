@@ -7,7 +7,8 @@ $(document).ready(function(){
     $("form").on("submit", function(e){
         e.preventDefault();
         updateResult("Processing... $" + $("#amount").val());
-        Converge.processTransaction($("#cardNumber").val(), $("#expiry").val(), $("#amount").val());
+        Converge.processTransaction($("#cardNumber").val(), $("#cardPresent").is(":checked"), $("#expiry").val(),
+            $("#cvv").val(), $("#address").val(), $("#zip").val(), $("#amount").val());
     });
 });
 
@@ -20,8 +21,9 @@ function updateResult(message) {
 
     <body>
         <form action="">
-            Card Number: <input type="text" id="cardNumber"><br>
-            Expiry: <input type="text" id="expiry"><br>
+            Card Number: <input type="text" id="cardNumber"> Present? <input type="checkBox" id="cardPresent"> <br>
+            Expiry: <input type="text" id="expiry"> Cvv: <input type="text" id="cvv"><br>
+            Address: <input type="text" id="address"> Zip: <input type="text" id="zip"><br>
             Amount: <input type="text" id="amount"><br>
             <input type="submit">
         </form>

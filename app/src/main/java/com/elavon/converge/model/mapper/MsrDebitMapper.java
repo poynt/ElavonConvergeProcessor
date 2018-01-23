@@ -35,6 +35,7 @@ public class MsrDebitMapper extends InterfaceMapper {
     @Override
     ElavonTransactionRequest createSale(final Transaction t) {
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
+        request.setPoyntUserId(t.getContext().getEmployeeUserId().toString());
         request.setTransactionType(ElavonTransactionType.DEBIT_SALE);
         request.setEncryptedTrackData(t.getFundingSource().getCard().getTrack2data());
         request.setKsn(t.getFundingSource().getCard().getKeySerialNumber());

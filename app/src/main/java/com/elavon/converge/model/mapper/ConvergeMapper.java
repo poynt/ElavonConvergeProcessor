@@ -9,6 +9,8 @@ import com.elavon.converge.model.ElavonSettleRequest;
 import com.elavon.converge.model.ElavonTransactionRequest;
 import com.elavon.converge.model.ElavonTransactionResponse;
 import com.elavon.converge.model.ElavonTransactionSearchRequest;
+import com.elavon.converge.model.type.AVSResponse;
+import com.elavon.converge.model.type.CVV2Response;
 import com.elavon.converge.model.type.ElavonTransactionType;
 import com.elavon.converge.model.type.ResponseCodes;
 import com.elavon.converge.model.type.SignatureImageType;
@@ -26,7 +28,10 @@ import java.util.UUID;
 
 import javax.inject.Inject;
 
+import co.poynt.api.model.AVSResult;
+import co.poynt.api.model.AVSResultType;
 import co.poynt.api.model.AdjustTransactionRequest;
+import co.poynt.api.model.CVResult;
 import co.poynt.api.model.EMVData;
 import co.poynt.api.model.EMVTag;
 import co.poynt.api.model.EntryMode;
@@ -213,6 +218,14 @@ public class ConvergeMapper {
                                                                   final AdjustTransactionRequest adjustTransactionRequest) {
         final InterfaceMapper mapper = getMapper(fundingSource);
         return mapper.createCapture(transactionId, adjustTransactionRequest);
+    }
+
+    public ElavonTransactionSearchRequest getSearchRequest(final String transactionId) {
+        final ElavonTransactionSearchRequest search = new ElavonTransactionSearchRequest();
+        search.setTestMode("false");
+        search.setTransactionType(ElavonTransactionType.TRANSACTION_QUERY);
+        search.setTransactionId(transactionId);
+        return search;
     }
 
     public ElavonTransactionSearchRequest getSearchRequest(final String cardLast4, final Date searchStartDate) {
@@ -483,6 +496,13 @@ public class ConvergeMapper {
         }
 
         processorResponse.setEmvTags(emvTags);
+        if (etResponse.getCvv2Response() != null) {
+            processorResponse.setCvResult(mapCvResponse(etResponse.getCvv2Response()));
+            processorResponse.setCvActualResult(etResponse.getCvv2Response().getValue());
+        }
+        if (etResponse.getAvsResponse() != null) {
+            processorResponse.setAvsResult(mapAvsResponse(etResponse.getAvsResponse()));
+        }
         transaction.setProcessorResponse(processorResponse);
 
         // TODO temporary fix
@@ -492,6 +512,69 @@ public class ConvergeMapper {
         if (transaction.isSignatureCaptured() == null) {
             transaction.setSignatureCaptured(false);
         }
+    }
+
+    private CVResult mapCvResponse(final CVV2Response cvv2Response) {
+        switch (cvv2Response) {
+            case MATCH:
+                return CVResult.MATCH;
+            case NO_MATCH:
+                return CVResult.NO_MATCH;
+            case NOT_PROCESSED:
+                return CVResult.NOT_PROCESSED;
+            case CVV_EXPECTED:
+                return CVResult.SHOULD_HAVE_BEEN_PRESENT;
+            case NOT_AVAILABLE:
+                return CVResult.ISSUER_NOT_CERTIFIED;
+        }
+        return CVResult.INVALID;
+    }
+
+    private AVSResult mapAvsResponse(final AVSResponse avsResponse) {
+        final AVSResult avsResult = new AVSResult();
+        switch (avsResponse) {
+            case MATCH:
+            case MATCH_INTERNATIONAL:
+            case MATCH_INTERNATIONAL_INTL:
+            case MATCH_UK:
+            case STREET_ZIP5_MATCH:
+                avsResult.setAddressResult(AVSResultType.MATCH);
+                break;
+            case STREET_MATCH:
+            case STREET_MATCH_MALFORMED_ZIP:
+            case ZIP_MATCH:
+            case ZIP9_MATCH:
+            case ZIP5_MATCH:
+                avsResult.setAddressResult(AVSResultType.PARTIAL_MATCH);
+                break;
+            case MALFORMED_STREET_ZIP:
+                avsResult.setAddressResult(AVSResultType.BAD_FORMAT);
+                break;
+            case AVS_ERROR:
+                avsResult.setAddressResult(AVSResultType.ERROR);
+                break;
+            case NOT_VERIFIED:
+                avsResult.setAddressResult(AVSResultType.NOT_VERIFIED);
+                break;
+            case NO_MATCH:
+                avsResult.setAddressResult(AVSResultType.NO_MATCH);
+                break;
+            case NO_RESPONSE:
+                avsResult.setAddressResult(AVSResultType.NO_RESPONSE_FROM_CARD_ASSOCIATION);
+                break;
+            case NOT_SUPPORTED_INTL:
+            case NOT_SUPPORTED:
+                avsResult.setAddressResult(AVSResultType.UNSUPPORTED_BY_ISSUER);
+                break;
+            case UNAVAILABLE:
+            case ADDRESS_UNAVAILABLE:
+                avsResult.setAddressResult(AVSResultType.UNAVAILABLE);
+                break;
+            default:
+                avsResult.setAddressResult(AVSResultType.ERROR);
+        }
+        avsResult.setActualResult(avsResponse.getValue());
+        return avsResult;
     }
 
     private String numberToAsciiHex(char[] numberChars) {

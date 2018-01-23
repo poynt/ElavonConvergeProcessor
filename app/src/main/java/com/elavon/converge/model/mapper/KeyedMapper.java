@@ -6,7 +6,9 @@ import com.elavon.converge.model.type.ElavonTransactionType;
 import com.elavon.converge.util.CardUtil;
 import com.elavon.converge.util.CurrencyUtil;
 
+import co.poynt.api.model.CustomerPresenceStatus;
 import co.poynt.api.model.Transaction;
+import co.poynt.os.util.StringUtil;
 
 public class KeyedMapper extends InterfaceMapper {
     @Override
@@ -22,11 +24,30 @@ public class KeyedMapper extends InterfaceMapper {
     @Override
     ElavonTransactionRequest createSale(final Transaction t) {
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
+        request.setPoyntUserId(t.getContext().getEmployeeUserId().toString());
         request.setTransactionType(ElavonTransactionType.SALE);
         request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getTransactionAmount(), t.getAmounts().getCurrency()));
         request.setToken(t.getFundingSource().getCard().getNumberHashed());
         request.setExpDate(CardUtil.getCardExpiry(t.getFundingSource().getCard()));
         request.setCardLast4(t.getFundingSource().getCard().getNumberLast4());
+
+        // verification info
+        if(StringUtil.notEmpty(t.getFundingSource().getVerificationData().getCardHolderBillingAddress().getPostalCode())) {
+            request.setAvsZip(t.getFundingSource().getVerificationData().getCardHolderBillingAddress().getPostalCode());
+        }
+        if(StringUtil.notEmpty(t.getFundingSource().getVerificationData().getCardHolderBillingAddress().getLine1())) {
+            request.setAvsAddress(t.getFundingSource().getVerificationData().getCardHolderBillingAddress().getLine1());
+        }
+        if(StringUtil.notEmpty(t.getFundingSource().getVerificationData().getCvData())) {
+            request.setCvv2(t.getFundingSource().getVerificationData().getCvData());
+            // 1 for present
+            request.setCvv2Indicator("1");
+        }
+        if(CustomerPresenceStatus.PRESENT == t.getFundingSource().getEntryDetails().getCustomerPresenceStatus()) {
+            request.setCardPresent(true);
+        } else {
+            request.setCardPresent(false);
+        }
         return request;
     }
 
