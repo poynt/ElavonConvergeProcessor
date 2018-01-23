@@ -8,6 +8,7 @@ import com.elavon.converge.util.CurrencyUtil;
 import java.util.HashMap;
 import java.util.Map;
 
+import co.poynt.api.model.BalanceInquiry;
 import co.poynt.api.model.EBTType;
 import co.poynt.api.model.Transaction;
 
@@ -74,5 +75,10 @@ public class MsrEbtMapper extends InterfaceMapper {
     @Override
     ElavonTransactionRequest createReverse(final String t) {
         throw new ConvergeMapperException("Reverse not allowed in EBT transaction");
+    }
+
+    @Override
+    ElavonTransactionRequest createBalanceInquiry(BalanceInquiry balanceInquiry) {
+        throw new ConvergeMapperException("Not supported");
     }
 }

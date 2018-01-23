@@ -23,12 +23,14 @@ import java.util.List;
 import javax.inject.Inject;
 
 import co.poynt.api.model.AdjustTransactionRequest;
+import co.poynt.api.model.BalanceInquiry;
 import co.poynt.api.model.EMVData;
 import co.poynt.api.model.EntryMode;
 import co.poynt.api.model.Transaction;
 import co.poynt.api.model.TransactionAction;
 import co.poynt.os.model.Intents;
 import co.poynt.os.model.PoyntError;
+import co.poynt.os.services.v1.IPoyntTransactionBalanceInquiryListener;
 import co.poynt.os.services.v1.IPoyntTransactionService;
 import co.poynt.os.services.v1.IPoyntTransactionServiceListener;
 
@@ -616,6 +618,39 @@ public class TransactionManager {
                 }
             }
         });
+    }
+
+    public void processBalanceInquiry(
+            final BalanceInquiry balanceInquiry,
+            final String requestId,
+            final IPoyntTransactionBalanceInquiryListener listener) {
+        Log.d(TAG, "processBalanceInquiry");
+
+        final ElavonTransactionRequest request = convergeMapper.getBalanceInquiryRequest(balanceInquiry);
+        convergeService.create(request, new ConvergeCallback<ElavonTransactionResponse>() {
+            @Override
+            public void onResponse(final ElavonTransactionResponse elavonResponse) {
+                try {
+                    convergeMapper.mapBalanceInquiryResponse(elavonResponse, balanceInquiry);
+                    listener.onResponse(balanceInquiry, null);
+                } catch (final RemoteException e) {
+                    Log.e(TAG, "Failed to respond", e);
+                }
+            }
+
+            @Override
+            public void onFailure(final Throwable t) {
+                // TODO need better error mapping
+                final PoyntError error = new PoyntError(PoyntError.CHECK_CARD_FAILURE);
+                error.setThrowable(t);
+                try {
+                    listener.onResponse(balanceInquiry, error);
+                } catch (final RemoteException e) {
+                    Log.e(TAG, "Failed to respond", e);
+                }
+            }
+        });
+
     }
 
     public void generateToken(final String cardNumber, final String expiry, final ConvergeCallback<ElavonTransactionResponse> callback) {

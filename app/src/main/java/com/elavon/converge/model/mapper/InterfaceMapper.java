@@ -5,6 +5,7 @@ import com.elavon.converge.model.type.ElavonTransactionType;
 import com.elavon.converge.util.CurrencyUtil;
 
 import co.poynt.api.model.AdjustTransactionRequest;
+import co.poynt.api.model.BalanceInquiry;
 import co.poynt.api.model.Transaction;
 
 import static com.elavon.converge.model.type.ElavonTransactionType.VOID;
@@ -47,4 +48,5 @@ public abstract class InterfaceMapper {
         return request;
     }
 
+    abstract ElavonTransactionRequest createBalanceInquiry(BalanceInquiry balanceInquiry);
 }
