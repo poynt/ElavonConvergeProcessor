@@ -94,6 +94,9 @@ public class ElavonTransactionRequest extends ElavonRequest {
     @Element(name = "ssl_avs_zip", required = false)
     private String avsZip;
 
+    @Element(name = "ssl_avs_address", required = false)
+    private String avsAddress;
+
     @Element(name = "ssl_invoice_number", required = false)
     private String invoiceNumber;
 
@@ -321,6 +324,14 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     public void setAvsZip(String avsZip) {
         this.avsZip = avsZip;
+    }
+
+    public String getAvsAddress() {
+        return avsAddress;
+    }
+
+    public void setAvsAddress(String avsAddress) {
+        this.avsAddress = avsAddress;
     }
 
     public Boolean getCardPresent() {

@@ -13,7 +13,10 @@ import java.util.UUID;
 
 import javax.inject.Inject;
 
+import co.poynt.api.model.Address;
 import co.poynt.api.model.Card;
+import co.poynt.api.model.ClientContext;
+import co.poynt.api.model.CustomerPresenceStatus;
 import co.poynt.api.model.EntryMode;
 import co.poynt.api.model.FundingSource;
 import co.poynt.api.model.FundingSourceEntryDetails;
@@ -21,6 +24,7 @@ import co.poynt.api.model.FundingSourceType;
 import co.poynt.api.model.Transaction;
 import co.poynt.api.model.TransactionAction;
 import co.poynt.api.model.TransactionAmounts;
+import co.poynt.api.model.VerificationData;
 import co.poynt.os.model.PoyntError;
 import co.poynt.os.services.v1.IPoyntTransactionServiceListener;
 
@@ -40,7 +44,14 @@ public class VirtualTerminalService {
     }
 
     @JavascriptInterface
-    public void processTransaction(final String cardNumber, final String expiry, final String amount) {
+    public void processTransaction(
+            final String cardNumber,
+            final String cardPresent,
+            final String expiry,
+            final String cvv,
+            final String address,
+            final String zip,
+            final String amount) {
         Log.i(TAG, "processTransaction");
 
         transactionManager.generateToken(cardNumber, expiry, new ConvergeCallback<ElavonTransactionResponse>() {
@@ -53,8 +64,8 @@ public class VirtualTerminalService {
 
                 virtualTerminalListener.onProcessed("token loaded successfully.");
 
-                final Transaction transaction = getTransaction(response.getToken(), expiry, amount);
-
+                final boolean isCardPresent = "true".equals(cardPresent);
+                final Transaction transaction = getTransaction(response.getToken(), isCardPresent, expiry, cvv, address, zip, amount);
                 try {
                     transactionManager.processTransaction(
                             transaction,
@@ -93,7 +104,14 @@ public class VirtualTerminalService {
         });
     }
 
-    private Transaction getTransaction(final String token, final String expiry, final String amount) {
+    private Transaction getTransaction(
+            final String token,
+            final boolean isCardPresent,
+            final String expiry,
+            final String cvv,
+            final String address,
+            final String zip,
+            final String amount) {
 
         final Long amountLong = Long.parseLong(amount);
         final Integer month = Integer.parseInt(expiry.substring(0, 2));
@@ -111,16 +129,33 @@ public class VirtualTerminalService {
 
         final FundingSourceEntryDetails fundingSourceEntryDetails = new FundingSourceEntryDetails();
         fundingSourceEntryDetails.setEntryMode(EntryMode.KEYED);
+        if (isCardPresent) {
+            fundingSourceEntryDetails.setCustomerPresenceStatus(CustomerPresenceStatus.PRESENT);
+        }
+
+        final Address fundingSourceAddress = new Address();
+        fundingSourceAddress.setLine1(address);
+        fundingSourceAddress.setPostalCode(zip);
+
+        final VerificationData verificationData = new VerificationData();
+        verificationData.setCardHolderBillingAddress(fundingSourceAddress);
+        verificationData.setCvData(cvv);
 
         final FundingSource fundingSource = new FundingSource();
         fundingSource.setCard(card);
         fundingSource.setType(FundingSourceType.CREDIT_DEBIT);
         fundingSource.setEntryDetails(fundingSourceEntryDetails);
+        fundingSource.setVerificationData(verificationData);
+
+        final ClientContext clientContext = new ClientContext();
+        // TODO get employee id
+        clientContext.setEmployeeUserId(0L);
 
         final Transaction transaction = new Transaction();
         transaction.setAction(TransactionAction.SALE);
         transaction.setAmounts(amounts);
         transaction.setFundingSource(fundingSource);
+        transaction.setContext(clientContext);
         return transaction;
     }
 
