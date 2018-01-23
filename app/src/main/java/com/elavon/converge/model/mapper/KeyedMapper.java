@@ -6,6 +6,7 @@ import com.elavon.converge.model.type.ElavonTransactionType;
 import com.elavon.converge.util.CardUtil;
 import com.elavon.converge.util.CurrencyUtil;
 
+import co.poynt.api.model.BalanceInquiry;
 import co.poynt.api.model.CustomerPresenceStatus;
 import co.poynt.api.model.Transaction;
 import co.poynt.os.util.StringUtil;
@@ -59,5 +60,10 @@ public class KeyedMapper extends InterfaceMapper {
     @Override
     ElavonTransactionRequest createReverse(final String t) {
         throw new ConvergeMapperException("Please implement");
+    }
+
+    @Override
+    ElavonTransactionRequest createBalanceInquiry(BalanceInquiry balanceInquiry) {
+        throw new ConvergeMapperException("Not supported");
     }
 }

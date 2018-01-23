@@ -1,5 +1,6 @@
 package com.elavon.converge.model.mapper;
 
+import com.elavon.converge.exception.ConvergeMapperException;
 import com.elavon.converge.model.ElavonTransactionRequest;
 import com.elavon.converge.model.type.ElavonEntryMode;
 import com.elavon.converge.model.type.ElavonPosMode;
@@ -9,6 +10,7 @@ import com.elavon.converge.util.CurrencyUtil;
 
 import javax.inject.Inject;
 
+import co.poynt.api.model.BalanceInquiry;
 import co.poynt.api.model.EntryMode;
 import co.poynt.api.model.FundingSourceEntryDetails;
 import co.poynt.api.model.Transaction;
@@ -175,6 +177,16 @@ public class MsrMapper extends InterfaceMapper {
             request.setPinBlock(t.getFundingSource().getVerificationData().getPin());
             request.setPinKsn(t.getFundingSource().getVerificationData().getKeySerialNumber());
         }
+        return request;
+    }
+
+    @Override
+    ElavonTransactionRequest createBalanceInquiry(final BalanceInquiry b) {
+        final ElavonTransactionRequest request = new ElavonTransactionRequest();
+        request.setTransactionType(ElavonTransactionType.BALANCE_INQUIRY);
+        request.setEncryptedTrackData(b.getFundingSource().getCard().getTrack2data());
+        request.setKsn(b.getFundingSource().getCard().getKeySerialNumber());
+        request.setExpDate(CardUtil.getCardExpiry(b.getFundingSource().getCard()));
         return request;
     }
 }

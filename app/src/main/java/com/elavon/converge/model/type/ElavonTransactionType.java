@@ -12,6 +12,7 @@ public enum ElavonTransactionType {
     VERIFY("ccverify"),
     CREDIT("cccredit"),
     FORCE("ccforce"),
+    BALANCE_INQUIRY("ccbalinquiry"),
     VOID("ccvoid"),
     RETURN("ccreturn"),
     COMPLETE("cccomplete"),

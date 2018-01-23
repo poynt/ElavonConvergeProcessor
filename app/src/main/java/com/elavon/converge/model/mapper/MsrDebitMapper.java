@@ -7,6 +7,7 @@ import com.elavon.converge.model.type.ElavonTransactionType;
 import com.elavon.converge.util.CardUtil;
 import com.elavon.converge.util.CurrencyUtil;
 
+import co.poynt.api.model.BalanceInquiry;
 import co.poynt.api.model.Transaction;
 
 public class MsrDebitMapper extends InterfaceMapper {
@@ -66,6 +67,11 @@ public class MsrDebitMapper extends InterfaceMapper {
 
     @Override
     ElavonTransactionRequest createReverse(final String transactionId) {
+        throw new ConvergeMapperException("Not supported");
+    }
+
+    @Override
+    ElavonTransactionRequest createBalanceInquiry(BalanceInquiry balanceInquiry) {
         throw new ConvergeMapperException("Not supported");
     }
 }

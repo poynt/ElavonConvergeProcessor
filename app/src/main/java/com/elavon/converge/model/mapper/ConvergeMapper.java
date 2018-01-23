@@ -31,6 +31,7 @@ import javax.inject.Inject;
 import co.poynt.api.model.AVSResult;
 import co.poynt.api.model.AVSResultType;
 import co.poynt.api.model.AdjustTransactionRequest;
+import co.poynt.api.model.BalanceInquiry;
 import co.poynt.api.model.CVResult;
 import co.poynt.api.model.EMVData;
 import co.poynt.api.model.EMVTag;
@@ -47,6 +48,9 @@ import co.poynt.api.model.TransactionStatus;
 public class ConvergeMapper {
 
     private static final String TAG = ConvergeMapper.class.getSimpleName();
+
+    private static final String DEFAULT_CURRENCY = "USD";
+
     private final MsrMapper msrMapper;
     private final MsrDebitMapper msrDebitMapper;
     private final MsrEbtMapper msrEbtMapper;
@@ -249,6 +253,12 @@ public class ConvergeMapper {
         return mapper.createVoid(transactionId);
     }
 
+    public ElavonTransactionRequest getBalanceInquiryRequest(final BalanceInquiry balanceInquiry) {
+        Log.d(TAG, "Balance Inquiry Request");
+        final InterfaceMapper mapper = getMapper(balanceInquiry.getFundingSource());
+        return mapper.createBalanceInquiry(balanceInquiry);
+    }
+
     /**
      * <pre><code>
      * Example Transaction:
@@ -298,20 +308,7 @@ public class ConvergeMapper {
             );
         }
 
-        if (etResponse.isSuccess()) {
-            processorResponse.setStatus(ProcessorStatus.Successful);
-        } else {
-            processorResponse.setStatus(ProcessorStatus.Failure);
-        }
-
-        processorResponse.setStatusCode(etResponse.getResult());
-        if (etResponse.getResultMessage() != null) {
-            processorResponse.setStatusMessage(etResponse.getResultMessage());
-        } else if (etResponse.getErrorMessage() != null) {
-            processorResponse.setStatusMessage(etResponse.getErrorMessage());
-        } else {
-            processorResponse.setStatusMessage(Integer.toString(etResponse.getErrorCode()));
-        }
+        setStatusResponse(processorResponse, etResponse);
 
         if (etResponse.getResponseCode() == ResponseCodes.AA
                 || ElavonResponse.RESULT_MESSAGE.APPROVAL.equals(etResponse.getResultMessage())) {
@@ -412,17 +409,7 @@ public class ConvergeMapper {
             }
         }
 
-        // TODO currently there is issue with processor response transaction id overwritten
-        // TODO with transaction id. using retrieval ref num to store converge transaction id
-        if (etResponse.getTxnId() != null) {
-            processorResponse.setTransactionId(etResponse.getTxnId());
-            processorResponse.setRetrievalRefNum(etResponse.getTxnId());
-        } else {
-            //TODO - our API Service requires a processor transactionId even for declines
-            processorResponse.setTransactionId(UUID.randomUUID().toString());
-            //TODO - what do we do for retrieval reference number
-            // may be when it doesn't exist we can block the call here
-        }
+        setTransactionIdResponse(processorResponse, etResponse);
 
         if (etResponse.getApprovalCode() != null) {
             processorResponse.setApprovalCode(etResponse.getApprovalCode());
@@ -511,6 +498,38 @@ public class ConvergeMapper {
         }
         if (transaction.isSignatureCaptured() == null) {
             transaction.setSignatureCaptured(false);
+        }
+    }
+
+    private void setStatusResponse(
+            final ProcessorResponse processorResponse,
+            final ElavonTransactionResponse etResponse) {
+
+        processorResponse.setStatus(etResponse.isSuccess() ? ProcessorStatus.Successful : ProcessorStatus.Failure);
+        processorResponse.setStatusCode(etResponse.getResult());
+
+        if (etResponse.getResultMessage() != null) {
+            processorResponse.setStatusMessage(etResponse.getResultMessage());
+        } else if (etResponse.getErrorMessage() != null) {
+            processorResponse.setStatusMessage(etResponse.getErrorMessage());
+        } else {
+            processorResponse.setStatusMessage(Integer.toString(etResponse.getErrorCode()));
+        }
+    }
+
+    private void setTransactionIdResponse(
+            final ProcessorResponse processorResponse,
+            final ElavonTransactionResponse etResponse) {
+        // TODO currently there is issue with processor response transaction id overwritten
+        // TODO with transaction id. using retrieval ref num to store converge transaction id
+        if (etResponse.getTxnId() != null) {
+            processorResponse.setTransactionId(etResponse.getTxnId());
+            processorResponse.setRetrievalRefNum(etResponse.getTxnId());
+        } else {
+            //TODO - our API Service requires a processor transactionId even for declines
+            processorResponse.setTransactionId(UUID.randomUUID().toString());
+            //TODO - what do we do for retrieval reference number
+            // may be when it doesn't exist we can block the call here
         }
     }
 
@@ -616,6 +635,19 @@ public class ConvergeMapper {
             Log.e(TAG, "couldn't make hash of card");
         }
         return hash;
+    }
+
+    public void mapBalanceInquiryResponse(final ElavonTransactionResponse etResponse, final BalanceInquiry balanceInquiry) {
+        final ProcessorResponse processorResponse = new ProcessorResponse();
+        processorResponse.setProcessor(Processor.ELAVON);
+        processorResponse.setAcquirer(Processor.ELAVON);
+        setStatusResponse(processorResponse, etResponse);
+        setTransactionIdResponse(processorResponse, etResponse);
+        if (etResponse.getApprovalCode() != null) {
+            processorResponse.setApprovalCode(etResponse.getApprovalCode());
+        }
+        processorResponse.setRemainingBalance(CurrencyUtil.getAmount(etResponse.getAccountBalance(), DEFAULT_CURRENCY));
+        balanceInquiry.setProcessorResponse(processorResponse);
     }
 
     public ElavonTransactionRequest getGenerateTokenRequest(final String cardNumber, final String expiry) {

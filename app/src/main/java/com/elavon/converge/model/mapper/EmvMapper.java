@@ -2,6 +2,7 @@ package com.elavon.converge.model.mapper;
 
 import android.util.Log;
 
+import com.elavon.converge.exception.ConvergeMapperException;
 import com.elavon.converge.model.ElavonTransactionRequest;
 import com.elavon.converge.model.type.ElavonEntryMode;
 import com.elavon.converge.model.type.ElavonPosMode;
@@ -15,6 +16,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import co.poynt.api.model.BalanceInquiry;
 import co.poynt.api.model.EntryMode;
 import co.poynt.api.model.FundingSourceEntryDetails;
 import co.poynt.api.model.Transaction;
@@ -141,7 +143,11 @@ public class EmvMapper extends InterfaceMapper {
          *   Savings  = ‘1’
          */
         // TODO
-
         return builder.toString();
+    }
+
+    @Override
+    ElavonTransactionRequest createBalanceInquiry(BalanceInquiry balanceInquiry) {
+        throw new ConvergeMapperException("Not supported");
     }
 }

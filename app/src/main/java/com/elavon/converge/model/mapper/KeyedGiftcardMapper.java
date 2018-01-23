@@ -1,10 +1,12 @@
 package com.elavon.converge.model.mapper;
 
+import com.elavon.converge.exception.ConvergeMapperException;
 import com.elavon.converge.model.ElavonTransactionRequest;
 import com.elavon.converge.model.type.ElavonTransactionType;
 import com.elavon.converge.util.CardUtil;
 import com.elavon.converge.util.CurrencyUtil;
 
+import co.poynt.api.model.BalanceInquiry;
 import co.poynt.api.model.Transaction;
 
 public class KeyedGiftcardMapper extends InterfaceMapper {
@@ -52,5 +54,10 @@ public class KeyedGiftcardMapper extends InterfaceMapper {
     @Override
     ElavonTransactionRequest createReverse(String t) {
         throw new RuntimeException("Please implement");
+    }
+
+    @Override
+    ElavonTransactionRequest createBalanceInquiry(BalanceInquiry balanceInquiry) {
+        throw new ConvergeMapperException("Not supported");
     }
 }
