@@ -21,6 +21,10 @@ public class MsrEbtMapper extends InterfaceMapper {
     private static final Map<EBTType, ElavonTransactionType> EBT_REFUND_TYPES_MAP = new HashMap<EBTType, ElavonTransactionType>() {{
         put(EBTType.FOOD_STAMP, ElavonTransactionType.EBT_RETURN);
     }};
+    private static final Map<EBTType, ElavonTransactionType> EBT_INQUIRY_TYPES_MAP = new HashMap<EBTType, ElavonTransactionType>() {{
+        put(EBTType.FOOD_STAMP,ElavonTransactionType.EBT_INQUIRY);
+        put(EBTType.CASH_BENEFIT,ElavonTransactionType.EBT_CASH_INQUIRY);
+    }};
 
     @Override
     ElavonTransactionRequest createAuth(final Transaction t) {
@@ -78,7 +82,20 @@ public class MsrEbtMapper extends InterfaceMapper {
     }
 
     @Override
-    ElavonTransactionRequest createBalanceInquiry(BalanceInquiry balanceInquiry) {
-        throw new ConvergeMapperException("Not supported");
+    ElavonTransactionRequest createBalanceInquiry(final BalanceInquiry b) {
+        final EBTType ebtType = b.getFundingSource().getEbtDetails().getType();
+        if (!EBT_INQUIRY_TYPES_MAP.containsKey(ebtType)) {
+            throw new ConvergeMapperException("Not supported EBT type for MSR: " + ebtType);
+        }
+
+        final ElavonTransactionRequest request = new ElavonTransactionRequest();
+        request.setTransactionType(EBT_INQUIRY_TYPES_MAP.get(ebtType));
+        request.setEncryptedTrackData(b.getFundingSource().getCard().getTrack2data());
+        request.setKsn(b.getFundingSource().getCard().getKeySerialNumber());
+
+        request.setPinKsn(b.getFundingSource().getVerificationData().getKeySerialNumber());
+        request.setKeyPointer("T");
+        request.setPinBlock(b.getFundingSource().getVerificationData().getPin());
+        return request;
     }
 }
