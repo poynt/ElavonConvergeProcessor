@@ -3,6 +3,7 @@
     package="com.elavon.converge">
 
     <uses-permission android:name="poynt.permission.SECURITY_SERVICE" />
+    <uses-permission android:name="poynt.permission.BUSINESS_SERVICE" />
     <uses-permission android:name="poynt.permission.CONFIGURATION_SERVICE" />
     <uses-permission android:name="poynt.permission.TRANSACTION_SERVICE" />
     <uses-permission android:name="co.poynt.orders.ACCESS_ORDERS" />
@@ -41,6 +42,19 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".config.LoadBusinessIntentService"
+            android:exported="false" />
+
+        <receiver
+            android:name=".config.BusinessUpdatedReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="poynt.intent.action.BUSINESS_UPDATED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
