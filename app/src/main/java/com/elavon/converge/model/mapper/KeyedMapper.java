@@ -28,23 +28,40 @@ public class KeyedMapper extends InterfaceMapper {
         request.setPoyntUserId(t.getContext().getEmployeeUserId().toString());
         request.setTransactionType(ElavonTransactionType.SALE);
         request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getTransactionAmount(), t.getAmounts().getCurrency()));
-        request.setToken(t.getFundingSource().getCard().getNumberHashed());
+        // add card token if we have it
+        // TODO - is this the right field ?
+        if (StringUtil.notEmpty(t.getFundingSource().getCard().getNumberHashed())) {
+            request.setToken(t.getFundingSource().getCard().getNumberHashed());
+        }
         request.setExpDate(CardUtil.getCardExpiry(t.getFundingSource().getCard()));
         request.setCardLast4(t.getFundingSource().getCard().getNumberLast4());
+        // add card number if we have it
+        if (StringUtil.notEmpty(t.getFundingSource().getCard().getNumber())) {
+            request.setCardNumber(t.getFundingSource().getCard().getNumber());
+        }
+        // add KSN if we have it
+        if (StringUtil.notEmpty(t.getFundingSource().getCard().getKeySerialNumber())) {
+            request.setKsn(t.getFundingSource().getCard().getKeySerialNumber());
+        }
 
         // verification info
-        if(StringUtil.notEmpty(t.getFundingSource().getVerificationData().getCardHolderBillingAddress().getPostalCode())) {
-            request.setAvsZip(t.getFundingSource().getVerificationData().getCardHolderBillingAddress().getPostalCode());
+        if (t.getFundingSource().getVerificationData() != null) {
+            if (t.getFundingSource().getVerificationData().getCardHolderBillingAddress() != null) {
+                if (StringUtil.notEmpty(t.getFundingSource().getVerificationData().getCardHolderBillingAddress().getPostalCode())) {
+                    request.setAvsZip(t.getFundingSource().getVerificationData().getCardHolderBillingAddress().getPostalCode());
+                }
+                if (StringUtil.notEmpty(t.getFundingSource().getVerificationData().getCardHolderBillingAddress().getLine1())) {
+                    request.setAvsAddress(t.getFundingSource().getVerificationData().getCardHolderBillingAddress().getLine1());
+                }
+            }
+            if (StringUtil.notEmpty(t.getFundingSource().getVerificationData().getCvData())) {
+                request.setCvv2(t.getFundingSource().getVerificationData().getCvData());
+                // 1 for present
+                request.setCvv2Indicator("1");
+            }
         }
-        if(StringUtil.notEmpty(t.getFundingSource().getVerificationData().getCardHolderBillingAddress().getLine1())) {
-            request.setAvsAddress(t.getFundingSource().getVerificationData().getCardHolderBillingAddress().getLine1());
-        }
-        if(StringUtil.notEmpty(t.getFundingSource().getVerificationData().getCvData())) {
-            request.setCvv2(t.getFundingSource().getVerificationData().getCvData());
-            // 1 for present
-            request.setCvv2Indicator("1");
-        }
-        if(CustomerPresenceStatus.PRESENT == t.getFundingSource().getEntryDetails().getCustomerPresenceStatus()) {
+
+        if (CustomerPresenceStatus.PRESENT == t.getFundingSource().getEntryDetails().getCustomerPresenceStatus()) {
             request.setCardPresent(true);
         } else {
             request.setCardPresent(false);

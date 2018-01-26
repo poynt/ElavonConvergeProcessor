@@ -20,6 +20,8 @@ import com.elavon.converge.processor.ConvergeService;
 
 import java.util.List;
 
+import java.util.UUID;
+
 import javax.inject.Inject;
 
 import co.poynt.api.model.AdjustTransactionRequest;
@@ -438,6 +440,9 @@ public class TransactionManager {
                                     if (listener != null) {
                                         convergeMapper.mapTransactionResponse(elavonResponse, transaction);
                                         try {
+                                            // update the transactionId w/ new void txn Id and set parent
+                                            transaction.setParentId(transaction.getId());
+                                            transaction.setId(UUID.randomUUID());
                                             listener.onResponse(transaction, requestId, null);
                                         } catch (RemoteException e) {
                                             e.printStackTrace();
@@ -448,7 +453,7 @@ public class TransactionManager {
                                     if (listener != null) {
                                         try {
                                             // TODO need better error mapping
-                                            final PoyntError error = new PoyntError(PoyntError.CHECK_CARD_FAILURE);
+                                            PoyntError error = new PoyntError(PoyntError.CODE_API_ERROR);
                                             listener.onResponse(transaction, requestId, error);
                                         } catch (RemoteException e) {
                                             e.printStackTrace();
