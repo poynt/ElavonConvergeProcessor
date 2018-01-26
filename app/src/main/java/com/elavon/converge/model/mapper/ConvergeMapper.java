@@ -43,6 +43,7 @@ import co.poynt.api.model.Processor;
 import co.poynt.api.model.ProcessorResponse;
 import co.poynt.api.model.ProcessorStatus;
 import co.poynt.api.model.Transaction;
+import co.poynt.api.model.TransactionReference;
 import co.poynt.api.model.TransactionStatus;
 
 public class ConvergeMapper {
@@ -117,16 +118,33 @@ public class ConvergeMapper {
     public ElavonTransactionRequest getTransactionRequest(final Transaction transaction) {
         Log.d(TAG, "Transaction Request:" + transaction);
         final InterfaceMapper mapper = getMapper(transaction.getFundingSource());
+        final ElavonTransactionRequest request;
         switch (transaction.getAction()) {
             case AUTHORIZE:
-                return mapper.createAuth(transaction);
+                request = mapper.createAuth(transaction);
+                break;
             case REFUND:
-                return mapper.createRefund(transaction);
+                request = mapper.createRefund(transaction);
+                break;
             case SALE:
-                return mapper.createSale(transaction);
+                request = mapper.createSale(transaction);
+                break;
             default:
                 throw new ConvergeMapperException("Invalid transaction action found");
         }
+        request.setInvoiceNumber(getReference(transaction, "invoiceId"));
+        return request;
+    }
+
+    private String getReference(final Transaction t, final String type) {
+        if (t.getReferences() != null) {
+            for (final TransactionReference ref : t.getReferences()) {
+                if (type.equals(ref.getCustomType())) {
+                    return ref.getId();
+                }
+            }
+        }
+        return null;
     }
 
     public ElavonTransactionRequest getTransactionUpdateRequest(FundingSourceEntryDetails entryDetails,
