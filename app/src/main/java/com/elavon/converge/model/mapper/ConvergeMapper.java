@@ -39,6 +39,7 @@ import co.poynt.api.model.EntryMode;
 import co.poynt.api.model.FundingSource;
 import co.poynt.api.model.FundingSourceAccountType;
 import co.poynt.api.model.FundingSourceEntryDetails;
+import co.poynt.api.model.FundingSourceType;
 import co.poynt.api.model.Processor;
 import co.poynt.api.model.ProcessorResponse;
 import co.poynt.api.model.ProcessorStatus;
@@ -60,6 +61,7 @@ public class ConvergeMapper {
     private final KeyedMapper keyedMapper;
     private final KeyedEbtMapper keyedEbtMapper;
     private final KeyedGiftcardMapper keyedGiftcardMapper;
+    private final CashMapper cashMapper;
 
     @Inject
     public ConvergeMapper(
@@ -70,7 +72,8 @@ public class ConvergeMapper {
             final EmvMapper emvMapper,
             final KeyedMapper keyedMapper,
             final KeyedEbtMapper keyedEbtMapper,
-            final KeyedGiftcardMapper keyedGiftcardMapper) {
+            final KeyedGiftcardMapper keyedGiftcardMapper,
+            final CashMapper cashMapper) {
         this.msrMapper = msrMapper;
         this.msrDebitMapper = msrDebitMapper;
         this.msrEbtMapper = msrEbtMapper;
@@ -79,34 +82,39 @@ public class ConvergeMapper {
         this.keyedMapper = keyedMapper;
         this.keyedEbtMapper = keyedEbtMapper;
         this.keyedGiftcardMapper = keyedGiftcardMapper;
+        this.cashMapper = cashMapper;
     }
 
     private InterfaceMapper getMapper(final FundingSource fundingSource) {
-        switch (fundingSource.getEntryDetails().getEntryMode()) {
-            case TRACK_DATA_FROM_MAGSTRIPE:
-            case CONTACTLESS_MAGSTRIPE:
-                if (Boolean.TRUE.equals(fundingSource.isDebit())) {
-                    return msrDebitMapper;
-                } else if (fundingSource.getAccountType() == FundingSourceAccountType.EBT) {
-                    return msrEbtMapper;
-                } else if (isGiftCard(fundingSource)) {
-                    return msrGiftcardMapper;
-                } else {
-                    return msrMapper;
-                }
-            case INTEGRATED_CIRCUIT_CARD:
-            case CONTACTLESS_INTEGRATED_CIRCUIT_CARD:
-                return emvMapper;
-            case KEYED:
-                if (fundingSource.getAccountType() == FundingSourceAccountType.EBT) {
-                    return keyedEbtMapper;
-                } else if (isGiftCard(fundingSource)) {
-                    return keyedGiftcardMapper;
-                } else {
-                    return keyedMapper;
-                }
-            default:
-                throw new ConvergeMapperException("Invalid entry mode found");
+        if (fundingSource.getType() == FundingSourceType.CASH) {
+            return cashMapper;
+        } else {
+            switch (fundingSource.getEntryDetails().getEntryMode()) {
+                case TRACK_DATA_FROM_MAGSTRIPE:
+                case CONTACTLESS_MAGSTRIPE:
+                    if (Boolean.TRUE.equals(fundingSource.isDebit())) {
+                        return msrDebitMapper;
+                    } else if (fundingSource.getAccountType() == FundingSourceAccountType.EBT) {
+                        return msrEbtMapper;
+                    } else if (isGiftCard(fundingSource)) {
+                        return msrGiftcardMapper;
+                    } else {
+                        return msrMapper;
+                    }
+                case INTEGRATED_CIRCUIT_CARD:
+                case CONTACTLESS_INTEGRATED_CIRCUIT_CARD:
+                    return emvMapper;
+                case KEYED:
+                    if (fundingSource.getAccountType() == FundingSourceAccountType.EBT) {
+                        return keyedEbtMapper;
+                    } else if (isGiftCard(fundingSource)) {
+                        return keyedGiftcardMapper;
+                    } else {
+                        return keyedMapper;
+                    }
+                default:
+                    throw new ConvergeMapperException("Invalid entry mode found");
+            }
         }
     }
 
