@@ -8,6 +8,7 @@ import com.elavon.converge.config.Config;
 import com.elavon.converge.config.ConfigLoader;
 import com.elavon.converge.core.TransactionManager;
 import com.elavon.converge.exception.AppInitException;
+import com.elavon.converge.model.mapper.CashMapper;
 import com.elavon.converge.model.mapper.ConvergeMapper;
 import com.elavon.converge.model.mapper.EmvMapper;
 import com.elavon.converge.model.mapper.KeyedEbtMapper;
@@ -109,6 +110,12 @@ public class AppModule {
 
     @Provides
     @Singleton
+    public CashMapper provideCashMapper() {
+        return new CashMapper();
+    }
+
+    @Provides
+    @Singleton
     public ConvergeMapper provideConvergeMapper(
             final MsrMapper msrMapper,
             final MsrDebitMapper msrDebitMapper,
@@ -117,9 +124,10 @@ public class AppModule {
             final EmvMapper emvMapper,
             final KeyedMapper keyedMapper,
             final KeyedEbtMapper keyedEbtMapper,
-            final KeyedGiftcardMapper keyedGiftcardMapper) {
+            final KeyedGiftcardMapper keyedGiftcardMapper,
+            final CashMapper cashMapper) {
         return new ConvergeMapper(msrMapper, msrDebitMapper, msrEbtMapper, msrGiftcardMapper,
-                emvMapper, keyedMapper, keyedEbtMapper, keyedGiftcardMapper);
+                emvMapper, keyedMapper, keyedEbtMapper, keyedGiftcardMapper, cashMapper);
     }
 
     @Provides
@@ -145,7 +153,8 @@ public class AppModule {
         // add logging interceptor
         if (Boolean.TRUE.equals(config.getLog().getEnableHttpTracing())) {
             final HttpLoggingInterceptor logging = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
-                @Override public void log(String message) {
+                @Override
+                public void log(String message) {
                     Log.i("OkHttp", message);
                 }
             });
