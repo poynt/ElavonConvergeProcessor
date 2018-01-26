@@ -26,7 +26,9 @@ public class KeyedMapper extends InterfaceMapper {
     ElavonTransactionRequest createSale(final Transaction t) {
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
         request.setPoyntUserId(t.getContext().getEmployeeUserId().toString());
-        request.setTransactionType(ElavonTransactionType.SALE);
+        // TODO is this only way to find if force?
+        request.setTransactionType(StringUtil.isEmpty(t.getApprovalCode()) ? ElavonTransactionType.SALE : ElavonTransactionType.FORCE);
+        request.setApprovalCode(t.getApprovalCode());
         request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getTransactionAmount(), t.getAmounts().getCurrency()));
         // add card token if we have it
         // TODO - is this the right field ?
