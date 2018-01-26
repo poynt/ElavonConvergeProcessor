@@ -332,6 +332,8 @@
                                             <entry key="&lt;9F66&gt;" value="36204000" />
                                             <entry key="&lt;DF02&gt;" value="05" />
                                             <entry key="&lt;DF810C&gt;" value="03" />
+                                            <!-- Terminal Type -->
+                                            <entry key="&lt;9F35&gt;" value="21" />
                                             <!-- Contactless CVM Required Limit $10-->
                                             <entry key="&lt;DFE4&gt;" value="000003E8" />
                                             <entry key="&lt;CFFFFF00&gt;"
