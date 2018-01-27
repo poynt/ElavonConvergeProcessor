@@ -9,6 +9,7 @@ import com.elavon.converge.util.CurrencyUtil;
 import co.poynt.api.model.BalanceInquiry;
 import co.poynt.api.model.CustomerPresenceStatus;
 import co.poynt.api.model.Transaction;
+import co.poynt.api.model.TransactionStatus;
 import co.poynt.os.util.StringUtil;
 
 public class KeyedMapper extends InterfaceMapper {
@@ -26,8 +27,7 @@ public class KeyedMapper extends InterfaceMapper {
     ElavonTransactionRequest createSale(final Transaction t) {
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
         request.setPoyntUserId(t.getContext().getEmployeeUserId().toString());
-        // TODO is this only way to find if force?
-        request.setTransactionType(StringUtil.isEmpty(t.getApprovalCode()) ? ElavonTransactionType.SALE : ElavonTransactionType.FORCE);
+        request.setTransactionType(isForce(t) ? ElavonTransactionType.FORCE : ElavonTransactionType.SALE);
         request.setApprovalCode(t.getApprovalCode());
         request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getTransactionAmount(), t.getAmounts().getCurrency()));
         // add card token if we have it
@@ -69,6 +69,10 @@ public class KeyedMapper extends InterfaceMapper {
             request.setCardPresent(false);
         }
         return request;
+    }
+
+    private boolean isForce(final Transaction t) {
+        return t.getStatus() == TransactionStatus.CAPTURED && StringUtil.notEmpty(t.getApprovalCode());
     }
 
     @Override
