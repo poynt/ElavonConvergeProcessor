@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.elavon.converge.MainActivity">
+    tools:context="com.elavon.converge.activities.MainActivity">
 
     <TextView
         android:id="@+id/setupTextView"
@@ -51,17 +51,5 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="SETTLE" />
-
-    <TextView
-        android:id="@+id/manualEntryTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingTop="5dp"
-        android:text="Manual Entry" />
-
-    <WebView
-        android:id="@+id/manualEntryWebView"
-        android:layout_width="match_parent"
-        android:layout_height="206dp" />
 
 </LinearLayout>

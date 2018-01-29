@@ -8,6 +8,11 @@
     <!-- descriptive name of this capability -->
     <provider>Elavon Converge Processor</provider>>
 
+    <!-- For Converge we handle our own manual entry -->
+    <!-- Payment Fragment will launch this activity for result  -->
+    <manual_entry_activity>com.elavon.converge.activities.ManualEntryActivity
+    </manual_entry_activity>
+
 
     <!-- entry method could be one of the following
         MANUAL -> will result in showing a icon to the merchant to manually launch the capability.

@@ -1,0 +1,91 @@
+<html>
+    <head><title>Converge Manual Entry</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.css">
+        <link rel="stylesheet" href="https://d347164ulyc57y.cloudfront.net/virtualterminal/production/dist/css/virtual-terminal.bd30e7bf.css">
+    </head>
+    <body class="payment-fragment ">
+        <div id="vt" class="xy-center">
+            <div id="vt-error"></div>
+            <div id="vt-complete"></div>
+            <div id="vt-intermediate-dialog"></div>
+            <form id="vt-form" method="post" action="/virtualterminal" class="active">
+                <div id="vt-authorizing" class="xy-center vt-charging">
+                    <div><span class="fa fa-fw fa-circle-o-notch fa-spin"></span><h2>Processing&hellip;</h2></div>
+                </div>
+                <div id="vt-form-auth-fields">
+                    <div>
+                        <div id="vt-form-cp-box" >
+                            <label for="vt-form-cardpresent">Card Present</label>
+                            <input type="checkbox" class="common" id="vt-form-cardpresent" checked="checked" />
+                        </div>
+                    </div>
+                    <div>
+                        <div id="vt-form-card-box" class="vt-form-row">
+                            <input id="vt-form-card" type="tel" name="number" placeholder="CARD NUMBER" autocomplete="off" tabindex="3"
+                                    value="5472063333333330">
+                            <div>
+                                <span class="xy-center"><span class="fa fa-fw fa-credit-card-alt"></span></span>
+                                <span class="xy-center"><span class="fa fa-fw fa-cc-visa"></span></span>
+                                <span class="xy-center"><span class="fa fa-fw fa-cc-mastercard"></span></span>
+                                <span class="xy-center"><span class="fa fa-fw fa-cc-discover"></span></span>
+                                <span class="xy-center"><span class="fa fa-fw fa-cc-amex"></span></span>
+                                <span class="xy-center"><span class="fa fa-fw fa-cc-diners-club"></span></span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div id="vt-form-exp-box" class="vt-form-row">
+                            <input id="vt-form-exp" type="tel" name="expiration" placeholder="MM / YY" autocomplete="off" tabindex="4"
+                                    value="1219">
+                            <div><span class="xy-center"><span class="fa fa-fw fa-calendar-o"></span></span></div>
+                        </div>
+                        <div id="vt-form-cvc-box" class="vt-form-row">
+                            <input id="vt-form-cvc" type="tel" name="cvc" placeholder="CVV" autocomplete="off" tabindex="5"
+                                    value="123">
+                            <div><span class="xy-center"><span class="fa fa-fw fa-lock"></span></span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div id="vt-form-zip-box" class="vt-form-row">
+                            <input id="vt-form-zip" type="tel" name="zip" placeholder="BILLING ZIP" maxlength="9" autocomplete="off" tabindex="6"
+                                    value="95054">
+                            <div><span class="xy-center"><span class="fa fa-fw fa-home"></span></span></div>
+                        </div>
+                        <div id="vt-form-street-box" class="vt-form-row">
+                            <input id="vt-form-street" type="tel" name="street" placeholder="STREET #" autocomplete="off" tabindex="7"
+                                    value="965">
+                            <div><span class="xy-center"><span class="fa fa-fw fa-road"></span></span></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="vt-call-auth-btn-row" class="active vt-call-auth-btn-row">
+                    <button id="vt-form-cancel" type="button">CANCEL</button>
+                    <button id="vt-form-submit" type="button" tabindex="9">CHARGE</button>
+                </div>
+            </form>
+            <div id="vt-form-error"></div>
+        </div>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <script>
+        $('#vt-form-submit').on('click', function () {
+          $('#vt-authorizing').fadeIn(200);
+          $('#vt-form-error').removeClass('active');
+          Converge.processTransaction($("#vt-form-card").val(), $("#vt-form-cardpresent").is(":checked"),
+            $("#vt-form-exp").val(), $("#vt-form-cvc").val(), $("#vt-form-street").val(), $("#vt-form-zip").val());
+          return false;
+        });
+
+        $('#vt-form-cancel').on('click', function () {
+            $('#vt-form-error').removeClass('active');
+            Converge.cancelTransaction();
+            return false;
+        });
+
+        function updateResult(message) {
+            $('#vt-authorizing').fadeOut(200);
+            $("#vt-form-error").text(message);
+            $('#vt-form-error').addClass('active');
+        }
+        </script>
+    </body>
+</html>

@@ -20,6 +20,8 @@ import com.elavon.converge.util.HexDump;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -332,6 +334,30 @@ public class ConvergeMapper {
                             transaction.getFundingSource().getCard().getNumberLast4(),
                             transaction.getFundingSource().getCard().getEncryptedExpirationDate())
             );
+            // remove sensitive fields from getting recorded in Poynt
+            if (transaction.getFundingSource().getEntryDetails().getEntryMode() == EntryMode.KEYED) {
+                transaction.getFundingSource().getCard().setNumber(null);
+                if (transaction.getFundingSource().getVerificationData() != null) {
+                    transaction.getFundingSource().getVerificationData().setCvData(null);
+                }
+            }
+            // HACK: Poynt Server require 4 digit expiry year :-/
+            // NOTE: If it is 2-digit (yy) then the year is set to be between 80 years before and
+            // 20 years after the date the SimpleDateFormat instance is created
+            if (transaction.getFundingSource().getCard().getExpirationYear() != null) {
+                String expiryYear = transaction.getFundingSource().getCard().getExpirationYear().toString();
+                SimpleDateFormat sdfmt1 = new SimpleDateFormat("yy");
+                SimpleDateFormat sdfmt2 = new SimpleDateFormat("yyyy");
+                try {
+                    Date dDate = sdfmt1.parse(expiryYear);
+                    String strOutput = sdfmt2.format(dDate);
+                    Log.d(TAG, "Converting year from " + expiryYear + " to " + strOutput);
+                    transaction.getFundingSource().getCard().setExpirationYear(Integer.parseInt(strOutput));
+                } catch (ParseException e) {
+                    Log.e(TAG, "Failed to convert expiry year from YY to YYYY", e);
+                }
+
+            }
         }
 
         setStatusResponse(processorResponse, etResponse);
