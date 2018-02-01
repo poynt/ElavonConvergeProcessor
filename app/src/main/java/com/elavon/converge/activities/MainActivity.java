@@ -1,4 +1,4 @@
-package com.elavon.converge;
+package com.elavon.converge.activities;
 
 import android.app.Activity;
 import android.content.ComponentName;
@@ -12,19 +12,17 @@ import android.os.Looper;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.elavon.converge.R;
 import com.elavon.converge.core.TransactionManager;
 import com.elavon.converge.inject.AppComponent;
 import com.elavon.converge.inject.AppModule;
 import com.elavon.converge.inject.DaggerAppComponent;
 import com.elavon.converge.model.ElavonSettleResponse;
 import com.elavon.converge.processor.ConvergeCallback;
-import com.elavon.converge.util.FileUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -40,7 +38,7 @@ import co.poynt.os.services.v1.IPoyntConfigurationService;
 import co.poynt.os.services.v1.IPoyntConfigurationUpdateListener;
 import fr.devnied.bitlib.BytesUtils;
 
-public class MainActivity extends Activity implements VirtualTerminalService.VirtualTerminalListener {
+public class MainActivity extends Activity {
 
     private static final String TAG = "MainActivity";
 
@@ -53,11 +51,8 @@ public class MainActivity extends Activity implements VirtualTerminalService.Vir
 
     @Inject
     protected TransactionManager transactionManager;
-    @Inject
-    protected VirtualTerminalService virtualTerminalService;
 
     private IPoyntConfigurationService poyntConfigurationService;
-    private WebView manualEntryWebView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,7 +64,6 @@ public class MainActivity extends Activity implements VirtualTerminalService.Vir
         setContentView(R.layout.activity_main);
         createTrackFormatView();
         createSettleView();
-        createManualEntryView();
 
         Button balaceInquiryBtn = (Button) findViewById(R.id.balanceInquiry);
         balaceInquiryBtn.setOnClickListener(new View.OnClickListener() {
@@ -94,6 +88,7 @@ public class MainActivity extends Activity implements VirtualTerminalService.Vir
                 startActivityForResult(intent, BALANCE_INQUIRY_REQUEST);
             }
         });
+
     }
 
     private void createTrackFormatView() {
@@ -203,28 +198,6 @@ public class MainActivity extends Activity implements VirtualTerminalService.Vir
             }
         }
         return list;
-    }
-
-    private void createManualEntryView() {
-        final String manualEntryHtml = FileUtil.readFile(getResources().openRawResource(R.raw.manual_entry));
-        manualEntryWebView = (WebView) findViewById(R.id.manualEntryWebView);
-        manualEntryWebView.getSettings().setJavaScriptEnabled(true);
-        manualEntryWebView.getSettings().setAllowFileAccessFromFileURLs(true); // maybe you don't need this rule
-        manualEntryWebView.getSettings().setAllowUniversalAccessFromFileURLs(true);
-        manualEntryWebView.setWebViewClient(new WebViewClient());
-        manualEntryWebView.addJavascriptInterface(virtualTerminalService, "Converge");
-        manualEntryWebView.loadData(manualEntryHtml, "text/html", "UTF-8");
-        virtualTerminalService.setVirtualTerminalListener(this);
-    }
-
-    @Override
-    public void onProcessed(final String message) {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                manualEntryWebView.evaluateJavascript("updateResult('" + message + "');", null);
-            }
-        });
     }
 
     /**

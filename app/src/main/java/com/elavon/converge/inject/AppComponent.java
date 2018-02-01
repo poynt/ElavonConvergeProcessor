@@ -1,7 +1,8 @@
 package com.elavon.converge.inject;
 
-import com.elavon.converge.MainActivity;
 import com.elavon.converge.TransactionService;
+import com.elavon.converge.activities.MainActivity;
+import com.elavon.converge.activities.ManualEntryActivity;
 
 import javax.inject.Singleton;
 
@@ -11,5 +12,8 @@ import dagger.Component;
 @Component(modules = AppModule.class)
 public interface AppComponent {
     void inject(MainActivity mainActivity);
+
     void inject(TransactionService transactionService);
+
+    void inject(ManualEntryActivity manualEntryActivity);
 }

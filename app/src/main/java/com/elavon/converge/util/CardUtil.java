@@ -1,6 +1,7 @@
 package com.elavon.converge.util;
 
 import co.poynt.api.model.Card;
+import co.poynt.api.model.CardType;
 
 public class CardUtil {
     /**
@@ -11,5 +12,32 @@ public class CardUtil {
             return null;
         }
         return card.getExpirationMonth().toString() + (card.getExpirationYear() % 100);
+    }
+
+    public static CardType cardTypeByFirst6(String first6)
+            throws NumberFormatException {
+        if (first6 == null)
+            throw new NumberFormatException("Null credit card number");
+
+        CreditCardType creditCardType = CreditCardType.detect(first6);
+        switch (creditCardType) {
+            case VISA:
+                return CardType.VISA;
+            case MASTERCARD:
+                return CardType.MASTERCARD;
+            case AMERICAN_EXPRESS:
+                return CardType.AMERICAN_EXPRESS;
+            case DISCOVER:
+                return CardType.DISCOVER;
+            case DINERS_CLUB:
+                return CardType.DINERS_CLUB;
+            case JCB:
+                return CardType.JCB;
+            case MAESTRO:
+                return CardType.MAESTRO;
+            case UNKNOWN:
+            default:
+                return CardType.OTHER;
+        }
     }
 }
