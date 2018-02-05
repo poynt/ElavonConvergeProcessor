@@ -10,6 +10,11 @@
     <uses-permission android:name="co.poynt.business.ACCESS_BUSINESS" />
     <uses-permission android:name="poynt.permission.SECOND_SCREEN_SERVICE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- for sync -->
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
 
     <application
         android:name=".ElavonConvergeProcessorApplication"
@@ -69,6 +74,24 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
+        <provider
+            android:name=".sync.StubProvider"
+            android:authorities="com.elavon.converge.datasync.provider"
+            android:exported="false"
+            android:syncable="true" />
+
+        <service
+            android:name=".sync.SyncService"
+            android:exported="true"
+            android:process=":sync">
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter" />
+            </intent-filter>
+            <meta-data
+                android:name="android.content.SyncAdapter"
+                android:resource="@xml/syncadapter" />
+        </service>
     </application>
 
 </manifest>
