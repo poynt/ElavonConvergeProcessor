@@ -15,6 +15,7 @@ import java.util.UUID;
 import javax.inject.Inject;
 
 import co.poynt.api.model.Address;
+import co.poynt.api.model.CVSkipReason;
 import co.poynt.api.model.Card;
 import co.poynt.api.model.ClientContext;
 import co.poynt.api.model.CustomerPresenceStatus;
@@ -29,6 +30,7 @@ import co.poynt.api.model.VerificationData;
 import co.poynt.os.model.Payment;
 import co.poynt.os.model.PoyntError;
 import co.poynt.os.services.v1.IPoyntTransactionServiceListener;
+import co.poynt.os.util.StringUtil;
 
 public class VirtualTerminalService {
 
@@ -59,69 +61,75 @@ public class VirtualTerminalService {
     public void processTransaction(
             final String cardNumber,
             final String cardPresent,
-            final String expiry,
+            final String expiryMonth,
+            final String expriryYear,
             final String cvv,
-            final String address,
-            final String zip) {
+            final String zip,
+            final String address) {
         Log.i(TAG, "processTransaction");
 
-        transactionManager.generateToken(cardNumber, expiry, new ConvergeCallback<ElavonTransactionResponse>() {
-            @Override
-            public void onResponse(final ElavonTransactionResponse response) {
-                if (response.getToken() == null) {
-                    Log.e(TAG, "Failed to tokenize the card");
-                    virtualTerminalListener.onProcessed(null, "Failed to tokenize the card, please try again!");
-                    return;
-                }
+        transactionManager.generateToken(
+                cardNumber,
+                expiryMonth + expriryYear.substring(2),
+                new ConvergeCallback<ElavonTransactionResponse>() {
+                    @Override
+                    public void onResponse(final ElavonTransactionResponse response) {
+                        if (response.getToken() == null) {
+                            Log.e(TAG, "Failed to tokenize the card");
+                            virtualTerminalListener.onProcessed(null, "Invalid card, please try again!");
+                            return;
+                        }
 
-                Log.d(TAG, "Card tokenization successful...");
+                        Log.d(TAG, "Card tokenization successful...");
 
-                final boolean isCardPresent = "true".equals(cardPresent);
-                final Transaction transaction = getTransaction(cardNumber,
-                        response.getToken(), isCardPresent, expiry, cvv, address, zip, payment);
-                try {
-                    transactionManager.processTransaction(
-                            transaction,
-                            UUID.randomUUID().toString(),
-                            new IPoyntTransactionServiceListener.Stub() {
-                                @Override
-                                public void onResponse(final Transaction parentTransaction,
-                                                       final String requestId,
-                                                       final PoyntError poyntError) throws RemoteException {
-                                    if (poyntError == null) {
-                                        virtualTerminalListener.onProcessed(parentTransaction, null);
+                        final boolean isCardPresent = "true".equals(cardPresent);
+                        final Transaction transaction = getTransaction(cardNumber,
+                                response.getToken(), isCardPresent,
+                                expiryMonth + expriryYear.substring(2),
+                                cvv, address, zip, payment);
+                        try {
+                            transactionManager.processTransaction(
+                                    transaction,
+                                    UUID.randomUUID().toString(),
+                                    new IPoyntTransactionServiceListener.Stub() {
+                                        @Override
+                                        public void onResponse(final Transaction parentTransaction,
+                                                               final String requestId,
+                                                               final PoyntError poyntError) throws RemoteException {
+                                            if (poyntError == null) {
+                                                virtualTerminalListener.onProcessed(parentTransaction, null);
 
-                                    } else {
-                                        virtualTerminalListener.onProcessed(parentTransaction,
-                                                "transaction failed with " + poyntError.getReason());
-                                    }
-                                }
+                                            } else {
+                                                virtualTerminalListener.onProcessed(parentTransaction,
+                                                        "transaction failed with " + poyntError.getReason());
+                                            }
+                                        }
 
-                                @Override
-                                public void onLoginRequired() throws RemoteException {
-                                    Log.e(TAG, "Received login required - unexpected!");
-                                    virtualTerminalListener.onProcessed(null, "transaction failed.");
-                                }
+                                        @Override
+                                        public void onLoginRequired() throws RemoteException {
+                                            Log.e(TAG, "Received login required - unexpected!");
+                                            virtualTerminalListener.onProcessed(null, "transaction failed.");
+                                        }
 
-                                @Override
-                                public void onLaunchActivity(final Intent intent, final String s) throws RemoteException {
-                                    //no-op
-                                    Log.e(TAG, "Received launch activity - unexpected!");
-                                    virtualTerminalListener.onProcessed(null, "transaction failed.");
-                                }
-                            });
-                } catch (final RemoteException e) {
-                    Log.e(TAG, "Received remoteException - unexpected!");
-                    virtualTerminalListener.onProcessed(null, "transaction failed.");
-                }
-            }
+                                        @Override
+                                        public void onLaunchActivity(final Intent intent, final String s) throws RemoteException {
+                                            //no-op
+                                            Log.e(TAG, "Received launch activity - unexpected!");
+                                            virtualTerminalListener.onProcessed(null, "transaction failed.");
+                                        }
+                                    });
+                        } catch (final RemoteException e) {
+                            Log.e(TAG, "Received remoteException - unexpected!");
+                            virtualTerminalListener.onProcessed(null, "transaction failed.");
+                        }
+                    }
 
-            @Override
-            public void onFailure(final Throwable t) {
-                Log.e(TAG, "Failed to tokenize the card");
-                virtualTerminalListener.onProcessed(null, "Failed to tokenize the card, please try again!");
-            }
-        });
+                    @Override
+                    public void onFailure(final Throwable t) {
+                        Log.e(TAG, "Failed to tokenize the card");
+                        virtualTerminalListener.onProcessed(null, "Failed to tokenize the card, please try again!");
+                    }
+                });
     }
 
     private Transaction getTransaction(
@@ -168,7 +176,15 @@ public class VirtualTerminalService {
 
         final VerificationData verificationData = new VerificationData();
         verificationData.setCardHolderBillingAddress(fundingSourceAddress);
-        verificationData.setCvData(cvv);
+        if (StringUtil.notEmpty(cvv) && !"undefined".equalsIgnoreCase(cvv)) {
+            verificationData.setCvData(cvv);
+        } else {
+            if (!isCardPresent) {
+                verificationData.setCvSkipReason(CVSkipReason.NOT_PRESENT);
+            } else {
+                verificationData.setCvSkipReason(CVSkipReason.BYPASSED);
+            }
+        }
 
         final FundingSource fundingSource = new FundingSource();
         fundingSource.setCard(card);

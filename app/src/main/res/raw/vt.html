@@ -1,0 +1,176 @@
+<html>
+    <head>
+        <title>Poynt Virtual Terminal</title>
+        <meta charset="utf-8" />
+        <meta
+                name="viewport"
+                content="width=device-width, initial-scale=1.0">
+        <link
+                rel="stylesheet"
+                href="https://d347164ulyc57y.cloudfront.net/converge/css/main.css" />
+        <link
+                rel="stylesheet"
+                href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <script src="https://d347164ulyc57y.cloudfront.net/converge/js/jquery-3.3.1.min.js"></script>
+        <script src="https://d347164ulyc57y.cloudfront.net/converge/js/jquery.payment.js"></script>
+        <script src="https://d347164ulyc57y.cloudfront.net/converge/js/main.js"></script>
+    </head>
+    <body>
+        <div
+                class='xy-center'
+                id='vt'>
+            <form
+                    method="POST"
+                    id='vt-form'
+                    class='active'>
+                <!--<div id='vt-form-amount-tip'>-->
+                    <!--<div id='vt-form-amount-section'>-->
+                        <!--$-->
+                        <!--<input-->
+                                <!--id='vt-form-amount'-->
+                                <!--type='tel'-->
+                                <!--name='amount'-->
+                                <!--placeholder="0.00"-->
+                                <!--autocomplete="off">-->
+                    <!--</div>-->
+                    <!--<div id='vt-form-tip-section'>-->
+                        <!--(Incl. Tip $<input-->
+                            <!--id='vt-form-tip'-->
+                            <!--type='tel'-->
+                            <!--name='tip'-->
+                            <!--placeholder="0.00"-->
+                            <!--autocomplete="off">)-->
+                    <!--</div>-->
+                <!--</div>-->
+                <div id='vt-card-present'>
+                    <div id='vt-card-present-text'>Card present?</div>
+                    <div id='vt-card-present-toggle-section'>
+                        <label class="switch">
+                            <input
+                                    type="checkbox"
+                                    id="vt-card-present-toggle">
+                            <div class="slider round">
+                                <!--ADDED HTML -->
+                                <span class="on">YES</span>
+                                <span class="off">NO</span>
+                                <!--END-->
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                <div id='vt-form-auth-fields'>
+                    <div>
+                        <div
+                                id='vt-form-card-box'
+                                class='vt-form-row'>
+                            <input
+                                    id='vt-form-card'
+                                    type='tel'
+                                    name='number'
+                                    placeholder='CARD NUMBER'
+                                    autocomplete='cc-number'>
+                            <div>
+                                <span class="xy-center">
+                                    <span class="fa fa-fw fa-credit-card-alt"></span>
+                                </span>
+                                <span class="xy-center">
+                                    <span class="fa fa-fw fa-cc-visa"></span>
+                                </span>
+                                <span class="xy-center">
+                                    <span class="fa fa-fw fa-cc-mastercard"></span>
+                                </span>
+                                <span class="xy-center">
+                                    <span class="fa fa-fw fa-cc-discover"></span>
+                                </span>
+                                <span class="xy-center">
+                                    <span class="fa fa-fw fa-cc-amex"></span>
+                                </span>
+                                <span class="xy-center">
+                                    <span class="fa fa-fw fa-cc-diners-club"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style='display: flex;'>
+                        <div
+                                id='vt-form-exp-box'
+                                class='vt-form-row'>
+                            <input
+                                    id='vt-form-exp'
+                                    type='tel'
+                                    name='expiration'
+                                    placeholder='MM / YY'
+                                    autocomplete='cc-exp'>
+                            <div>
+                                <span class='xy-center'>
+                                    <span class='fa fa-fw fa-calendar-o'></span>
+                                </span>
+                            </div>
+                        </div>
+                        <div
+                                id='vt-form-cvc-box'
+                                class='vt-form-row'>
+                            <input
+                                    id='vt-form-cvc'
+                                    type='tel'
+                                    name='cvc'
+                                    placeholder='CVV'
+                                    autocomplete='off'>
+                            <div>
+                                <span class='xy-center'>
+                                    <span class='fa fa-fw fa-lock'></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style='display: flex;'>
+                        <div
+                                id="vt-form-zip-box"
+                                class="vt-form-row">
+                            <input
+                                    id="vt-form-zip"
+                                    type="tel"
+                                    name="zip"
+                                    placeholder="BILLING ZIP"
+                                    maxlength="9"
+                                    autocomplete="off">
+                            <div>
+                                <span class="xy-center">
+                                    <span class="fa fa-fw fa-home"></span>
+                                </span>
+                            </div>
+                        </div>
+                        <div
+                                id="vt-form-street-box"
+                                class="vt-form-row">
+                            <input
+                                    id="vt-form-street"
+                                    type="tel"
+                                    name="street"
+                                    placeholder="STREET #"
+                                    autocomplete="off">
+                            <div>
+                                <span class="xy-center">
+                                    <span class="fa fa-fw fa-road"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id='vt-form-error'></div>
+                <div
+                        id='vt-form-submit-row'
+                        class='vt-form-button-row active'>
+                    <button
+                            id='vt-form-cancel'
+                            type='button'>CANCEL
+                    </button>
+                    <button
+                            id='vt-form-charge'
+                            type='submit'>CHARGE
+                    </button>
+                </div>
+            </form>
+        </div>
+    </body>
+</html>

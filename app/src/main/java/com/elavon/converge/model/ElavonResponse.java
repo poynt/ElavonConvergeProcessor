@@ -1,6 +1,5 @@
 package com.elavon.converge.model;
 
-import com.elavon.converge.model.type.ElavonTransactionType;
 import com.elavon.converge.model.type.ResponseCodes;
 
 import org.simpleframework.xml.Element;
@@ -47,27 +46,27 @@ public abstract class ElavonResponse {
     }
 
     @Element(name = "ssl_result", required = false)
-    private String result;
+    protected String result;
 
     @Element(name = "ssl_result_message", required = false)
-    private String resultMessage;
+    protected String resultMessage;
 
     // Error code returned only if an error occurred. Typically, when the transaction failed validation or the request is
     // incorrect. This will prevent the transaction from going to authorization.
     @Element(name = "errorCode", required = false)
-    private int errorCode;
+    protected int errorCode;
 
     @Element(name = "errorName", required = false)
-    private String errorName;
+    protected String errorName;
 
     @Element(name = "errorMessage", required = false)
-    private String errorMessage;
+    protected String errorMessage;
 
     @Element(name = "ssl_transaction_type", required = false)
-    private ElavonTransactionType transactionType;
+    protected String transactionType;
 
     @Element(name = "ssl_response_code", required = false)
-    private ResponseCodes responseCode;
+    protected ResponseCodes responseCode;
 
 
     public String getResult() {
@@ -114,11 +113,11 @@ public abstract class ElavonResponse {
         return RESULT_SUCCESS.equals(result);
     }
 
-    public ElavonTransactionType getTransactionType() {
+    public String getTransactionType() {
         return transactionType;
     }
 
-    public void setTransactionType(ElavonTransactionType transactionType) {
+    public void setTransactionType(String transactionType) {
         this.transactionType = transactionType;
     }
 

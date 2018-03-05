@@ -1,10 +1,12 @@
 package com.elavon.converge.activities;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Window;
@@ -88,7 +90,7 @@ public class ManualEntryActivity extends AppCompatActivity
     private void createManualEntryView() {
         VirtualTerminalService virtualTerminalService = new VirtualTerminalService(transactionManager, payment);
 
-        final String manualEntryHtml = FileUtil.readFile(getResources().openRawResource(R.raw.manual_entry_form));
+        final String manualEntryHtml = FileUtil.readFile(getResources().openRawResource(R.raw.vt));
         manualEntryWebView = (WebView) findViewById(R.id.manualEntryWebView);
         manualEntryWebView.getSettings().setJavaScriptEnabled(true);
         manualEntryWebView.getSettings().setAllowFileAccessFromFileURLs(true); // maybe you don't need this rule
@@ -110,7 +112,17 @@ public class ManualEntryActivity extends AppCompatActivity
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
-                    manualEntryWebView.evaluateJavascript("updateResult('" + message + "');", null);
+                    //manualEntryWebView.evaluateJavascript("updateResult('" + message + "');", null);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(ManualEntryActivity.this);
+                    builder.setMessage(message)
+                            .setCancelable(false)
+                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.dismiss();
+                                }
+                            });
+                    AlertDialog alert = builder.create();
+                    alert.show();
                 }
             });
         }

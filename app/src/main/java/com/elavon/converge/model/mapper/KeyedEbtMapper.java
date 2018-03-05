@@ -13,6 +13,9 @@ import co.poynt.api.model.BalanceInquiry;
 import co.poynt.api.model.EBTType;
 import co.poynt.api.model.Transaction;
 
+import static com.elavon.converge.model.type.ElavonTransactionType.DELETE;
+import static com.elavon.converge.model.type.ElavonTransactionType.VOID;
+
 public class KeyedEbtMapper extends InterfaceMapper {
 
     private static final Map<EBTType, ElavonTransactionType> EBT_SALE_TYPES_MAP = new HashMap<EBTType, ElavonTransactionType>() {{
@@ -88,6 +91,19 @@ public class KeyedEbtMapper extends InterfaceMapper {
     @Override
     ElavonTransactionRequest createReverse(final String t) {
         throw new ConvergeMapperException("Reverse not allowed in EBT transaction");
+    }
+
+    @Override
+    public ElavonTransactionRequest createVoid(Transaction transaction, String transactionId) {
+        final ElavonTransactionRequest request = new ElavonTransactionRequest();
+        if (transaction.isAuthOnly() == Boolean.TRUE) {
+            request.setTransactionType(DELETE);
+        } else {
+            request.setTransactionType(VOID);
+        }
+        // elavon transactionId
+        request.setTxnId(transactionId);
+        return request;
     }
 
     @Override

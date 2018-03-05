@@ -4,7 +4,9 @@ import com.elavon.converge.model.type.AVSResponse;
 import com.elavon.converge.model.type.CVV2Response;
 import com.elavon.converge.model.type.CardShortDescription;
 import com.elavon.converge.model.type.CardType;
+import com.elavon.converge.model.type.ElavonEntryMode;
 import com.elavon.converge.model.type.TokenResponse;
+import com.elavon.converge.model.type.TransactionStatus;
 
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;
@@ -41,6 +43,7 @@ import java.util.Date;
  * <ssl_issue_points />
  * <ssl_txn_time>10/23/2017 06:12:25 PM</ssl_txn_time>
  * <ssl_access_code />
+ * <ssl_trans_status>STL</ssl_trans_status>
  * </txn>
  */
 @Root(name = "txn")
@@ -138,7 +141,6 @@ public class ElavonTransactionResponse extends ElavonResponse {
     @Element(name = "ssl_add_token_response", required = false)
     private String addTokenResponse;
 
-
     @Element(name = "ssl_account_type", required = false)
     private String accountType;
 
@@ -204,6 +206,30 @@ public class ElavonTransactionResponse extends ElavonResponse {
 
     @Element(name = "ssl_processing_code", required = false)
     private String interacProcessingCode;
+
+    @Element(name = "ssl_trans_status", required = false)
+    private TransactionStatus transactionStatus;
+
+    @Element(name = "ssl_first_name", required = false)
+    private String firstName;
+
+    @Element(name = "ssl_last_name", required = false)
+    private String lastName;
+
+    @Element(name = "ssl_user_id", required = false)
+    private String userId;
+
+    @Element(name = "ssl_salestax", required = false)
+    private BigDecimal salesTax;
+
+    @Element(name = "ssl_tip_amount", required = false)
+    private BigDecimal tipAmount;
+
+    @Element(name = "ssl_is_voidable", required = false)
+    private String isVoidable;
+
+    @Element(name = "ssl_entry_mode", required = false)
+    private ElavonEntryMode entryMode;
 
 
     public String getTxnId() {
@@ -584,17 +610,74 @@ public class ElavonTransactionResponse extends ElavonResponse {
         this.iccCardType = iccCardType;
     }
 
+    public TransactionStatus getTransactionStatus() {
+        return transactionStatus;
+    }
+
+    public void setTransactionStatus(TransactionStatus transactionStatus) {
+        this.transactionStatus = transactionStatus;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public BigDecimal getSalesTax() {
+        return salesTax;
+    }
+
+    public void setSalesTax(BigDecimal salesTax) {
+        this.salesTax = salesTax;
+    }
+
+    public BigDecimal getTipAmount() {
+        return tipAmount;
+    }
+
+    public void setTipAmount(BigDecimal tipAmount) {
+        this.tipAmount = tipAmount;
+    }
+
+    public String getIsVoidable() {
+        return isVoidable;
+    }
+
+    public void setIsVoidable(String isVoidable) {
+        this.isVoidable = isVoidable;
+    }
+
+
     @Override
     public String toString() {
         return "ElavonTransactionResponse{" +
-                "accountBalance=" + accountBalance +
-                ", txnId='" + txnId + '\'' +
+                "txnId='" + txnId + '\'' +
                 ", txnTime=" + txnTime +
                 ", approvalCode='" + approvalCode + '\'' +
                 ", amount=" + amount +
                 ", baseAmount=" + baseAmount +
                 ", requestedAmount=" + requestedAmount +
                 ", balanceDue=" + balanceDue +
+                ", accountBalance=" + accountBalance +
                 ", avsResponse=" + avsResponse +
                 ", cvv2Response=" + cvv2Response +
                 ", cardNumberMasked='" + cardNumberMasked + '\'' +
@@ -603,16 +686,23 @@ public class ElavonTransactionResponse extends ElavonResponse {
                 ", cardCurrency='" + cardCurrency + '\'' +
                 ", cardholderAmount=" + cardholderAmount +
                 ", cardholderBaseAmount=" + cardholderBaseAmount +
+                ", result='" + result + '\'' +
                 ", cardholderTipAmount=" + cardholderTipAmount +
+                ", resultMessage='" + resultMessage + '\'' +
                 ", serverId='" + serverId + '\'' +
+                ", errorCode=" + errorCode +
+                ", errorName='" + errorName + '\'' +
                 ", shift='" + shift + '\'' +
+                ", errorMessage='" + errorMessage + '\'' +
+                ", transactionType='" + transactionType + '\'' +
                 ", cardShortDescription=" + cardShortDescription +
+                ", responseCode=" + responseCode +
                 ", cardType=" + cardType +
                 ", transactionCurrency='" + transactionCurrency + '\'' +
                 ", token='" + token + '\'' +
                 ", tokenResponse=" + tokenResponse +
                 ", addTokenResponse='" + addTokenResponse + '\'' +
-                ", accountType=" + accountType +
+                ", accountType='" + accountType + '\'' +
                 ", issuerScript='" + issuerScript + '\'' +
                 ", csn='" + csn + '\'' +
                 ", atc='" + atc + '\'' +
@@ -634,6 +724,14 @@ public class ElavonTransactionResponse extends ElavonResponse {
                 ", interacMacAmount='" + interacMacAmount + '\'' +
                 ", interacSTAN='" + interacSTAN + '\'' +
                 ", interacProcessingCode='" + interacProcessingCode + '\'' +
+                ", transactionStatus=" + transactionStatus +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", userId='" + userId + '\'' +
+                ", salesTax=" + salesTax +
+                ", tipAmount=" + tipAmount +
+                ", isVoidable='" + isVoidable + '\'' +
+                ", entryMode=" + entryMode +
                 '}';
     }
 }

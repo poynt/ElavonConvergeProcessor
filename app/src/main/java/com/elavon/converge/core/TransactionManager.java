@@ -19,7 +19,6 @@ import com.elavon.converge.processor.ConvergeCallback;
 import com.elavon.converge.processor.ConvergeService;
 
 import java.util.List;
-
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -28,6 +27,7 @@ import co.poynt.api.model.AdjustTransactionRequest;
 import co.poynt.api.model.BalanceInquiry;
 import co.poynt.api.model.EMVData;
 import co.poynt.api.model.EntryMode;
+import co.poynt.api.model.FundingSourceEntryDetails;
 import co.poynt.api.model.Transaction;
 import co.poynt.api.model.TransactionAction;
 import co.poynt.os.model.Intents;
@@ -91,34 +91,40 @@ public class TransactionManager {
         Log.d(TAG, "processTransaction");
         // if the transaction action is REFUND and if it has a parentId - let's get it first
         if (transaction.getAction() == TransactionAction.REFUND) {
-            // get parent transaction from poynt service first
-            getTransaction(transaction.getParentId().toString(),
-                    requestId,
-                    new IPoyntTransactionServiceListener.Stub() {
-                        @Override
-                        public void onResponse(final Transaction parentTransaction,
-                                               final String requestId,
-                                               final PoyntError poyntError) throws RemoteException {
-                            refundTransaction(transaction,
-                                    parentTransaction,
-                                    requestId,
-                                    listener);
-                        }
 
-                        @Override
-                        public void onLoginRequired() throws RemoteException {
-                            if (listener != null) {
-                                listener.onLoginRequired();
+            // if it's a regular refund - get parent transaction from poynt service first
+            // if it's non-ref refund just send refund request
+            if (transaction.getParentId() != null) {
+                getTransaction(transaction.getParentId().toString(),
+                        requestId,
+                        new IPoyntTransactionServiceListener.Stub() {
+                            @Override
+                            public void onResponse(final Transaction parentTransaction,
+                                                   final String requestId,
+                                                   final PoyntError poyntError) throws RemoteException {
+                                refundTransaction(transaction,
+                                        parentTransaction,
+                                        requestId,
+                                        listener);
                             }
-                        }
 
-                        @Override
-                        public void onLaunchActivity(final Intent intent, final String s) throws RemoteException {
-                            if (listener != null) {
-                                listener.onLaunchActivity(intent, s);
+                            @Override
+                            public void onLoginRequired() throws RemoteException {
+                                if (listener != null) {
+                                    listener.onLoginRequired();
+                                }
                             }
-                        }
-                    });
+
+                            @Override
+                            public void onLaunchActivity(final Intent intent, final String s) throws RemoteException {
+                                if (listener != null) {
+                                    listener.onLaunchActivity(intent, s);
+                                }
+                            }
+                        });
+            } else {
+                refundTransaction(transaction, null, requestId, listener);
+            }
         } else {
             final ElavonTransactionRequest request = convergeMapper.getTransactionRequest(transaction);
 
@@ -240,41 +246,77 @@ public class TransactionManager {
                 }
 
                 // update in converge
-                final ElavonTransactionRequest request = convergeMapper.getTransactionUpdateRequest(
-                        transaction.getFundingSource().getEntryDetails(),
-                        transaction.getProcessorResponse().getRetrievalRefNum(),
-                        adjustTransactionRequest);
-                convergeService.update(request, new ConvergeCallback<ElavonTransactionResponse>() {
-                    @Override
-                    public void onResponse(final ElavonTransactionResponse elavonResponse) {
-                        try {
-                            if (elavonResponse.isSuccess()) {
-                                // if it's MSR and if we have signature it's a separate call
-                                if (transaction.getFundingSource().getEntryDetails().getEntryMode() == EntryMode.TRACK_DATA_FROM_MAGSTRIPE
-                                        && adjustTransactionRequest.getSignature() != null) {
-                                    updateSignature(transaction, adjustTransactionRequest, requestId, listener);
-                                } else {
-                                    listener.onResponse(transaction, requestId, null);
-                                }
-                            } else {
-                                listener.onResponse(transaction, requestId, new PoyntError(PoyntError.CODE_API_ERROR));
-                            }
-                        } catch (final RemoteException e) {
-                            Log.e(TAG, "Failed to respond", e);
-                        }
-                    }
+                // if there is tip - call update tip API followed by signature
+                boolean signatureOnlyForMSR = false;
+                FundingSourceEntryDetails entryDetails = transaction.getFundingSource().getEntryDetails();
+                if (entryDetails != null
+                        && entryDetails.getEntryMode() == EntryMode.TRACK_DATA_FROM_MAGSTRIPE) {
 
-                    @Override
-                    public void onFailure(final Throwable t) {
-                        final PoyntError error = new PoyntError(PoyntError.CODE_API_ERROR);
-                        error.setThrowable(t);
-                        try {
-                            listener.onResponse(transaction, requestId, error);
-                        } catch (final RemoteException e) {
-                            Log.e(TAG, "Failed to respond", e);
-                        }
+                    if (adjustTransactionRequest.getAmounts() == null
+                            && adjustTransactionRequest.getSignature() != null) {
+                        // if there is no amounts but signature then only update signature
+                        signatureOnlyForMSR = true;
+                    } else if (adjustTransactionRequest.getAmounts().isCustomerOptedNoTip() != null
+                            && adjustTransactionRequest.getAmounts().isCustomerOptedNoTip() == Boolean.TRUE
+                            && adjustTransactionRequest.getSignature() != null) {
+                        // if there is amounts but customer opted no tip and there is signature
+                        signatureOnlyForMSR = true;
+                    } else {
+                        // if there is tip amount and signature - we let the tip update happen first
+                        // followed by signature from the onResponse below
                     }
-                });
+                }
+                if (!signatureOnlyForMSR) {
+                    final ElavonTransactionRequest request = convergeMapper.getTransactionUpdateRequest(
+                            transaction.getFundingSource().getEntryDetails(),
+                            transaction.getProcessorResponse().getRetrievalRefNum(),
+                            adjustTransactionRequest);
+                    convergeService.update(request, new ConvergeCallback<ElavonTransactionResponse>() {
+                        @Override
+                        public void onResponse(final ElavonTransactionResponse elavonResponse) {
+                            try {
+                                if (elavonResponse.isSuccess()) {
+                                    // if it's MSR and if we have signature it's a separate call
+                                    if (transaction.getFundingSource().getEntryDetails().getEntryMode()
+                                            == EntryMode.TRACK_DATA_FROM_MAGSTRIPE
+                                            && adjustTransactionRequest.getSignature() != null) {
+                                        updateSignature(transaction, adjustTransactionRequest, requestId, listener);
+                                    } else {
+                                        listener.onResponse(transaction, requestId, null);
+                                    }
+                                } else {
+                                    Log.e(TAG, "Failed to update tip/emv tags");
+                                    // if the original request also has signature - we should try saving it
+                                    // if it's MSR and if we have signature it's a separate call
+                                    if (transaction.getFundingSource().getEntryDetails().getEntryMode()
+                                            == EntryMode.TRACK_DATA_FROM_MAGSTRIPE
+                                            && adjustTransactionRequest.getSignature() != null) {
+                                        Log.i(TAG, "Saving signature");
+                                        updateSignature(transaction, adjustTransactionRequest, requestId, listener);
+                                    } else {
+                                        listener.onResponse(transaction, requestId, new PoyntError(PoyntError.CODE_API_ERROR));
+                                    }
+                                }
+                            } catch (final RemoteException e) {
+                                Log.e(TAG, "Failed to respond", e);
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(final Throwable t) {
+                            final PoyntError error = new PoyntError(PoyntError.CODE_API_ERROR);
+                            error.setThrowable(t);
+                            try {
+                                listener.onResponse(transaction, requestId, error);
+                            } catch (final RemoteException e) {
+                                Log.e(TAG, "Failed to respond", e);
+                            }
+                        }
+                    });
+                } else {
+                    Log.i(TAG, "Saving signature only");
+                    updateSignature(transaction, adjustTransactionRequest, requestId, listener);
+                }
             }
 
             @Override
@@ -429,7 +471,7 @@ public class TransactionManager {
                         transaction.setAction(TransactionAction.VOID);
 
                         final ElavonTransactionRequest request = convergeMapper.getTransactionVoidRequest(
-                                transaction.getFundingSource(),
+                                transaction,
                                 transaction.getProcessorResponse().getRetrievalRefNum());
                         convergeService.update(request, new ConvergeCallback<ElavonTransactionResponse>() {
                             @Override
@@ -593,12 +635,13 @@ public class TransactionManager {
                                   final IPoyntTransactionServiceListener listener) {
         Log.d(TAG, "refundTransaction");
 
-        if (!Boolean.TRUE.equals(transaction.getFundingSource().isDebit())) {
-            // set the funding source from parent transaction
-            transaction.setFundingSource(parentTransaction.getFundingSource());
+        if (parentTransaction != null) {
+            if (!Boolean.TRUE.equals(transaction.getFundingSource().isDebit())) {
+                // set the funding source from parent transaction
+                transaction.setFundingSource(parentTransaction.getFundingSource());
+            }
+            transaction.setProcessorResponse(parentTransaction.getProcessorResponse());
         }
-        transaction.setProcessorResponse(parentTransaction.getProcessorResponse());
-
         final ElavonTransactionRequest request = convergeMapper.getTransactionRequest(transaction);
         convergeService.create(request, new ConvergeCallback<ElavonTransactionResponse>() {
             @Override

@@ -12,18 +12,21 @@ import co.poynt.api.model.BalanceInquiry;
 import co.poynt.api.model.EBTType;
 import co.poynt.api.model.Transaction;
 
+import static com.elavon.converge.model.type.ElavonTransactionType.DELETE;
+import static com.elavon.converge.model.type.ElavonTransactionType.VOID;
+
 public class MsrEbtMapper extends InterfaceMapper {
 
     private static final Map<EBTType, ElavonTransactionType> EBT_SALE_TYPES_MAP = new HashMap<EBTType, ElavonTransactionType>() {{
-        put(EBTType.FOOD_STAMP,ElavonTransactionType.EBT_SALE);
-        put(EBTType.CASH_BENEFIT,ElavonTransactionType.EBT_CASH_SALE);
+        put(EBTType.FOOD_STAMP, ElavonTransactionType.EBT_SALE);
+        put(EBTType.CASH_BENEFIT, ElavonTransactionType.EBT_CASH_SALE);
     }};
     private static final Map<EBTType, ElavonTransactionType> EBT_REFUND_TYPES_MAP = new HashMap<EBTType, ElavonTransactionType>() {{
         put(EBTType.FOOD_STAMP, ElavonTransactionType.EBT_RETURN);
     }};
     private static final Map<EBTType, ElavonTransactionType> EBT_INQUIRY_TYPES_MAP = new HashMap<EBTType, ElavonTransactionType>() {{
-        put(EBTType.FOOD_STAMP,ElavonTransactionType.EBT_INQUIRY);
-        put(EBTType.CASH_BENEFIT,ElavonTransactionType.EBT_CASH_INQUIRY);
+        put(EBTType.FOOD_STAMP, ElavonTransactionType.EBT_INQUIRY);
+        put(EBTType.CASH_BENEFIT, ElavonTransactionType.EBT_CASH_INQUIRY);
     }};
 
     @Override
@@ -79,6 +82,19 @@ public class MsrEbtMapper extends InterfaceMapper {
     @Override
     ElavonTransactionRequest createReverse(final String t) {
         throw new ConvergeMapperException("Reverse not allowed in EBT transaction");
+    }
+
+    @Override
+    public ElavonTransactionRequest createVoid(Transaction transaction, String transactionId) {
+        final ElavonTransactionRequest request = new ElavonTransactionRequest();
+        if (transaction.isAuthOnly() == Boolean.TRUE) {
+            request.setTransactionType(DELETE);
+        } else {
+            request.setTransactionType(VOID);
+        }
+        // elavon transactionId
+        request.setTxnId(transactionId);
+        return request;
     }
 
     @Override

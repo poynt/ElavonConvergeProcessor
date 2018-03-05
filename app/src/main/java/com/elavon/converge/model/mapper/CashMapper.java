@@ -33,6 +33,11 @@ public class CashMapper extends InterfaceMapper {
     }
 
     @Override
+    ElavonTransactionRequest createVoid(Transaction transaction, String transactionId) {
+        return null;
+    }
+
+    @Override
     public ElavonTransactionRequest createRefund(final Transaction t) {
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
         request.setTransactionType(ElavonTransactionType.CASH_CREDIT);

@@ -97,6 +97,7 @@ public class ConvergeClient {
         request.setMerchantId(merchantId);
         request.setUserId(userId);
         request.setPin(pin);
+        request.setVendorId("POYNT000");
         try {
             return new Request.Builder()
                     .url(host)
