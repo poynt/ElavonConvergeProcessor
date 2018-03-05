@@ -8,8 +8,6 @@ import co.poynt.api.model.AdjustTransactionRequest;
 import co.poynt.api.model.BalanceInquiry;
 import co.poynt.api.model.Transaction;
 
-import static com.elavon.converge.model.type.ElavonTransactionType.VOID;
-
 public abstract class InterfaceMapper {
     abstract ElavonTransactionRequest createAuth(Transaction transaction);
 
@@ -40,13 +38,7 @@ public abstract class InterfaceMapper {
         return request;
     }
 
-    public ElavonTransactionRequest createVoid(String transactionId) {
-        final ElavonTransactionRequest request = new ElavonTransactionRequest();
-        request.setTransactionType(VOID);
-        // elavon transactionId
-        request.setTxnId(transactionId);
-        return request;
-    }
+    abstract ElavonTransactionRequest createVoid(Transaction transaction, String transactionId);
 
     abstract ElavonTransactionRequest createBalanceInquiry(BalanceInquiry balanceInquiry);
 }

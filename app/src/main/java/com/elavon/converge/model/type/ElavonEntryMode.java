@@ -5,7 +5,7 @@ package com.elavon.converge.model.type;
  * The transaction entry indicator to indicate how the track data was captured.
  */
 public enum ElavonEntryMode {
-    MANUAL_ENTRY_ONLY("01"),
+    KEY_ENTERED_CARD_NOT_PRESENT("01"),
     KEY_ENTERED_CARD_PRESENT("02"),
     SWIPED("03"), // Default value when track Data is sent alone
     CONTACTLESS("04"), // for MSD

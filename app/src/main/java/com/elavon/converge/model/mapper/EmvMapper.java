@@ -21,6 +21,9 @@ import co.poynt.api.model.EntryMode;
 import co.poynt.api.model.FundingSourceEntryDetails;
 import co.poynt.api.model.Transaction;
 
+import static com.elavon.converge.model.type.ElavonTransactionType.DELETE;
+import static com.elavon.converge.model.type.ElavonTransactionType.VOID;
+
 public class EmvMapper extends InterfaceMapper {
 
     private static final String TAG = "EmvMapper";
@@ -49,6 +52,19 @@ public class EmvMapper extends InterfaceMapper {
     public ElavonTransactionRequest createReverse(String transactionId) {
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
         request.setTransactionType(ElavonTransactionType.EMV_REVERSAL);
+        // elavon transactionId
+        request.setTxnId(transactionId);
+        return request;
+    }
+
+    @Override
+    public ElavonTransactionRequest createVoid(Transaction transaction, String transactionId) {
+        final ElavonTransactionRequest request = new ElavonTransactionRequest();
+        if (transaction.isAuthOnly() == Boolean.TRUE) {
+            request.setTransactionType(DELETE);
+        } else {
+            request.setTransactionType(VOID);
+        }
         // elavon transactionId
         request.setTxnId(transactionId);
         return request;

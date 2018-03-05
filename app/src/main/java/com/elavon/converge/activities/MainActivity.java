@@ -1,7 +1,10 @@
 package com.elavon.converge.activities;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -37,6 +40,9 @@ import co.poynt.os.model.Payment;
 import co.poynt.os.services.v1.IPoyntConfigurationService;
 import co.poynt.os.services.v1.IPoyntConfigurationUpdateListener;
 import fr.devnied.bitlib.BytesUtils;
+
+import static co.poynt.os.Constants.Accounts.POYNT_ACCOUNT_TYPE;
+import static com.elavon.converge.Constants.DATASYNC_PROVIDER_AUTHORITY;
 
 public class MainActivity extends Activity {
 
@@ -161,6 +167,8 @@ public class MainActivity extends Activity {
                                         settleStatusTextView,
                                         "Success! Settled " + elavonResponse.getTxnMainCount()
                                                 + " with amount: " + elavonResponse.getTxnMainAmount());
+                                // trigger data sync
+                                performSync();
                             }
                         });
                     }
@@ -231,5 +239,24 @@ public class MainActivity extends Activity {
     protected void onPause() {
         super.onPause();
         unbindService(poyntConfigurationServiceConnection);
+    }
+
+    private void performSync() {
+        Log.d(TAG, "Requesting converge transaction sync....");
+
+        AccountManager accountManager =
+                (AccountManager) this.getSystemService(
+                        Context.ACCOUNT_SERVICE);
+
+        //Get any Poynt.co account
+        Account[] poyntAccounts = accountManager.getAccountsByType(POYNT_ACCOUNT_TYPE);
+
+        // Pass the settings flags by inserting them in a bundle
+        Bundle settingsBundle = new Bundle();
+        settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+        settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+
+        ContentResolver.requestSync(poyntAccounts[0], DATASYNC_PROVIDER_AUTHORITY,
+                settingsBundle);
     }
 }

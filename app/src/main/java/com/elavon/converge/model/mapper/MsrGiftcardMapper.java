@@ -8,6 +8,9 @@ import com.elavon.converge.util.CurrencyUtil;
 import co.poynt.api.model.BalanceInquiry;
 import co.poynt.api.model.Transaction;
 
+import static com.elavon.converge.model.type.ElavonTransactionType.DELETE;
+import static com.elavon.converge.model.type.ElavonTransactionType.VOID;
+
 public class MsrGiftcardMapper extends InterfaceMapper {
     @Override
     ElavonTransactionRequest createAuth(final Transaction t) {
@@ -51,6 +54,19 @@ public class MsrGiftcardMapper extends InterfaceMapper {
     @Override
     ElavonTransactionRequest createReverse(final String transactionId) {
         throw new RuntimeException("Please implement");
+    }
+
+    @Override
+    public ElavonTransactionRequest createVoid(Transaction transaction, String transactionId) {
+        final ElavonTransactionRequest request = new ElavonTransactionRequest();
+        if (transaction.isAuthOnly() == Boolean.TRUE) {
+            request.setTransactionType(DELETE);
+        } else {
+            request.setTransactionType(VOID);
+        }
+        // elavon transactionId
+        request.setTxnId(transactionId);
+        return request;
     }
 
     @Override

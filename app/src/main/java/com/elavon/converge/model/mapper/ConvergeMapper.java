@@ -265,7 +265,37 @@ public class ConvergeMapper {
         search.setTestMode("false");
         search.setTransactionType(ElavonTransactionType.TRANSACTION_QUERY);
         search.setCardSuffix(cardLast4);
-        search.setSearchStartDate(searchStartDate);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+        search.setSearchStartDate(dateFormat.format(searchStartDate));
+        return search;
+    }
+
+    public ElavonTransactionSearchRequest getSearchRequest(final String searchStartDate, final String searchEndDate) {
+        final ElavonTransactionSearchRequest search = new ElavonTransactionSearchRequest();
+        search.setTestMode("false");
+        search.setTransactionType(ElavonTransactionType.TRANSACTION_QUERY);
+        if (searchStartDate != null) {
+            search.setSearchStartDate(searchStartDate);
+        }
+        if (searchEndDate != null) {
+            search.setSearchEndDate(searchEndDate);
+        }
+        return search;
+    }
+
+    public ElavonTransactionSearchRequest getSearchRequest(final String transactionType,
+                                                           final String searchStartDate,
+                                                           final String searchEndDate) {
+        final ElavonTransactionSearchRequest search = new ElavonTransactionSearchRequest();
+        search.setTestMode("false");
+        search.setTransactionType(ElavonTransactionType.TRANSACTION_QUERY);
+        search.setSearchTransactionType(transactionType);
+        if (searchStartDate != null) {
+            search.setSearchStartDate(searchStartDate);
+        }
+        if (searchEndDate != null) {
+            search.setSearchEndDate(searchEndDate);
+        }
         return search;
     }
 
@@ -275,10 +305,10 @@ public class ConvergeMapper {
         return mapper.createReverse(transactionId);
     }
 
-    public ElavonTransactionRequest getTransactionVoidRequest(final FundingSource fundingSource,
+    public ElavonTransactionRequest getTransactionVoidRequest(final Transaction transaction,
                                                               final String transactionId) {
-        final InterfaceMapper mapper = getMapper(fundingSource);
-        return mapper.createVoid(transactionId);
+        final InterfaceMapper mapper = getMapper(transaction.getFundingSource());
+        return mapper.createVoid(transaction, transactionId);
     }
 
     public ElavonTransactionRequest getBalanceInquiryRequest(final BalanceInquiry balanceInquiry) {

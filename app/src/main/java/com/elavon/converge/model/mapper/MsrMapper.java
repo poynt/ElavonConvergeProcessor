@@ -1,6 +1,5 @@
 package com.elavon.converge.model.mapper;
 
-import com.elavon.converge.exception.ConvergeMapperException;
 import com.elavon.converge.model.ElavonTransactionRequest;
 import com.elavon.converge.model.type.ElavonEntryMode;
 import com.elavon.converge.model.type.ElavonPosMode;
@@ -15,6 +14,7 @@ import co.poynt.api.model.EntryMode;
 import co.poynt.api.model.FundingSourceEntryDetails;
 import co.poynt.api.model.Transaction;
 
+import static com.elavon.converge.model.type.ElavonTransactionType.DELETE;
 import static com.elavon.converge.model.type.ElavonTransactionType.VOID;
 
 public class MsrMapper extends InterfaceMapper {
@@ -38,7 +38,38 @@ public class MsrMapper extends InterfaceMapper {
     @Override
     public ElavonTransactionRequest createReverse(String transactionId) {
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
-        request.setTransactionType(VOID);
+
+        // from Converge documentation
+        // ccdelete - deletes and attempts a reversal on a Sale or Auth Only credit transaction.
+        //            This transaction type is typically used in a Partial approval  scenario
+        // Best suited for reversals + authonly
+
+        // ccvoid -  removes a Sale,Credit or force transaction from the open batch. The ccvoid
+        //           command is typically used for same day returns or to correct cashier mistakes.
+        // Best suited for voiding txns before they are settled.
+        request.setTransactionType(DELETE);
+        // elavon transactionId
+        request.setTxnId(transactionId);
+        return request;
+    }
+
+    @Override
+    public ElavonTransactionRequest createVoid(Transaction transaction, String transactionId) {
+        final ElavonTransactionRequest request = new ElavonTransactionRequest();
+
+        // from Converge documentation
+        // ccdelete - deletes and attempts a reversal on a Sale or Auth Only credit transaction.
+        //            This transaction type is typically used in a Partial approval  scenario
+        // Best suited for reversals + authonly
+
+        // ccvoid -  removes a Sale,Credit or force transaction from the open batch. The ccvoid
+        //           command is typically used for same day returns or to correct cashier mistakes.
+        // Best suited for voiding txns before they are settled.
+        if (transaction.isAuthOnly() == Boolean.TRUE) {
+            request.setTransactionType(DELETE);
+        } else {
+            request.setTransactionType(VOID);
+        }
         // elavon transactionId
         request.setTxnId(transactionId);
         return request;
@@ -46,10 +77,21 @@ public class MsrMapper extends InterfaceMapper {
 
     @Override
     public ElavonTransactionRequest createRefund(final Transaction t) {
-        final ElavonTransactionRequest request = new ElavonTransactionRequest();
-        request.setTransactionType(ElavonTransactionType.RETURN);
-        request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getTransactionAmount(), t.getAmounts().getCurrency()));
-        request.setTxnId(t.getProcessorResponse().getRetrievalRefNum());
+        ElavonTransactionRequest request = null;
+        // if action in transaction is refund but no parent id then it's
+        // a Non-Ref Credit otherwise it's a regular refund
+        if (t.getParentId() != null) {
+            request = new ElavonTransactionRequest();
+            request.setTransactionType(ElavonTransactionType.RETURN);
+            request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getTransactionAmount(), t.getAmounts().getCurrency()));
+            // add retrieval ref number if we have it
+            if (t.getProcessorResponse() != null) {
+                request.setTxnId(t.getProcessorResponse().getRetrievalRefNum());
+            }
+        } else {
+            request = createRequest(t);
+            request.setTransactionType(ElavonTransactionType.CREDIT);
+        }
         return request;
     }
 

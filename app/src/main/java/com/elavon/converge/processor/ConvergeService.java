@@ -150,6 +150,48 @@ public class ConvergeService {
         convergeClient.call(searchRequest, cb);
     }
 
+    /**
+     * Get all transactions in the given date/time range
+     * Start/End date of the search window. Format MM/DD/YYYY or MM/DD/YYYY hh:mm:ss AM or
+     * MM/DD/YYYY hh:mm:ss PM. Example: 04/28/2015 08:00:34 AM, 04/28/2015
+     *
+     * @param dateAfter  Example: 04/28/2015 08:00:34 AM, 04/28/2015
+     * @param dateBefore Example: 04/29/2015 11:59:59 PM
+     * @param callback
+     */
+    public void fetchTransactions(
+            final String dateAfter,
+            final String dateBefore,
+            final ConvergeCallback<ElavonTransactionSearchResponse> callback) {
+        // we need either start or end - converge searches accordingly
+        // if only startDate given, converge searches +30 days
+        // if only endDate given, converge searches -30 days
+        if (dateBefore == null && dateAfter == null) {
+            callback.onFailure(new ConvergeClientException("Transaction not found. Not enough information."));
+            return;
+        }
+
+        final ElavonTransactionSearchRequest searchRequest = convergeMapper.getSearchRequest(dateAfter, dateBefore);
+        convergeClient.call(searchRequest, callback);
+    }
+
+    public void fetchTransactions(
+            final String transactionType,
+            final String dateAfter,
+            final String dateBefore,
+            final ConvergeCallback<ElavonTransactionSearchResponse> callback) {
+        // we need either start or end - converge searches accordingly
+        // if only startDate given, converge searches +30 days
+        // if only endDate given, converge searches -30 days
+        if (transactionType == null || (dateBefore == null && dateAfter == null)) {
+            callback.onFailure(new ConvergeClientException("Transaction not found. Not enough information."));
+            return;
+        }
+
+        final ElavonTransactionSearchRequest searchRequest = convergeMapper.getSearchRequest(transactionType, dateAfter, dateBefore);
+        convergeClient.call(searchRequest, callback);
+    }
+
     public void generateToken(final String cardNumber, final String expiry, final ConvergeCallback<ElavonTransactionResponse> callback) {
         convergeClient.call(convergeMapper.getGenerateTokenRequest(cardNumber, expiry), callback);
     }

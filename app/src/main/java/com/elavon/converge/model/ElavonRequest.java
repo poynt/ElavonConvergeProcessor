@@ -6,6 +6,9 @@ import org.simpleframework.xml.Element;
 
 public abstract class ElavonRequest {
 
+    @Element(name = "ssl_vendor_id")
+    private String vendorId;
+
     @Element(name = "ssl_merchant_id")
     private String merchantId;
 
@@ -59,5 +62,13 @@ public abstract class ElavonRequest {
 
     public void setTransactionType(ElavonTransactionType transactionType) {
         this.transactionType = transactionType;
+    }
+
+    public String getVendorId() {
+        return vendorId;
+    }
+
+    public void setVendorId(String vendorId) {
+        this.vendorId = vendorId;
     }
 }
