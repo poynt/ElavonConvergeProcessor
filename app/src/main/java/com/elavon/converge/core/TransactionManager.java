@@ -11,13 +11,16 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.util.LruCache;
 
+import com.elavon.converge.exception.ConvergeClientException;
 import com.elavon.converge.model.ElavonSettleResponse;
 import com.elavon.converge.model.ElavonTransactionRequest;
 import com.elavon.converge.model.ElavonTransactionResponse;
 import com.elavon.converge.model.mapper.ConvergeMapper;
+import com.elavon.converge.model.type.ElavonTransactionType;
 import com.elavon.converge.processor.ConvergeCallback;
 import com.elavon.converge.processor.ConvergeService;
 
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -89,6 +92,7 @@ public class TransactionManager {
                                    final String requestId,
                                    final IPoyntTransactionServiceListener listener) throws RemoteException {
         Log.d(TAG, "processTransaction");
+        final Date transactionInitiationTime = new Date();
         // if the transaction action is REFUND and if it has a parentId - let's get it first
         if (transaction.getAction() == TransactionAction.REFUND) {
 
@@ -142,17 +146,87 @@ public class TransactionManager {
 
                 @Override
                 public void onFailure(final Throwable t) {
-                    // TODO need better error mapping
-                    final PoyntError error = new PoyntError(PoyntError.CHECK_CARD_FAILURE);
+                    Log.e(TAG, "Transaction processing failure", t);
+                    PoyntError error = new PoyntError(PoyntError.CODE_PROCESSOR_UNRESPONSIVE);
+                    if (t instanceof ConvergeClientException) {
+                        if (((ConvergeClientException) t).isNetworkError()) {
+                            // we must reverse the transaction just in case
+                            error = new PoyntError(PoyntError.CODE_NETWORK_ERROR);
+                            // start reversal after 15secs as per John's recommendation
+                            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    findAndReverseTransaction(transactionInitiationTime,
+                                            request.getMerchantTxnId());
+                                }
+                            }, 15000);
+                        }
+                    }
                     error.setThrowable(t);
                     try {
-                        listener.onResponse(transaction, "", error);
+                        listener.onResponse(transaction, requestId, error);
                     } catch (final RemoteException e) {
                         Log.e(TAG, "Failed to respond", e);
                     }
                 }
             });
         }
+    }
+
+    private void findAndReverseTransaction(final Date transactionInitiationTime,
+                                           final String merchantTransactionId) {
+        final ConvergeCallback cb = new ConvergeCallback<ElavonTransactionResponse>() {
+            @Override
+            public void onResponse(final ElavonTransactionResponse response) {
+                Log.i(TAG, "Found transaction after timeout");
+                // reverse transaction
+                Log.d(TAG, "merchant transaction id: " + merchantTransactionId
+                        + " converge txn_id:" + response.getTxnId());
+                ElavonTransactionType reversalTransactionType = ElavonTransactionType.DELETE;
+//                switch (response.getTransactionType()) {
+//                    case SALE:
+//                        reversalTransactionType = ElavonTransactionType.DELETE;
+//                        break;
+//                    case AUTH_ONLY:
+//                        reversalTransactionType = ElavonTransactionType.DELETE;
+//                        break;
+//                    case EMV_CT_AUTH_ONLY:
+//                    case EMV_CT_SALE:
+//                    case EMV_SWIPE_AUTH_ONLY:
+//                    case EMV_SWIPE_SALE:
+//                        reversalTransactionType = ElavonTransactionType.EMV_REVERSAL;
+//                        break;
+//                }
+                final ElavonTransactionRequest request = new ElavonTransactionRequest();
+                request.setTransactionType(reversalTransactionType);
+                // elavon transactionId
+                request.setTxnId(response.getTxnId());
+                convergeService.update(request, new ConvergeCallback<ElavonTransactionResponse>() {
+                    @Override
+                    public void onResponse(final ElavonTransactionResponse elavonResponse) {
+                        Log.d(TAG, elavonResponse != null ? elavonResponse.toString() : "n/a");
+                        if (elavonResponse.isSuccess()) {
+                            Log.i(TAG, "reverseTransaction: " + response.getTxnId() + " SUCCESS");
+                        } else {
+                            Log.e(TAG, "reverseTransaction: " + response.getTxnId() + " FAILED");
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(final Throwable t) {
+                        t.printStackTrace();
+                        Log.e(TAG, "reverseTransaction: " + response.getTxnId() + " FAILED");
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(final Throwable t) {
+                Log.e(TAG, "Failed to find transaction after timeout");
+            }
+        };
+
+        convergeService.find(merchantTransactionId, transactionInitiationTime, cb);
     }
 
     public void captureTransaction(

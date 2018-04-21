@@ -1,16 +1,24 @@
 package com.elavon.converge.config;
 
 import android.content.res.Resources;
+import android.os.Environment;
+import android.util.Log;
 
 import com.elavon.converge.R;
 import com.elavon.converge.util.FileUtil;
 import com.google.gson.Gson;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+
 public class ConfigLoader {
 
+    private static final String TAG = ConfigLoader.class.getSimpleName();
     private Gson gson;
     private final Resources resources;
     private final Config.Environment environment;
+
 
     public ConfigLoader(final Resources resources, final Config.Environment environment) {
         this.gson = new Gson();
@@ -31,7 +39,25 @@ public class ConfigLoader {
         }
 
         final String configText = FileUtil.readFile(resources.openRawResource(configResource));
-        final String credentialText = FileUtil.readFile(resources.openRawResource(R.raw.credential));
+
+        String credentialText;
+        // check if we have a credential file in /sdcard - if so use it for testing otherwise use the bundled credential
+        File f = new File(Environment.getExternalStorageDirectory() + "/credential.json");
+        if (f.exists()) {
+            Log.i(TAG, "Found custom credential file in sdcard - using it for testing");
+            try {
+                credentialText = FileUtil.readFile(new FileInputStream(f));
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                Log.i(TAG, "Failed to load credentials from sdcard - falling back to resource file");
+                credentialText = FileUtil.readFile(resources.openRawResource(R.raw.credential));
+            }
+        } else {
+            Log.i(TAG, "Loading credentials from resource file");
+            credentialText = FileUtil.readFile(resources.openRawResource(R.raw.credential));
+        }
+        // TODO - remove this logging before going live
+        Log.i(TAG, credentialText);
 
         final Config config = gson.fromJson(configText, Config.class);
         final Config.Credential credential = gson.fromJson(credentialText, Config.Credential.class);

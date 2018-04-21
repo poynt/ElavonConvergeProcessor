@@ -10,6 +10,8 @@
     <uses-permission android:name="co.poynt.business.ACCESS_BUSINESS" />
     <uses-permission android:name="poynt.permission.SECOND_SCREEN_SERVICE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <!-- for sync -->
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />

@@ -41,10 +41,21 @@ public class EmvMapper extends InterfaceMapper {
 
     @Override
     public ElavonTransactionRequest createRefund(final Transaction t) {
-        final ElavonTransactionRequest request = new ElavonTransactionRequest();
-        request.setTransactionType(ElavonTransactionType.RETURN);
-        request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getTransactionAmount(), t.getAmounts().getCurrency()));
-        request.setTxnId(t.getProcessorResponse().getRetrievalRefNum());
+        ElavonTransactionRequest request = null;
+        // if action in transaction is refund but no parent id then it's
+        // a Non-Ref Credit otherwise it's a regular refund
+        if (t.getParentId() != null) {
+            request = new ElavonTransactionRequest();
+            request.setTransactionType(ElavonTransactionType.RETURN);
+            request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getTransactionAmount(), t.getAmounts().getCurrency()));
+            // add retrieval ref number if we have it
+            if (t.getProcessorResponse() != null) {
+                request.setTxnId(t.getProcessorResponse().getRetrievalRefNum());
+            }
+        } else {
+            request = createRequest(t);
+            request.setTransactionType(ElavonTransactionType.CREDIT);
+        }
         return request;
     }
 
@@ -79,7 +90,9 @@ public class EmvMapper extends InterfaceMapper {
 
     @Override
     public ElavonTransactionRequest createVerify(final Transaction transaction) {
-        throw new RuntimeException("Please implement");
+        final ElavonTransactionRequest request = createRequest(transaction);
+        request.setTransactionType(ElavonTransactionType.VERIFY);
+        return request;
     }
 
     private ElavonTransactionRequest createRequest(final Transaction t) {

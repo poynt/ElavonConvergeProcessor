@@ -125,8 +125,8 @@ public class ElavonTransactionRequest extends ElavonRequest {
     @Element(name = "ssl_dynamic_dba", required = false)
     private String dynamicDBA;
 
-    @Element(name = "PartialAuthIndicator", required = false)
-    private PartialAuthIndicator partialAuthIndicator;
+    @Element(name = "ssl_partial_auth_indicator", required = false)
+    private PartialAuthIndicator partialAuthIndicator = PartialAuthIndicator.SUPPORTED;
 
     // ssl_departure_date - NOT USED (used for Travel Data)
     // ssl_completion_date - NOT USED

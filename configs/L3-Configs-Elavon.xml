@@ -56,6 +56,23 @@
                                             <entry key="&lt;E001&gt;" value="FE50BC2000" />
                                         </map>
                                     </node>
+                                    <node name="APP5">
+                                        <map>
+                                            <entry key="Description" value="_Visa Interlink" />
+                                            <entry key="&lt;9F06&gt;" value="A0000000033010" />
+                                            <entry key="Selection Indicator" value="01" />
+                                            <entry key="Order" value="6" />
+                                            <entry key="&lt;9F09&gt;" value="008C" />
+                                            <!-- TAC – Denial -->
+                                            <entry key="&lt;E002&gt;" value="0010000000" />
+                                            <!-- TAC – Online -->
+                                            <entry key="&lt;E003&gt;" value="DC4004F800" />
+                                            <!-- TAC – Default -->
+                                            <entry key="&lt;E001&gt;" value="DC4000A800" />
+                                            <!-- Partial Name Selection / Indicator -->
+                                            <!--<entry key="&lt;1F8113&gt;" value="01" />-->
+                                        </map>
+                                    </node>
                                     <node name="APP6">
                                         <map>
                                             <entry key="Description" value="_Visa Credit" />

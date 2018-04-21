@@ -14,60 +14,89 @@ allprojects {
     }
 }
 
+def computeVersionCode() {
+    return 4
+}
+
+def computeVersionName() {
+    return System.env.BUILD_RELEASE_NAME ? System.env.BUILD_RELEASE_NAME : "1.0-DEV"
+}
+
+def gitSha = 'git rev-parse --short HEAD'.execute([], project.rootDir).text.trim()
+
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.1"
     defaultConfig {
         applicationId "com.elavon.converge"
         minSdkVersion 19
         targetSdkVersion 19
-        versionCode 1
-        versionName "1.0"
+        versionCode computeVersionCode()
+        versionName computeVersionName()
+        buildConfigField "String", "GIT_SHA", "\"${gitSha}\""
+    }
+    signingConfigs {
+        release {
+            storeFile file("keys/release.keystore")
+            keyAlias "release"
+            keyPassword "poynt123"
+            storePassword "poynt123"
+        }
     }
     buildTypes {
+        debug {
+            signingConfig signingConfigs.release
+            versionNameSuffix "-d"
+        }
         release {
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    productFlavors {
+    applicationVariants.all { variant ->
+        variant.outputs.each { output ->
+            def newAppName = output.outputFile.name
+            newAppName = newAppName.replace("app-", "ConvergeProcessor-")
+            newAppName = newAppName.replace(".apk", "-${variant.versionName}-${variant.versionCode}.apk")
+            output.outputFileName = newAppName
+        }
     }
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
 
-    compile 'com.android.support:appcompat-v7:23.4.0'
+    implementation 'com.android.support:appcompat-v7:23.4.0'
 
     // Poynt SDK and Model Dependencies
-    compile 'co.poynt.api:android-api-model:1.2.109@jar'
-    compile 'co.poynt.android.sdk:poynt-sdk:1.2.27@aar'
-    compile 'com.google.code.gson:gson:2.8.0'
+    implementation 'co.poynt.api:android-api-model:1.2.109@jar'
+    implementation 'co.poynt.android.sdk:poynt-sdk:1.2.28@aar'
+    implementation 'com.google.code.gson:gson:2.8.0'
     // bit byte manipulation
-    compile 'com.github.devnied:bit-lib4j:1.4.10@jar'
-    compile 'net.jcip:jcip-annotations:1.0@jar'
+    implementation 'com.github.devnied:bit-lib4j:1.4.10@jar'
+    implementation 'net.jcip:jcip-annotations:1.0@jar'
     // JWT dependencies - if you want to parse JWTs
-    compile 'com.nimbusds:nimbus-jose-jwt:2.26@jar'
-    compile 'net.minidev:json-smart:1.2@jar'
-    compile 'com.android.support:design:23.4.0'
+    implementation 'com.nimbusds:nimbus-jose-jwt:2.26@jar'
+    implementation 'net.minidev:json-smart:1.2@jar'
+    implementation 'com.android.support:design:23.4.0'
 
-    //compile 'com.squareup.okhttp3:okhttp:3.9.0'
-    compile 'com.squareup.okhttp3:okhttp:3.4.1'
-    compile 'com.squareup.okhttp3:okhttp-urlconnection:3.4.1'
-    compile 'com.squareup.okhttp3:logging-interceptor:3.4.1'
-    compile 'com.squareup.okio:okio:1.9.0'
-    compile('org.simpleframework:simple-xml:2.7.+') {
+    //implementation 'com.squareup.okhttp3:okhttp:3.9.0'
+    implementation 'com.squareup.okhttp3:okhttp:3.4.1'
+    implementation 'com.squareup.okhttp3:okhttp-urlconnection:3.4.1'
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.4.1'
+    implementation 'com.squareup.okio:okio:1.9.0'
+    implementation('org.simpleframework:simple-xml:2.7.+') {
         exclude module: 'stax'
         exclude module: 'stax-api'
         exclude module: 'xpp3'
     }
 
-    compile 'com.android.support:appcompat-v7:23.4.0'
-    compile 'com.google.dagger:dagger:2.12'
-    compile 'com.google.dagger:dagger-android:2.12'
+    implementation 'com.android.support:appcompat-v7:23.4.0'
+    implementation 'com.google.dagger:dagger:2.12'
+    implementation 'com.google.dagger:dagger-android:2.12'
     annotationProcessor 'com.google.dagger:dagger-android-processor:2.12'
     annotationProcessor 'com.google.dagger:dagger-compiler:2.12'
 
     // Unit testing dependencies
-    testCompile 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.12'
 }

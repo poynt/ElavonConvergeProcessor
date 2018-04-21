@@ -1,6 +1,7 @@
 package com.elavon.converge.activities;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,11 +9,13 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.EditText;
 
 import com.elavon.converge.R;
 import com.elavon.converge.core.TransactionManager;
@@ -34,6 +37,8 @@ public class ManualEntryActivity extends AppCompatActivity
     protected VirtualTerminalService virtualTerminalService;
     private WebView manualEntryWebView;
     private Payment payment;
+    private String selectedPaymentMethodType;
+    private ProgressDialog progress;
 
     @Inject
     TransactionManager transactionManager;
@@ -70,7 +75,7 @@ public class ManualEntryActivity extends AppCompatActivity
 
         if ("COLLECT_MANUAL_ENTRY".equalsIgnoreCase(action)) {
             payment = intent.getParcelableExtra("payment");
-
+            selectedPaymentMethodType = intent.getStringExtra("selectedPaymentMethodType");
             if (payment == null) {
                 Log.e(TAG, "ManualEntryActivity launched with no payment object");
                 Intent result = new Intent(Intents.ACTION_COLLECT_PAYMENT_RESULT);
@@ -88,7 +93,7 @@ public class ManualEntryActivity extends AppCompatActivity
     }
 
     private void createManualEntryView() {
-        VirtualTerminalService virtualTerminalService = new VirtualTerminalService(transactionManager, payment);
+        virtualTerminalService = new VirtualTerminalService(transactionManager, payment, selectedPaymentMethodType);
 
         final String manualEntryHtml = FileUtil.readFile(getResources().openRawResource(R.raw.vt));
         manualEntryWebView = (WebView) findViewById(R.id.manualEntryWebView);
@@ -103,6 +108,8 @@ public class ManualEntryActivity extends AppCompatActivity
 
     @Override
     public void onProcessed(final Transaction transaction, final String message) {
+        // stop the progress dialog if it's still running
+        stopProgressDialog();
         if (transaction != null) {
             Intent result = new Intent(Intents.ACTION_COLLECT_PAYMENT_RESULT);
             result.putExtra("transaction", transaction);
@@ -119,6 +126,10 @@ public class ManualEntryActivity extends AppCompatActivity
                             .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int id) {
                                     dialog.dismiss();
+                                    Log.e(TAG, "Manual entry transaction failed:" + message);
+                                    Intent result = new Intent(Intents.ACTION_COLLECT_PAYMENT_RESULT);
+                                    setResult(Activity.RESULT_CANCELED, result);
+                                    finish();
                                 }
                             });
                     AlertDialog alert = builder.create();
@@ -131,8 +142,103 @@ public class ManualEntryActivity extends AppCompatActivity
     @Override
     public void onCancel() {
         Log.e(TAG, "Manual entry canceled");
+        // stop progress bar if it's still running
+        stopProgressDialog();
         Intent result = new Intent(Intents.ACTION_COLLECT_PAYMENT_RESULT);
         setResult(Activity.RESULT_CANCELED, result);
         finish();
+    }
+
+    @Override
+    public void showAlert(String message) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(ManualEntryActivity.this);
+        builder.setMessage(message)
+                .setCancelable(false)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.dismiss();
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+
+    @Override
+    public void showProgressDialog() {
+        if (progress == null) {
+            progress = new ProgressDialog(this);
+            progress.setMessage("processing...");
+            progress.setCancelable(false);
+            progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progress.setIndeterminate(true);
+        }
+        progress.show();
+    }
+
+    @Override
+    public void stopProgressDialog() {
+        if (progress != null && progress.isShowing()) {
+            progress.dismiss();
+        }
+    }
+
+    @Override
+    public void collectAuthorizationCode(final VirtualTerminalService.AuthorizationCodeCallback callback) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Enter Authorization Code");
+
+        // Set up the input
+        final EditText input = new EditText(this);
+        // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        builder.setView(input);
+
+        // Set up the buttons
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                callback.onApprovalCodeEntered(input.getText().toString());
+                dialog.dismiss();
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                callback.onApprovalCodeCanceled();
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
+    @Override
+    public void collectEBTVoucherNumber(final VirtualTerminalService.AuthorizationCodeCallback callback) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Enter Voucher Number");
+
+        // Set up the input
+        final EditText input = new EditText(this);
+        // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        builder.setView(input);
+
+        // Set up the buttons
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                callback.onApprovalCodeEntered(input.getText().toString());
+                dialog.dismiss();
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                callback.onApprovalCodeCanceled();
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
     }
 }

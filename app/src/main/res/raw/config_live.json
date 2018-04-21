@@ -6,9 +6,9 @@
     "writeTimeoutMs": 30000
   },
   "transaction": {
-    "maxRetryCount": 5
+    "maxRetryCount": 0
   },
   "log": {
-    "enableHttpTracing": false
+    "enableHttpTracing": true
   }
 }

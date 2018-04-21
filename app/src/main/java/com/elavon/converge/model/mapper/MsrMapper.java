@@ -13,6 +13,8 @@ import co.poynt.api.model.BalanceInquiry;
 import co.poynt.api.model.EntryMode;
 import co.poynt.api.model.FundingSourceEntryDetails;
 import co.poynt.api.model.Transaction;
+import co.poynt.api.model.TransactionStatus;
+import co.poynt.os.util.StringUtil;
 
 import static com.elavon.converge.model.type.ElavonTransactionType.DELETE;
 import static com.elavon.converge.model.type.ElavonTransactionType.VOID;
@@ -102,9 +104,10 @@ public class MsrMapper extends InterfaceMapper {
                 == Boolean.TRUE) {
             request.setTransactionType(ElavonTransactionType.EMV_SWIPE_SALE);
         } else {
-            request.setTransactionType(ElavonTransactionType.SALE);
+            request.setTransactionType(isForce(transaction) ? ElavonTransactionType.FORCE : ElavonTransactionType.SALE);
         }
-
+        // add approval code if there is one
+        request.setApprovalCode(transaction.getApprovalCode());
         return request;
     }
 
@@ -113,6 +116,10 @@ public class MsrMapper extends InterfaceMapper {
         final ElavonTransactionRequest request = createRequest(transaction);
         request.setTransactionType(ElavonTransactionType.VERIFY);
         return request;
+    }
+
+    private boolean isForce(final Transaction t) {
+        return t.getStatus() == TransactionStatus.CAPTURED && StringUtil.notEmpty(t.getApprovalCode());
     }
 
     /**
@@ -198,14 +205,14 @@ public class MsrMapper extends InterfaceMapper {
     private ElavonTransactionRequest createRequest(final Transaction t) {
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
         request.setPoyntUserId(t.getContext().getEmployeeUserId().toString());
+        // always ICC DUAL - highest capability
+        request.setPosMode(ElavonPosMode.ICC_DUAL);
         FundingSourceEntryDetails entryDetails = t.getFundingSource().getEntryDetails();
 
         if (entryDetails.getEntryMode() == EntryMode.CONTACTLESS_INTEGRATED_CIRCUIT_CARD
                 || entryDetails.getEntryMode() == EntryMode.CONTACTLESS_MAGSTRIPE) {
-            request.setPosMode(ElavonPosMode.CL_CAPABLE);
             request.setEntryMode(ElavonEntryMode.CONTACTLESS);
         } else if (entryDetails.getEntryMode() == EntryMode.TRACK_DATA_FROM_MAGSTRIPE) {
-            request.setPosMode(ElavonPosMode.SWIPE_CAPABLE);
             request.setEntryMode(ElavonEntryMode.SWIPED);
         }
         request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getTransactionAmount(), t.getAmounts().getCurrency()));

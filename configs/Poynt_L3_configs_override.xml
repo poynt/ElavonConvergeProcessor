@@ -56,6 +56,23 @@
                                             <entry key="&lt;E001&gt;" value="FE50BC2000" />
                                         </map>
                                     </node>
+                                    <node name="APP5">
+                                        <map>
+                                            <entry key="Description" value="_Visa Interlink" />
+                                            <entry key="&lt;9F06&gt;" value="A0000000033010" />
+                                            <entry key="Selection Indicator" value="01" />
+                                            <entry key="Order" value="6" />
+                                            <entry key="&lt;9F09&gt;" value="008C" />
+                                            <!-- TAC – Denial -->
+                                            <entry key="&lt;E002&gt;" value="0010000000" />
+                                            <!-- TAC – Online -->
+                                            <entry key="&lt;E003&gt;" value="DC4004F800" />
+                                            <!-- TAC – Default -->
+                                            <entry key="&lt;E001&gt;" value="DC4000A800" />
+                                            <!-- Partial Name Selection / Indicator -->
+                                            <!--<entry key="&lt;1F8113&gt;" value="01" />-->
+                                        </map>
+                                    </node>
                                     <node name="APP6">
                                         <map>
                                             <entry key="Description" value="_Visa Credit" />
@@ -107,7 +124,7 @@
                                     </node>
                                     <node name="APP10">
                                         <map>
-                                            <entry key="Description" value="_Application 10" />
+                                            <entry key="Description" value="_AMEX" />
                                             <entry key="&lt;9F06&gt;" value="A00000002501" />
                                             <entry key="Selection Indicator" value="01" />
                                             <entry key="Order" value="A" />
@@ -192,6 +209,74 @@
                                             <entry key="&lt;E001&gt;" value="FC50A8A000" />
                                         </map>
                                     </node>
+                                    <node name="APP18">
+                                        <map>
+                                            <entry key="Description" value="_UnionPayCredit" />
+                                            <entry key="&lt;9F06&gt;" value="A000000333010102" />
+                                            <entry key="Selection Indicator" value="01" />
+                                            <entry key="Order" value="C" />
+                                            <entry key="&lt;9F09&gt;" value="0020" />
+                                            <!-- TAC – Denial -->
+                                            <entry key="&lt;E002&gt;" value="0010000000" />
+                                            <!-- TAC – Online -->
+                                            <entry key="&lt;E003&gt;" value="D84004F800" />
+                                            <!-- TAC – Default -->
+                                            <entry key="&lt;E001&gt;" value="D84000A800" />
+                                            <!-- Partial Name Selection / Indicator -->
+                                            <!--<entry key="&lt;1F8113&gt;" value="01" />-->
+                                        </map>
+                                    </node>
+                                    <node name="APP19">
+                                        <map>
+                                            <entry key="Description" value="_UnionPayDebit" />
+                                            <entry key="&lt;9F06&gt;" value="A000000333010101" />
+                                            <entry key="Selection Indicator" value="01" />
+                                            <entry key="Order" value="C" />
+                                            <entry key="&lt;9F09&gt;" value="0020" />
+                                            <!-- TAC – Denial -->
+                                            <entry key="&lt;E002&gt;" value="0010000000" />
+                                            <!-- TAC – Online -->
+                                            <entry key="&lt;E003&gt;" value="D84004F800" />
+                                            <!-- TAC – Default -->
+                                            <entry key="&lt;E001&gt;" value="D84000A800" />
+                                            <!-- Partial Name Selection / Indicator -->
+                                            <!--<entry key="&lt;1F8113&gt;" value="01" />-->
+                                        </map>
+                                    </node>
+                                    <node name="APP20">
+                                        <map>
+                                            <entry key="Description" value="_UnionPayCommonDebit" />
+                                            <entry key="&lt;9F06&gt;" value="A000000333010108" />
+                                            <entry key="Selection Indicator" value="01" />
+                                            <entry key="Order" value="C" />
+                                            <entry key="&lt;9F09&gt;" value="0020" />
+                                            <!-- TAC – Denial -->
+                                            <entry key="&lt;E002&gt;" value="0010000000" />
+                                            <!-- TAC – Online -->
+                                            <entry key="&lt;E003&gt;" value="D84004F800" />
+                                            <!-- TAC – Default -->
+                                            <entry key="&lt;E001&gt;" value="D84000A800" />
+                                            <!-- Partial Name Selection / Indicator -->
+                                            <!--<entry key="&lt;1F8113&gt;" value="01" />-->
+                                        </map>
+                                    </node>
+                                    <node name="APP21">
+                                        <map>
+                                            <entry key="Description" value="_UnionPayQuasi" />
+                                            <entry key="&lt;9F06&gt;" value="A000000333010103" />
+                                            <entry key="Selection Indicator" value="01" />
+                                            <entry key="Order" value="C" />
+                                            <entry key="&lt;9F09&gt;" value="0020" />
+                                            <!-- TAC – Denial -->
+                                            <entry key="&lt;E002&gt;" value="0010000000" />
+                                            <!-- TAC – Online -->
+                                            <entry key="&lt;E003&gt;" value="D84004F800" />
+                                            <!-- TAC – Default -->
+                                            <entry key="&lt;E001&gt;" value="D84000A800" />
+                                            <!-- Partial Name Selection / Indicator -->
+                                            <!--<entry key="&lt;1F8113&gt;" value="01" />-->
+                                        </map>
+                                    </node>
                                 </node>
                                 <node name="Sequence Counter">
                                     <map>
@@ -263,8 +348,8 @@
                                             <entry key="&lt;DF810C&gt;" value="04" />
                                             <!-- Contactless Transaction Limit $15 -->
                                             <entry key="&lt;DFE2&gt;" value="000005DC" />
-                                            <!-- Contactless Floor Limit $0 -->
-                                            <entry key="&lt;DFE3&gt;" value="00000000" />
+                                            <!-- Contactless Floor Limit $10 -->
+                                            <entry key="&lt;DFE3&gt;" value="000003E8" />
                                             <!-- Contactless CVM Required Limit $10-->
                                             <entry key="&lt;DFE4&gt;" value="000003E8" />
                                             <!-- TAC Default -->
@@ -331,9 +416,9 @@
                                             <entry key="&lt;9F39&gt;" value="07" />
                                             <entry key="&lt;9F66&gt;" value="36204000" />
                                             <entry key="&lt;DF02&gt;" value="05" />
+                                            <entry key="&lt;DF810C&gt;" value="03" />
                                             <!-- Terminal Type -->
                                             <entry key="&lt;9F35&gt;" value="21" />
-                                            <entry key="&lt;DF810C&gt;" value="03" />
                                             <!-- Contactless CVM Required Limit $10-->
                                             <entry key="&lt;DFE4&gt;" value="000003E8" />
                                             <entry key="&lt;CFFFFF00&gt;"
@@ -432,11 +517,12 @@
                                             <entry key="&lt;DF811D&gt;" value="00" />
                                             <entry key="&lt;DF811E&gt;" value="10" />
                                             <!-- byte 3 of 0x9F33 -->
-                                            <entry key="&lt;DF811F&gt;" value="08" />
+                                            <entry key="&lt;DF811F&gt;" value="C8" />
                                             <!-- TAC Default -->
                                             <entry key="&lt;DF8120&gt;" value="FC509C8800" />
                                             <!-- TAC Denial -->
-                                            <entry key="&lt;DF8121&gt;" value="0000000000" />
+                                            <entry key="&lt;DF8121&gt;[&lt;009C&gt;!20]" value="0000000000"/>
+                                            <entry key="&lt;DF8121&gt;[&lt;009C&gt;?20]" value="0000008000"/>
                                             <!-- TAC Online -->
                                             <entry key="&lt;DF8122&gt;" value="FC509C8800" />
                                             <!-- Contactless Floor Limit -->
@@ -446,18 +532,130 @@
                                             <!-- Contactless Transaction Limit - On Device CVM -->
                                             <entry key="&lt;DF8125&gt;" value="000009999999" />
                                             <!-- Contactless CVM Required Limit -->
-                                            <entry key="&lt;DF8126&gt;" value="000000020000" />
+                                            <entry key="&lt;DF8126&gt;" value="000000005000" />
                                             <entry key="&lt;DF812C&gt;" value="00" />
                                             <entry key="&lt;CFFFFF00&gt;"
-                                                value="9F219F06849F029F039F265F2482505A5F349F129F369F099F279F34849F1E9F109F119F339F1A9F3595579F535F2A9A9C9F37" />
+                                            value="9F219F06849F029F039F265F2482505A5F349F129F369F099F279F34849F1E9F109F119F339F1A9F3595579F535F2A9A9C9F37" />
                                             <entry key="&lt;CFFFFF01&gt;"
-                                                value="509F12849F119F6D569F6B" />
+                                            value="509F12849F119F6D569F6B" />
                                             <entry key="&lt;CFFFFF03&gt;"
-                                                value="9F42DF8104DF8102DF810BDF8115DF810EDF810F9F6EFF8101DF8104DF8105" />
+                                            value="9F42DF8104DF8102DF810BDF8115DF810EDF810F9F6EFF8101DF8104DF8105" />
                                             <entry key="&lt;CFFFFF04&gt;"
-                                                value="DF812ADF812BDF81159F6E" />
+                                            value="DF812ADF812BDF81159F6E" />
                                             <!-- Terminal Risk Management Data -->
                                             <entry key="&lt;9F1D&gt;" value="6C72000000000000" />
+                                        </map>
+                                    </node>
+                                    <!-- MAESTRO -->
+                                    <node name="APP2">
+                                        <map>
+                                            <entry key="&lt;5F57&gt;" value="" />
+                                            <entry key="&lt;9F01&gt;" value="" />
+                                            <entry key="&lt;9F06&gt;" value="A0000000043060" />
+                                            <entry key="&lt;9F09&gt;" value="0002" />
+                                            <entry key="&lt;9F16&gt;" value="" />
+                                            <entry key="&lt;9F1C&gt;" value="" />
+                                            <entry key="&lt;9F1E&gt;" value="3132333435363738" />
+                                            <entry key="&lt;9F33&gt;" value="E0F0C8" />
+                                            <entry key="&lt;9F35&gt;" value="21" />
+                                            <entry key="&lt;9F40&gt;" value="0000000000" />
+                                            <entry key="&lt;9F4E&gt;" value="" />
+                                            <entry key="&lt;9F6D&gt;" value="0001" />
+                                            <entry key="&lt;9F7E&gt;" value="" />
+                                            <entry key="&lt;DF810C&gt;" value="02" />
+                                            <!-- Byte1 of 0x9F33 -->
+                                            <entry key="&lt;DF8117&gt;" value="E0" />
+                                            <entry key="&lt;DF8118&gt;" value="60" />
+                                            <entry key="&lt;DF8119&gt;" value="08" />
+                                            <entry key="&lt;DF811A&gt;" value="9F6A04" />
+                                            <entry key="&lt;DF811B&gt;" value="20" />
+                                            <entry key="&lt;DF811C&gt;" value="0000" />
+                                            <entry key="&lt;DF811D&gt;" value="00" />
+                                            <entry key="&lt;DF811E&gt;" value="10" />
+                                            <!-- byte 3 of 0x9F33 -->
+                                            <entry key="&lt;DF811F&gt;" value="C8" />
+                                            <!-- TAC Default -->
+                                            <entry key="&lt;DF8120&gt;" value="FC509C8800" />
+                                            <!-- TAC Denial -->
+                                            <entry key="&lt;DF8121&gt;[&lt;009C&gt;!20]" value="0000800000"/>
+                                            <entry key="&lt;DF8121&gt;[&lt;009C&gt;?20]" value="0000008000"/>
+                                            <!-- TAC Online -->
+                                            <entry key="&lt;DF8122&gt;" value="FC509C8800" />
+                                            <!-- Contactless Floor Limit -->
+                                            <entry key="&lt;DF8123&gt;" value="000000000000" />
+                                            <!-- Contactless Transaction Limit - No On Device CVM-->
+                                            <entry key="&lt;DF8124&gt;" value="000009999999" />
+                                            <!-- Contactless Transaction Limit - On Device CVM -->
+                                            <entry key="&lt;DF8125&gt;" value="000009999999" />
+                                            <!-- Contactless CVM Required Limit -->
+                                            <entry key="&lt;DF8126&gt;" value="000000005000" />
+                                            <entry key="&lt;DF812C&gt;" value="00" />
+                                            <entry key="&lt;CFFFFF00&gt;"
+                                            value="9F219F06849F029F039F265F2482505A5F349F129F369F099F279F34849F1E9F109F119F339F1A9F3595579F535F2A9A9C9F37" />
+                                            <entry key="&lt;CFFFFF01&gt;"
+                                            value="509F12849F119F6D569F6B" />
+                                            <entry key="&lt;CFFFFF03&gt;"
+                                            value="9F42DF8104DF8102DF810BDF8115DF810EDF810F9F6EFF8101DF8104DF8105" />
+                                            <entry key="&lt;CFFFFF04&gt;"
+                                            value="DF812ADF812BDF81159F6E" />
+                                            <!-- Terminal Risk Management Data -->
+                                            <entry key="&lt;9F1D&gt;" value="6C72800000000000" />
+                                        </map>
+                                    </node>
+                                    <!-- MAESTRO 2 -->
+                                    <node name="APP3">
+                                        <map>
+                                            <entry key="&lt;5F57&gt;" value="" />
+                                            <entry key="&lt;9F01&gt;" value="" />
+                                            <entry key="&lt;9F06&gt;" value="A0000000042203" />
+                                            <entry key="&lt;9F09&gt;" value="0002" />
+                                            <entry key="&lt;9F16&gt;" value="" />
+                                            <entry key="&lt;9F1C&gt;" value="" />
+                                            <entry key="&lt;9F1E&gt;" value="3132333435363738" />
+                                            <entry key="&lt;9F33&gt;" value="E0F0C8" />
+                                            <entry key="&lt;9F35&gt;" value="21" />
+                                            <entry key="&lt;9F40&gt;" value="0000000000" />
+                                            <entry key="&lt;9F4E&gt;" value="" />
+                                            <entry key="&lt;9F6D&gt;" value="0001" />
+                                            <entry key="&lt;9F7E&gt;" value="" />
+                                            <entry key="&lt;DF810C&gt;" value="02" />
+                                            <!-- Byte1 of 0x9F33 -->
+                                            <entry key="&lt;DF8117&gt;" value="E0" />
+                                            <entry key="&lt;DF8118&gt;" value="60" />
+                                            <entry key="&lt;DF8119&gt;" value="08" />
+                                            <entry key="&lt;DF811A&gt;" value="9F6A04" />
+                                            <entry key="&lt;DF811B&gt;" value="20" />
+                                            <entry key="&lt;DF811C&gt;" value="0000" />
+                                            <entry key="&lt;DF811D&gt;" value="00" />
+                                            <entry key="&lt;DF811E&gt;" value="10" />
+                                            <!-- byte 3 of 0x9F33 -->
+                                            <entry key="&lt;DF811F&gt;" value="C8" />
+                                            <!-- TAC Default -->
+                                            <entry key="&lt;DF8120&gt;" value="FC509C8800" />
+                                            <!-- TAC Denial -->
+                                            <entry key="&lt;DF8121&gt;[&lt;009C&gt;!20]" value="0000800000"/>
+                                            <entry key="&lt;DF8121&gt;[&lt;009C&gt;?20]" value="0000008000"/>
+                                            <!-- TAC Online -->
+                                            <entry key="&lt;DF8122&gt;" value="FC509C8800" />
+                                            <!-- Contactless Floor Limit -->
+                                            <entry key="&lt;DF8123&gt;" value="000000000000" />
+                                            <!-- Contactless Transaction Limit - No On Device CVM-->
+                                            <entry key="&lt;DF8124&gt;" value="000009999999" />
+                                            <!-- Contactless Transaction Limit - On Device CVM -->
+                                            <entry key="&lt;DF8125&gt;" value="000009999999" />
+                                            <!-- Contactless CVM Required Limit -->
+                                            <entry key="&lt;DF8126&gt;" value="000000005000" />
+                                            <entry key="&lt;DF812C&gt;" value="00" />
+                                            <entry key="&lt;CFFFFF00&gt;"
+                                            value="9F219F06849F029F039F265F2482505A5F349F129F369F099F279F34849F1E9F109F119F339F1A9F3595579F535F2A9A9C9F37" />
+                                            <entry key="&lt;CFFFFF01&gt;"
+                                            value="509F12849F119F6D569F6B" />
+                                            <entry key="&lt;CFFFFF03&gt;"
+                                            value="9F42DF8104DF8102DF810BDF8115DF810EDF810F9F6EFF8101DF8104DF8105" />
+                                            <entry key="&lt;CFFFFF04&gt;"
+                                            value="DF812ADF812BDF81159F6E" />
+                                            <!-- Terminal Risk Management Data -->
+                                            <entry key="&lt;9F1D&gt;" value="6C72800000000000" />
                                         </map>
                                     </node>
                                 </node>

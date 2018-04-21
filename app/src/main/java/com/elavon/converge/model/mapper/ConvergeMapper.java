@@ -46,8 +46,13 @@ import co.poynt.api.model.Processor;
 import co.poynt.api.model.ProcessorResponse;
 import co.poynt.api.model.ProcessorStatus;
 import co.poynt.api.model.Transaction;
+import co.poynt.api.model.TransactionAmounts;
 import co.poynt.api.model.TransactionReference;
 import co.poynt.api.model.TransactionStatus;
+import co.poynt.os.util.StringUtil;
+
+import static co.poynt.api.model.EntryMode.CONTACTLESS_INTEGRATED_CIRCUIT_CARD;
+import static co.poynt.api.model.EntryMode.INTEGRATED_CIRCUIT_CARD;
 
 public class ConvergeMapper {
 
@@ -129,20 +134,44 @@ public class ConvergeMapper {
         Log.d(TAG, "Transaction Request:" + transaction);
         final InterfaceMapper mapper = getMapper(transaction.getFundingSource());
         final ElavonTransactionRequest request;
+        TransactionAmounts amounts = transaction.getAmounts();
         switch (transaction.getAction()) {
             case AUTHORIZE:
-                request = mapper.createAuth(transaction);
+                // if amount is 0 - then it should be verification request
+                if (amounts != null &&
+                        (amounts.getTransactionAmount() == null
+                                || amounts.getTransactionAmount() == 0l)) {
+                    request = mapper.createVerify(transaction);
+                } else {
+                    request = mapper.createAuth(transaction);
+                }
                 break;
             case REFUND:
                 request = mapper.createRefund(transaction);
                 break;
             case SALE:
-                request = mapper.createSale(transaction);
+                // if amount is 0 - then it should be verification request
+                if (amounts != null &&
+                        (amounts.getTransactionAmount() == null
+                                || amounts.getTransactionAmount() == 0l)) {
+                    request = mapper.createVerify(transaction);
+                } else {
+                    request = mapper.createSale(transaction);
+                }
+                break;
+            case VERIFY:
+                request = mapper.createVerify(transaction);
                 break;
             default:
                 throw new ConvergeMapperException("Invalid transaction action found");
         }
         request.setInvoiceNumber(getReference(transaction, "invoiceId"));
+        // we always use the merchant_txn_id as our unique identifier to bind poynt txn w/ converge txn
+        if (transaction.getId() != null) {
+            request.setMerchantTxnId(transaction.getId().toString());
+        } else {
+            request.setMerchantTxnId(UUID.randomUUID().toString());
+        }
         return request;
     }
 
@@ -162,8 +191,8 @@ public class ConvergeMapper {
                                                                 final AdjustTransactionRequest adjustTransactionRequest) {
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
         if (entryDetails != null
-                && (entryDetails.getEntryMode() == EntryMode.INTEGRATED_CIRCUIT_CARD
-                || entryDetails.getEntryMode() == EntryMode.CONTACTLESS_INTEGRATED_CIRCUIT_CARD)) {
+                && (entryDetails.getEntryMode() == INTEGRATED_CIRCUIT_CARD
+                || entryDetails.getEntryMode() == CONTACTLESS_INTEGRATED_CIRCUIT_CARD)) {
             request.setTransactionType(ElavonTransactionType.EMV_CT_UPDATE);
             // add signature - only for emv update
             if (adjustTransactionRequest.getSignature() != null) {
@@ -260,7 +289,8 @@ public class ConvergeMapper {
         return search;
     }
 
-    public ElavonTransactionSearchRequest getSearchRequest(final String cardLast4, final Date searchStartDate) {
+    public ElavonTransactionSearchRequest getSearchRequest(final String cardLast4,
+                                                           final Date searchStartDate) {
         final ElavonTransactionSearchRequest search = new ElavonTransactionSearchRequest();
         search.setTestMode("false");
         search.setTransactionType(ElavonTransactionType.TRANSACTION_QUERY);
@@ -270,7 +300,8 @@ public class ConvergeMapper {
         return search;
     }
 
-    public ElavonTransactionSearchRequest getSearchRequest(final String searchStartDate, final String searchEndDate) {
+    public ElavonTransactionSearchRequest getSearchRequest(final String searchStartDate,
+                                                           final String searchEndDate) {
         final ElavonTransactionSearchRequest search = new ElavonTransactionSearchRequest();
         search.setTestMode("false");
         search.setTransactionType(ElavonTransactionType.TRANSACTION_QUERY);
@@ -296,6 +327,17 @@ public class ConvergeMapper {
         if (searchEndDate != null) {
             search.setSearchEndDate(searchEndDate);
         }
+        return search;
+    }
+
+    public ElavonTransactionSearchRequest getSearchByMerchantTransactionIdRequest(
+            final String merchantTransactionId, final Date searchStartDate) {
+        final ElavonTransactionSearchRequest search = new ElavonTransactionSearchRequest();
+        search.setTestMode("false");
+        search.setTransactionType(ElavonTransactionType.TRANSACTION_QUERY);
+        search.setMerchantTxnId(merchantTransactionId);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+        search.setSearchStartDate(dateFormat.format(searchStartDate));
         return search;
     }
 
@@ -352,18 +394,25 @@ public class ConvergeMapper {
      */
     public void mapTransactionResponse(final ElavonTransactionResponse etResponse, final Transaction transaction) {
 
+        Log.d(TAG, "Received response:" + etResponse);
+
         final ProcessorResponse processorResponse = new ProcessorResponse();
         processorResponse.setProcessor(Processor.ELAVON);
         processorResponse.setAcquirer(Processor.ELAVON);
 
         // always generate a hash of the card info
         if (transaction.getFundingSource() != null && transaction.getFundingSource().getCard() != null) {
-            transaction.getFundingSource().getCard().setNumberHashed(
-                    generateHash(transaction.getFundingSource().getCard().getCardHolderFullName(),
-                            transaction.getFundingSource().getCard().getNumberFirst6(),
-                            transaction.getFundingSource().getCard().getNumberLast4(),
-                            transaction.getFundingSource().getCard().getEncryptedExpirationDate())
-            );
+            // set number hash if it's not already a card token
+            if (transaction.getFundingSource().getEntryDetails().getEntryMode() != EntryMode.KEYED) {
+                transaction.getFundingSource().getCard().setNumberHashed(
+                        generateHash(transaction.getFundingSource().getCard().getCardHolderFullName(),
+                                transaction.getFundingSource().getCard().getNumberFirst6(),
+                                transaction.getFundingSource().getCard().getNumberLast4(),
+                                transaction.getFundingSource().getCard().getEncryptedExpirationDate())
+                );
+            } else {
+                // for keyed transaction card token is already set as number hash for converge
+            }
             // remove sensitive fields from getting recorded in Poynt
             if (transaction.getFundingSource().getEntryDetails().getEntryMode() == EntryMode.KEYED) {
                 transaction.getFundingSource().getCard().setNumber(null);
@@ -424,7 +473,7 @@ public class ConvergeMapper {
                     break;
                 case SALE:
                 case CAPTURE:
-                    transaction.setStatus(TransactionStatus.PARTIALLY_CAPTURED);
+                    transaction.setStatus(TransactionStatus.CAPTURED);
                     break;
                 case VOID:
                     transaction.setStatus(TransactionStatus.VOIDED);
@@ -433,7 +482,7 @@ public class ConvergeMapper {
                     transaction.setStatus(TransactionStatus.AUTHORIZED);
                     break;
                 case REFUND:
-                    transaction.setStatus(TransactionStatus.PARTIALLY_REFUNDED);
+                    transaction.setStatus(TransactionStatus.REFUNDED);
                     break;
                 case VERIFY:
                     break;
@@ -501,30 +550,49 @@ public class ConvergeMapper {
                 || etResponse.getResponseCode() == ResponseCodes.AP
                 || ElavonResponse.RESULT_MESSAGE.APPROVAL.equals(etResponse.getResultMessage())
                 || ElavonResponse.RESULT_MESSAGE.PARTIAL_APPROVAL.equals(etResponse.getResultMessage())) {
+            // update the transaction amount
+            TransactionAmounts amounts = transaction.getAmounts();
             if (etResponse.getAmount() != null) {
-                processorResponse.setApprovedAmount(CurrencyUtil.getAmount(etResponse.getAmount(), transaction.getAmounts().getCurrency()));
+                processorResponse.setApprovedAmount(CurrencyUtil.getAmount(etResponse.getAmount(),
+                        transaction.getAmounts().getCurrency()));
+                amounts.setTransactionAmount(CurrencyUtil.getAmount(etResponse.getAmount(),
+                        transaction.getAmounts().getCurrency()));
+                if (etResponse.getCashbackAmount() != null) {
+                    amounts.setCashbackAmount(CurrencyUtil.getAmount(etResponse.getCashbackAmount(),
+                            transaction.getAmounts().getCurrency()));
+                }
             } else if (etResponse.getBaseAmount() != null) {
-                processorResponse.setApprovedAmount(CurrencyUtil.getAmount(etResponse.getBaseAmount(), transaction.getAmounts().getCurrency()));
+                processorResponse.setApprovedAmount(
+                        CurrencyUtil.getAmount(etResponse.getBaseAmount(), transaction.getAmounts().getCurrency()));
+                amounts.setTransactionAmount(CurrencyUtil.getAmount(etResponse.getBaseAmount(),
+                        transaction.getAmounts().getCurrency()));
+                if (etResponse.getCashbackAmount() != null) {
+                    amounts.setCashbackAmount(CurrencyUtil.getAmount(etResponse.getCashbackAmount(),
+                            transaction.getAmounts().getCurrency()));
+                }
             }
         }
 
-        // set  EMV response tags
-        Map<String, String> emvTags = new HashMap<>();
+        // set  EMV response tags - if it's EMV transaction
+        if (transaction.getFundingSource().getEntryDetails().getEntryMode()
+                == INTEGRATED_CIRCUIT_CARD
+                || transaction.getFundingSource().getEntryDetails().getEntryMode()
+                == CONTACTLESS_INTEGRATED_CIRCUIT_CARD) {
+            Map<String, String> emvTags = new HashMap<>();
 
-        // csn
-        if (etResponse.getCsn() != null) {
-            emvTags.put("0x5F34", etResponse.getCsn());
-        }
+            // NOTE do not pass CSN, atc and other non relevant tags in response as Poynt
+            // firmware might fail the transaction when it receives unexpected tags
 
-        // atc
-        if (etResponse.getAtc() != null) {
-            emvTags.put("0x9F36", etResponse.getAtc());
-        }
+            // arpc
+            if (etResponse.getArpc() != null) {
+                emvTags.put("0x91", etResponse.getArpc());
+            }
 
-        // arpc
-        if (etResponse.getArpc() != null) {
-            emvTags.put("0x91", etResponse.getArpc());
-        }
+            if (etResponse.getIssuerScript() != null) {
+                String fullField = etResponse.getIssuerScript();
+                String tagNo = fullField.substring(0, 2);
+                emvTags.put("0x" + tagNo, fullField.substring(4));
+            }
 
 //            if (er.hasField("ICCIssuerScript") && er.getField("ICCIssuerScript") != null
 //                    && er.getField("ICCIssuerScript").length() >= 4) {
@@ -536,35 +604,23 @@ public class ConvergeMapper {
 //                // emvTags.put("0x71", "");
 //            }
 
-        if (etResponse.getArc() != null) {
-            emvTags.put(EMVTag.RESPONSE_AUTHORIZATION_RESPONSE_CODE.tag(),
-                    numberToAsciiHex(etResponse.getArc().toCharArray()));
-            if (etResponse.getIssuerResponse() != null) {
-                emvTags.put("0xDFD9", numberToAsciiHex(etResponse.getIssuerResponse().toCharArray()));
-            }
-        } else {
-            if (etResponse.getResponseCode() == ResponseCodes.AA) {
-                // Create TLV for Referral Code 8A023032
-                emvTags.put(EMVTag.RESPONSE_AUTHORIZATION_RESPONSE_CODE.tag(), "3030");
-                if (etResponse.getIssuerResponse() != null) {
-                    emvTags.put("0xDFD9", numberToAsciiHex(etResponse.getIssuerResponse().toCharArray()));
-                }
-            } else if (etResponse.getResponseCode() == ResponseCodes.AP) {
-                // for partial approval, firmware team wants us to pass Approval..
-                emvTags.put("0xDFD9", "3030");
-                emvTags.put(EMVTag.RESPONSE_AUTHORIZATION_RESPONSE_CODE.tag(), "3030");
-            } else if (etResponse.getResponseCode() == ResponseCodes.NR) {
-                emvTags.put(EMVTag.RESPONSE_AUTHORIZATION_RESPONSE_CODE.tag(), "3031");
-                emvTags.put("0xDFD9", "3031");
+            if (etResponse.getArc() != null) {
+                emvTags.put(EMVTag.RESPONSE_AUTHORIZATION_RESPONSE_CODE.tag(),
+                        numberToAsciiHex(etResponse.getArc().toCharArray()));
             } else {
-                emvTags.put(EMVTag.RESPONSE_AUTHORIZATION_RESPONSE_CODE.tag(), "3035");
-                if (etResponse.getIssuerResponse() != null) {
-                    emvTags.put("0xDFD9", numberToAsciiHex(etResponse.getIssuerResponse().toCharArray()));
+                if (etResponse.getResponseCode() == ResponseCodes.AA) {
+                    emvTags.put(EMVTag.RESPONSE_AUTHORIZATION_RESPONSE_CODE.tag(), "3030");
+                } else if (etResponse.getResponseCode() == ResponseCodes.AP) {
+                    // for partial approval, firmware team wants us to pass Approval..
+                    emvTags.put(EMVTag.RESPONSE_AUTHORIZATION_RESPONSE_CODE.tag(), "3030");
+                } else if (etResponse.getResponseCode() == ResponseCodes.NR) {
+                    emvTags.put(EMVTag.RESPONSE_AUTHORIZATION_RESPONSE_CODE.tag(), "3031");
+                } else {
+                    emvTags.put(EMVTag.RESPONSE_AUTHORIZATION_RESPONSE_CODE.tag(), "3035");
                 }
             }
+            processorResponse.setEmvTags(emvTags);
         }
-
-        processorResponse.setEmvTags(emvTags);
         if (etResponse.getCvv2Response() != null) {
             processorResponse.setCvResult(mapCvResponse(etResponse.getCvv2Response()));
             processorResponse.setCvActualResult(etResponse.getCvv2Response().getValue());
@@ -574,10 +630,13 @@ public class ConvergeMapper {
         }
         transaction.setProcessorResponse(processorResponse);
 
-        // TODO temporary fix
-        if (transaction.getId() == null) {
+        // make sure the transactionId in Poynt is same as merchant-txn-id
+        if (StringUtil.notEmpty(etResponse.getMerchantTxnId())) {
+            transaction.setId(UUID.fromString(etResponse.getMerchantTxnId()));
+        } else if (transaction.getId() == null) {
             transaction.setId(UUID.randomUUID());
         }
+
         if (transaction.isSignatureCaptured() == null) {
             transaction.setSignatureCaptured(false);
         }

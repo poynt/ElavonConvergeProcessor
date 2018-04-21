@@ -19,4 +19,5 @@ public interface AppComponent {
     void inject(ManualEntryActivity manualEntryActivity);
 
     void inject(SyncAdapter syncAdapter);
+
 }
