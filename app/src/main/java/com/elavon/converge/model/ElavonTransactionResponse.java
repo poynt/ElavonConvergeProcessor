@@ -60,23 +60,26 @@ public class ElavonTransactionResponse extends ElavonResponse {
     private String approvalCode;
 
     @Element(name = "ssl_amount", required = false)
-    private BigDecimal amount;
+    private String amount;
 
     @Element(name = "ssl_base_amount", required = false)
-    private BigDecimal baseAmount;
+    private String baseAmount;
+
+    @Element(name = "ssl_cashback_amount", required = false)
+    private String cashbackAmount;
 
     //The amount originally requested on partial approvals only
     @Element(name = "ssl_requested_amount", required = false)
-    private BigDecimal requestedAmount;
+    private String requestedAmount;
 
     // This is the difference of the amount requested versus the amount authorized that the merchant
     // has to collect from the consumer on partial approvals only
     @Element(name = "ssl_balance_due", required = false)
-    private BigDecimal balanceDue;
+    private String balanceDue;
 
     // The balance left on the card, which is always 0.00 for a partially authorized transaction.
     @Element(name = "ssl_account_balance", required = false)
-    private BigDecimal accountBalance;
+    private String accountBalance;
 
     @Element(name = "ssl_avs_response", required = false)
     private AVSResponse avsResponse;
@@ -231,6 +234,8 @@ public class ElavonTransactionResponse extends ElavonResponse {
     @Element(name = "ssl_entry_mode", required = false)
     private ElavonEntryMode entryMode;
 
+    @Element(name = "ssl_merchant_txn_id", required = false)
+    private String merchantTxnId;
 
     public String getTxnId() {
         return txnId;
@@ -256,43 +261,47 @@ public class ElavonTransactionResponse extends ElavonResponse {
         this.approvalCode = approvalCode;
     }
 
-    public BigDecimal getAmount() {
+    public String getAmount() {
         return amount;
     }
 
-    public void setAmount(BigDecimal amount) {
+    public void setAmount(String amount) {
         this.amount = amount;
     }
 
-    public BigDecimal getBaseAmount() {
+    public String getBaseAmount() {
         return baseAmount;
     }
 
-    public void setBaseAmount(BigDecimal baseAmount) {
+    public void setBaseAmount(String baseAmount) {
         this.baseAmount = baseAmount;
     }
 
-    public BigDecimal getRequestedAmount() {
+    public void setCashbackAmount(String cashbackAmount) {
+        this.cashbackAmount = cashbackAmount;
+    }
+
+    public String getRequestedAmount() {
         return requestedAmount;
     }
 
-    public void setRequestedAmount(BigDecimal requestedAmount) {
+    public void setRequestedAmount(String requestedAmount) {
         this.requestedAmount = requestedAmount;
     }
 
-    public BigDecimal getBalanceDue() {
+    public String getBalanceDue() {
         return balanceDue;
     }
 
-    public void setBalanceDue(BigDecimal balanceDue) {
+    public void setBalanceDue(String balanceDue) {
         this.balanceDue = balanceDue;
     }
 
-    public BigDecimal getAccountBalance() {
+    public String getAccountBalance() {
         return accountBalance;
     }
 
-    public void setAccountBalance(BigDecimal accountBalance) {
+    public void setAccountBalance(String accountBalance) {
         this.accountBalance = accountBalance;
     }
 
@@ -667,6 +676,26 @@ public class ElavonTransactionResponse extends ElavonResponse {
     }
 
 
+    public String getMerchantTxnId() {
+        return merchantTxnId;
+    }
+
+    public void setMerchantTxnId(String merchantTxnId) {
+        this.merchantTxnId = merchantTxnId;
+    }
+
+    public ElavonEntryMode getEntryMode() {
+        return entryMode;
+    }
+
+    public void setEntryMode(ElavonEntryMode entryMode) {
+        this.entryMode = entryMode;
+    }
+
+    public String getCashbackAmount() {
+        return cashbackAmount;
+    }
+
     @Override
     public String toString() {
         return "ElavonTransactionResponse{" +
@@ -675,9 +704,10 @@ public class ElavonTransactionResponse extends ElavonResponse {
                 ", approvalCode='" + approvalCode + '\'' +
                 ", amount=" + amount +
                 ", baseAmount=" + baseAmount +
+                ", cashbackAmount=" + cashbackAmount +
                 ", requestedAmount=" + requestedAmount +
                 ", balanceDue=" + balanceDue +
-                ", accountBalance=" + accountBalance +
+                ", accountBalance='" + accountBalance + '\'' +
                 ", avsResponse=" + avsResponse +
                 ", cvv2Response=" + cvv2Response +
                 ", cardNumberMasked='" + cardNumberMasked + '\'' +
@@ -687,14 +717,14 @@ public class ElavonTransactionResponse extends ElavonResponse {
                 ", cardholderAmount=" + cardholderAmount +
                 ", cardholderBaseAmount=" + cardholderBaseAmount +
                 ", result='" + result + '\'' +
-                ", cardholderTipAmount=" + cardholderTipAmount +
                 ", resultMessage='" + resultMessage + '\'' +
+                ", cardholderTipAmount=" + cardholderTipAmount +
                 ", serverId='" + serverId + '\'' +
                 ", errorCode=" + errorCode +
                 ", errorName='" + errorName + '\'' +
                 ", shift='" + shift + '\'' +
                 ", errorMessage='" + errorMessage + '\'' +
-                ", transactionType='" + transactionType + '\'' +
+                ", transactionType=" + transactionType +
                 ", cardShortDescription=" + cardShortDescription +
                 ", responseCode=" + responseCode +
                 ", cardType=" + cardType +
@@ -732,6 +762,7 @@ public class ElavonTransactionResponse extends ElavonResponse {
                 ", tipAmount=" + tipAmount +
                 ", isVoidable='" + isVoidable + '\'' +
                 ", entryMode=" + entryMode +
+                ", merchantTxnId='" + merchantTxnId + '\'' +
                 '}';
     }
 }

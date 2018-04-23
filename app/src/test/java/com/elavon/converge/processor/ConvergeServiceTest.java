@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -92,9 +93,9 @@ public class ConvergeServiceTest extends BaseTest {
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicBoolean isSuccess = new AtomicBoolean();
         final AtomicReference<ElavonTransactionResponse> res = new AtomicReference<>();
-
+        final String merchantTransactionId = UUID.randomUUID().toString();
         // TEST
-        convergeService.find(cardLast4, req.getAmount(), dateAfter, new ConvergeCallback<ElavonTransactionResponse>() {
+        convergeService.find(merchantTransactionId, new ConvergeCallback<ElavonTransactionResponse>() {
             @Override
             public void onResponse(final ElavonTransactionResponse response) {
                 isSuccess.set(true);

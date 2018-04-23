@@ -20,9 +20,11 @@ public class MsrEbtMapper extends InterfaceMapper {
     private static final Map<EBTType, ElavonTransactionType> EBT_SALE_TYPES_MAP = new HashMap<EBTType, ElavonTransactionType>() {{
         put(EBTType.FOOD_STAMP, ElavonTransactionType.EBT_SALE);
         put(EBTType.CASH_BENEFIT, ElavonTransactionType.EBT_CASH_SALE);
+        put(EBTType.FOOD_STAMP_ELECTRONIC_VOUCHER, ElavonTransactionType.EBT_FORCE_SALE);
     }};
     private static final Map<EBTType, ElavonTransactionType> EBT_REFUND_TYPES_MAP = new HashMap<EBTType, ElavonTransactionType>() {{
         put(EBTType.FOOD_STAMP, ElavonTransactionType.EBT_RETURN);
+        put(EBTType.FOOD_STAMP_ELECTRONIC_VOUCHER, ElavonTransactionType.EBT_FORCE_RETURN);
     }};
     private static final Map<EBTType, ElavonTransactionType> EBT_INQUIRY_TYPES_MAP = new HashMap<EBTType, ElavonTransactionType>() {{
         put(EBTType.FOOD_STAMP, ElavonTransactionType.EBT_INQUIRY);
@@ -64,13 +66,28 @@ public class MsrEbtMapper extends InterfaceMapper {
         request.setTransactionType(EBT_SALE_TYPES_MAP.get(ebtType));
         request.setEncryptedTrackData(t.getFundingSource().getCard().getTrack2data());
         request.setKsn(t.getFundingSource().getCard().getKeySerialNumber());
-        request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getOrderAmount(), t.getAmounts().getCurrency()));
-        if (t.getAmounts().getCashbackAmount() != null) {
-            request.setCashbackAmount(CurrencyUtil.getAmount(t.getAmounts().getCashbackAmount(), t.getAmounts().getCurrency()));
+        if (t.getAmounts().getOrderAmount() != null) {
+            request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getOrderAmount(),
+                    t.getAmounts().getCurrency()));
+        } else {
+            request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getTransactionAmount(),
+                    t.getAmounts().getCurrency()));
         }
-        request.setPinKsn(t.getFundingSource().getVerificationData().getKeySerialNumber());
+
+        if (t.getAmounts().getCashbackAmount() != null) {
+            request.setCashbackAmount(CurrencyUtil.getAmount(t.getAmounts().getCashbackAmount(),
+                    t.getAmounts().getCurrency()));
+        }
+
+        if (t.getFundingSource().getVerificationData() != null) {
+            request.setPinKsn(t.getFundingSource().getVerificationData().getKeySerialNumber());
+            request.setPinBlock(t.getFundingSource().getVerificationData().getPin());
+        }
         request.setKeyPointer("T");
-        request.setPinBlock(t.getFundingSource().getVerificationData().getPin());
+        if (ebtType == EBTType.FOOD_STAMP_ELECTRONIC_VOUCHER) {
+            request.setApprovalCode(t.getFundingSource().getEbtDetails().getElectronicVoucherApprovalCode());
+            request.setVoucherNumber(t.getFundingSource().getEbtDetails().getElectronicVoucherSerialNumber());
+        }
         return request;
     }
 

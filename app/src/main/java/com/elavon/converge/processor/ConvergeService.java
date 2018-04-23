@@ -10,7 +10,6 @@ import com.elavon.converge.model.ElavonTransactionSearchRequest;
 import com.elavon.converge.model.ElavonTransactionSearchResponse;
 import com.elavon.converge.model.mapper.ConvergeMapper;
 
-import java.math.BigDecimal;
 import java.net.SocketTimeoutException;
 import java.util.Date;
 import java.util.List;
@@ -43,9 +42,10 @@ public class ConvergeService {
             final Date originalTime) {
 
         if (retryCount > maxRetryCount) {
-            // TODO submit reversal
             Log.e(TAG, "Max retry count reached. Starting reversal...");
-            callback.onFailure(new ConvergeClientException("Transaction failed after all retries"));
+            callback.onFailure(
+                    new ConvergeClientException("Transaction failed after all retries",
+                            true /* network error */));
             return;
         }
         Log.i(TAG, "Create with retry count: " + retryCount);
@@ -60,9 +60,12 @@ public class ConvergeService {
             public void onFailure(final Throwable t) {
                 // retry if timeout
                 if (t instanceof SocketTimeoutException) {
-                    Log.e(TAG, "Create transaction timeout. Retrying...");
-                    checkAndCreate(request, callback, retryCount + 1, originalTime);
-                    return;
+                    //Log.e(TAG, "Create transaction timeout. Retrying...");
+                    //checkAndCreate(request, callback, retryCount + 1, originalTime);
+                    //return;
+                    callback.onFailure(
+                            new ConvergeClientException("Transaction failed due to network error",
+                                    true /* network error */));
                 }
                 callback.onFailure(t);
             }
@@ -88,8 +91,7 @@ public class ConvergeService {
                 create(request, callback, retryCount, originalTime);
             }
         };
-
-        find(request.getCardLast4(), request.getAmount(), originalTime, cb);
+        find(request.getMerchantTxnId(), originalTime, cb);
     }
 
     public void update(
@@ -116,11 +118,10 @@ public class ConvergeService {
     }
 
     public void find(
-            final String cardLast4,
-            final BigDecimal amount,
+            final String merchantTransactionId,
             final Date dateAfter,
             final ConvergeCallback<ElavonTransactionResponse> callback) {
-        if (cardLast4 == null || cardLast4.length() < 4 || amount == null || dateAfter == null) {
+        if (merchantTransactionId == null) {
             callback.onFailure(new ConvergeClientException("Transaction not found. Not enough information."));
             return;
         }
@@ -129,12 +130,11 @@ public class ConvergeService {
             @Override
             public void onResponse(final ElavonTransactionSearchResponse response) {
                 // find the matching transaction object
+                Log.i(TAG, "Found transaction for merchantTransactionId:" + merchantTransactionId);
                 if (response.getList() != null) {
                     for (final ElavonTransactionResponse tr : response.getList()) {
-                        if (amount.equals(tr.getAmount())) {
-                            callback.onResponse(tr);
-                            return;
-                        }
+                        Log.d(TAG, tr.toString());
+                        callback.onResponse(tr);
                     }
                 }
                 callback.onFailure(new ConvergeClientException("Transaction not found"));
@@ -146,7 +146,8 @@ public class ConvergeService {
             }
         };
 
-        final ElavonTransactionSearchRequest searchRequest = convergeMapper.getSearchRequest(cardLast4, dateAfter);
+        final ElavonTransactionSearchRequest searchRequest
+                = convergeMapper.getSearchByMerchantTransactionIdRequest(merchantTransactionId, dateAfter);
         convergeClient.call(searchRequest, cb);
     }
 

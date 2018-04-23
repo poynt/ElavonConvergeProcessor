@@ -14,6 +14,7 @@ import static com.elavon.converge.model.type.ElavonTransactionType.DELETE;
 import static com.elavon.converge.model.type.ElavonTransactionType.VOID;
 
 public class MsrDebitMapper extends InterfaceMapper {
+
     @Override
     ElavonTransactionRequest createAuth(final Transaction t) {
         throw new ConvergeMapperException("Not supported");
@@ -87,7 +88,18 @@ public class MsrDebitMapper extends InterfaceMapper {
     }
 
     @Override
-    ElavonTransactionRequest createBalanceInquiry(BalanceInquiry balanceInquiry) {
-        throw new ConvergeMapperException("Not supported");
+    ElavonTransactionRequest createBalanceInquiry(BalanceInquiry b) {
+        final ElavonTransactionRequest request = new ElavonTransactionRequest();
+        request.setTransactionType(ElavonTransactionType.DEBIT_INQUIRY);
+        request.setEncryptedTrackData(b.getFundingSource().getCard().getTrack2data());
+        request.setKsn(b.getFundingSource().getCard().getKeySerialNumber());
+        request.setExpDate(CardUtil.getCardExpiry(b.getFundingSource().getCard()));
+        request.setPinKsn(b.getFundingSource().getVerificationData().getKeySerialNumber());
+        request.setKeyPointer("T");
+        request.setPinBlock(b.getFundingSource().getVerificationData().getPin());
+        // account type - 0 checking 1 savings
+        request.setAccountType(AccountType.CHECKING);
+
+        return request;
     }
 }
