@@ -3,6 +3,7 @@ package com.elavon.converge.model.mapper;
 import com.elavon.converge.exception.ConvergeMapperException;
 import com.elavon.converge.model.ElavonTransactionRequest;
 import com.elavon.converge.model.type.ElavonEntryMode;
+import com.elavon.converge.model.type.ElavonPosMode;
 import com.elavon.converge.model.type.ElavonTransactionType;
 import com.elavon.converge.util.CardUtil;
 import com.elavon.converge.util.CurrencyUtil;
@@ -106,6 +107,7 @@ public class KeyedMapper extends InterfaceMapper {
             request.setCardPresent(false);
             request.setEntryMode(ElavonEntryMode.KEY_ENTERED_CARD_NOT_PRESENT);
         }
+        request.setPosMode(ElavonPosMode.ICC_DUAL);
 
         request.setPoyntUserId(t.getContext().getEmployeeUserId().toString());
         request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getTransactionAmount(), t.getAmounts().getCurrency()));
@@ -130,9 +132,13 @@ public class KeyedMapper extends InterfaceMapper {
             if (t.getFundingSource().getVerificationData().getCardHolderBillingAddress() != null) {
                 if (StringUtil.notEmpty(t.getFundingSource().getVerificationData().getCardHolderBillingAddress().getPostalCode())) {
                     request.setAvsZip(t.getFundingSource().getVerificationData().getCardHolderBillingAddress().getPostalCode());
+                } else {
+                    request.setAvsZip("");
                 }
                 if (StringUtil.notEmpty(t.getFundingSource().getVerificationData().getCardHolderBillingAddress().getLine1())) {
                     request.setAvsAddress(t.getFundingSource().getVerificationData().getCardHolderBillingAddress().getLine1());
+                } else {
+                    request.setAvsAddress("");
                 }
             }
             if (StringUtil.notEmpty(t.getFundingSource().getVerificationData().getCvData())) {

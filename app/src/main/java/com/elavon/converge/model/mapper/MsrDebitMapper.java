@@ -3,6 +3,7 @@ package com.elavon.converge.model.mapper;
 import com.elavon.converge.exception.ConvergeMapperException;
 import com.elavon.converge.model.ElavonTransactionRequest;
 import com.elavon.converge.model.type.AccountType;
+import com.elavon.converge.model.type.ElavonPosMode;
 import com.elavon.converge.model.type.ElavonTransactionType;
 import com.elavon.converge.util.CardUtil;
 import com.elavon.converge.util.CurrencyUtil;
@@ -44,6 +45,7 @@ public class MsrDebitMapper extends InterfaceMapper {
         request.setTransactionType(ElavonTransactionType.DEBIT_SALE);
         request.setEncryptedTrackData(t.getFundingSource().getCard().getTrack2data());
         request.setKsn(t.getFundingSource().getCard().getKeySerialNumber());
+        request.setPosMode(ElavonPosMode.ICC_DUAL);
         request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getOrderAmount(), t.getAmounts().getCurrency()));
         if (t.getAmounts().getCashbackAmount() != null) {
             request.setCashbackAmount(CurrencyUtil.getAmount(t.getAmounts().getCashbackAmount(), t.getAmounts().getCurrency()));
@@ -91,6 +93,7 @@ public class MsrDebitMapper extends InterfaceMapper {
     ElavonTransactionRequest createBalanceInquiry(BalanceInquiry b) {
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
         request.setTransactionType(ElavonTransactionType.DEBIT_INQUIRY);
+        request.setPosMode(ElavonPosMode.ICC_DUAL);
         request.setEncryptedTrackData(b.getFundingSource().getCard().getTrack2data());
         request.setKsn(b.getFundingSource().getCard().getKeySerialNumber());
         request.setExpDate(CardUtil.getCardExpiry(b.getFundingSource().getCard()));

@@ -2,6 +2,7 @@ package com.elavon.converge.model.mapper;
 
 import com.elavon.converge.exception.ConvergeMapperException;
 import com.elavon.converge.model.ElavonTransactionRequest;
+import com.elavon.converge.model.type.ElavonPosMode;
 import com.elavon.converge.model.type.ElavonTransactionType;
 import com.elavon.converge.util.CurrencyUtil;
 
@@ -47,6 +48,7 @@ public class MsrEbtMapper extends InterfaceMapper {
         request.setTransactionType(EBT_REFUND_TYPES_MAP.get(ebtType));
         request.setEncryptedTrackData(t.getFundingSource().getCard().getTrack2data());
         request.setKsn(t.getFundingSource().getCard().getKeySerialNumber());
+        request.setPosMode(ElavonPosMode.SWIPE_CAPABLE);
         request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getTransactionAmount(), t.getAmounts().getCurrency()));
         request.setPinKsn(t.getFundingSource().getVerificationData().getKeySerialNumber());
         request.setKeyPointer("T");
@@ -64,6 +66,7 @@ public class MsrEbtMapper extends InterfaceMapper {
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
         request.setPoyntUserId(t.getContext().getEmployeeUserId().toString());
         request.setTransactionType(EBT_SALE_TYPES_MAP.get(ebtType));
+        request.setPosMode(ElavonPosMode.SWIPE_CAPABLE);
         request.setEncryptedTrackData(t.getFundingSource().getCard().getTrack2data());
         request.setKsn(t.getFundingSource().getCard().getKeySerialNumber());
         if (t.getAmounts().getOrderAmount() != null) {
@@ -125,6 +128,7 @@ public class MsrEbtMapper extends InterfaceMapper {
         request.setTransactionType(EBT_INQUIRY_TYPES_MAP.get(ebtType));
         request.setEncryptedTrackData(b.getFundingSource().getCard().getTrack2data());
         request.setKsn(b.getFundingSource().getCard().getKeySerialNumber());
+        request.setPosMode(ElavonPosMode.SWIPE_CAPABLE);
 
         request.setPinKsn(b.getFundingSource().getVerificationData().getKeySerialNumber());
         request.setKeyPointer("T");

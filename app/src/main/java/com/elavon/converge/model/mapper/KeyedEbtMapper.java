@@ -2,6 +2,7 @@ package com.elavon.converge.model.mapper;
 
 import com.elavon.converge.exception.ConvergeMapperException;
 import com.elavon.converge.model.ElavonTransactionRequest;
+import com.elavon.converge.model.type.ElavonPosMode;
 import com.elavon.converge.model.type.ElavonTransactionType;
 import com.elavon.converge.util.CardUtil;
 import com.elavon.converge.util.CurrencyUtil;
@@ -40,7 +41,7 @@ public class KeyedEbtMapper extends InterfaceMapper {
 
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
         request.setTransactionType(EBT_REFUND_TYPES_MAP.get(ebtType));
-        // TODO need unencrypted card number
+        request.setPosMode(ElavonPosMode.SWIPE_CAPABLE);
         request.setCardNumber(t.getFundingSource().getCard().getNumber());
         request.setExpDate(CardUtil.getCardExpiry(t.getFundingSource().getCard()));
         request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getTransactionAmount(), t.getAmounts().getCurrency()));
@@ -65,6 +66,7 @@ public class KeyedEbtMapper extends InterfaceMapper {
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
         request.setPoyntUserId(t.getContext().getEmployeeUserId().toString());
         request.setTransactionType(EBT_SALE_TYPES_MAP.get(ebtType));
+        request.setPosMode(ElavonPosMode.SWIPE_CAPABLE);
 
         if (t.getFundingSource().getCard().getNumberHashed() != null) {
             request.setToken(t.getFundingSource().getCard().getNumberHashed());
@@ -108,6 +110,7 @@ public class KeyedEbtMapper extends InterfaceMapper {
         }
         // elavon transactionId
         request.setTxnId(transactionId);
+        request.setPosMode(ElavonPosMode.SWIPE_CAPABLE);
         return request;
     }
 
