@@ -233,6 +233,7 @@ public class MsrMapper extends InterfaceMapper {
     ElavonTransactionRequest createBalanceInquiry(final BalanceInquiry b) {
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
         request.setTransactionType(ElavonTransactionType.BALANCE_INQUIRY);
+        request.setPosMode(ElavonPosMode.ICC_DUAL);
         request.setEncryptedTrackData(b.getFundingSource().getCard().getTrack2data());
         request.setKsn(b.getFundingSource().getCard().getKeySerialNumber());
         request.setExpDate(CardUtil.getCardExpiry(b.getFundingSource().getCard()));
