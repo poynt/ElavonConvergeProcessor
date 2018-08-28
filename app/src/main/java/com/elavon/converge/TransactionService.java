@@ -2,6 +2,7 @@ package com.elavon.converge;
 
 import android.app.Service;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
@@ -15,12 +16,14 @@ import javax.inject.Inject;
 
 import co.poynt.api.model.AdjustTransactionRequest;
 import co.poynt.api.model.BalanceInquiry;
+import co.poynt.api.model.CaptureAllRequest;
 import co.poynt.api.model.EMVData;
 import co.poynt.api.model.Transaction;
 import co.poynt.os.model.Payment;
 import co.poynt.os.model.PoyntError;
 import co.poynt.os.services.v1.IPoyntCheckCardListener;
 import co.poynt.os.services.v1.IPoyntTransactionBalanceInquiryListener;
+import co.poynt.os.services.v1.IPoyntTransactionCaptureAllListener;
 import co.poynt.os.services.v1.IPoyntTransactionService;
 import co.poynt.os.services.v1.IPoyntTransactionServiceListener;
 
@@ -183,6 +186,11 @@ public class TransactionService extends Service {
                 final IPoyntTransactionBalanceInquiryListener listener) throws RemoteException {
             Log.d(TAG, "getBalanceInquiry: " + requestId);
             transactionManager.processBalanceInquiry(balanceInquiry, requestId, listener);
+        }
+
+        @Override
+        public void captureAllTransactionsWithOptions(String s, Bundle bundle, CaptureAllRequest captureAllRequest, IPoyntTransactionCaptureAllListener iPoyntTransactionCaptureAllListener) throws RemoteException {
+
         }
 
         @Override

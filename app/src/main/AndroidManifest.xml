@@ -95,8 +95,9 @@
                 android:name="android.content.SyncAdapter"
                 android:resource="@xml/syncadapter" />
         </service>
+
         <service
-            android:name=".config.LoadMerchantCredsIntentService"
+            android:name=".config.LoadProcessorCredentialsIntentService"
             android:exported="false" />
     </application>
 

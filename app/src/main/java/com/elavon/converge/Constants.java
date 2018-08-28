@@ -12,5 +12,8 @@ public class Constants {
     public static final String SSL_USER_ID = "ssl_user_id";
     public static final String SSL_MERCHANT_ID = "ssl_merchant_id";
     public static final String SSL_PIN = "ssl_pin";
+    public static final String ELAVON_CONVERGE_SSL_USER_ID = "ElavonConvergeSSLUserId";
+    public static final String ELAVON_CONVERGE_SSL_MERCHANT_ID = "ElavonConvergeSSLMerchantId";
+    public static final String ELAVON_CONVERGE_SSL_PIN = "ElavonConvergeSSLPin";
 
 }

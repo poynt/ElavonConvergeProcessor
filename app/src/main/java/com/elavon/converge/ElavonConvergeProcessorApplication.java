@@ -6,13 +6,12 @@ import android.app.Application;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
 
 import com.elavon.converge.config.LoadBusinessIntentService;
-import com.elavon.converge.config.LoadMerchantCredsIntentService;
+import com.elavon.converge.config.LoadProcessorCredentialsIntentService;
+import com.elavon.converge.model.ProcessorCredentials;
 
 import co.poynt.api.model.Business;
 import co.poynt.os.model.PaymentSettings;
@@ -27,6 +26,7 @@ public class ElavonConvergeProcessorApplication extends Application {
     public static ElavonConvergeProcessorApplication instance;
     private Business business;
     private PaymentSettings paymentSettings;
+    private ProcessorCredentials processorCredentials;
 
     public static ElavonConvergeProcessorApplication getInstance() {
         return instance;
@@ -38,11 +38,8 @@ public class ElavonConvergeProcessorApplication extends Application {
         Log.d(TAG, "onCreate: ");
         instance = this;
         startService(new Intent(this, LoadBusinessIntentService.class));
-        //Check if the merchant creds are stored in shared pref
-        if(!isMerchantCredsAvailableInPref()) {
-            //If not stored in shared pref, fetch it from Poynt Services
-            startLoadMerchantCredsService();
-        }
+        Log.d(TAG, "starting processor credentials service");
+        startService(new Intent(this, LoadProcessorCredentialsIntentService.class));
         schedulePeriodicSync();
     }
 
@@ -81,28 +78,12 @@ public class ElavonConvergeProcessorApplication extends Application {
         }
     }
 
-    private boolean isMerchantCredsAvailableInPref() {
-        boolean merchantCredsExists = false;
-
-        try {
-            SharedPreferences prefs = getSharedPreferences(Constants.MERCHANT_CREDS_PREFS, MODE_PRIVATE);
-            String userId = prefs.getString(Constants.SSL_USER_ID, null);
-            String merchantId = prefs.getString(Constants.SSL_MERCHANT_ID, null);
-            String sslPin = prefs.getString(Constants.SSL_PIN, null);
-
-            if (!TextUtils.isEmpty(userId) && !TextUtils.isEmpty(merchantId)
-                    && !TextUtils.isEmpty(sslPin)) {
-                merchantCredsExists = true;
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Exception while reading merchant creds from shared pref");
-            merchantCredsExists = false;
-        }
-
-        return merchantCredsExists;
+    public ProcessorCredentials getProcessorCredentials() {
+        return processorCredentials;
     }
 
-    private void startLoadMerchantCredsService() {
-        startService(new Intent(this, LoadMerchantCredsIntentService.class));
+    public void setProcessorCredentials(ProcessorCredentials processorCredentials) {
+        this.processorCredentials = processorCredentials;
+        Log.d(TAG, "set Processor Credentials in converger application");
     }
 }
