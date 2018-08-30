@@ -10,8 +10,6 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.elavon.converge.config.LoadBusinessIntentService;
-import com.elavon.converge.config.LoadProcessorCredentialsIntentService;
-import com.elavon.converge.model.ProcessorCredentials;
 
 import co.poynt.api.model.Business;
 import co.poynt.os.model.PaymentSettings;
@@ -26,7 +24,6 @@ public class ElavonConvergeProcessorApplication extends Application {
     public static ElavonConvergeProcessorApplication instance;
     private Business business;
     private PaymentSettings paymentSettings;
-    private ProcessorCredentials processorCredentials;
 
     public static ElavonConvergeProcessorApplication getInstance() {
         return instance;
@@ -37,9 +34,8 @@ public class ElavonConvergeProcessorApplication extends Application {
         super.onCreate();
         Log.d(TAG, "onCreate: ");
         instance = this;
+        Log.d(TAG, "loading business with Processor data service");
         startService(new Intent(this, LoadBusinessIntentService.class));
-        Log.d(TAG, "starting processor credentials service");
-        startService(new Intent(this, LoadProcessorCredentialsIntentService.class));
         schedulePeriodicSync();
     }
 
@@ -78,12 +74,4 @@ public class ElavonConvergeProcessorApplication extends Application {
         }
     }
 
-    public ProcessorCredentials getProcessorCredentials() {
-        return processorCredentials;
-    }
-
-    public void setProcessorCredentials(ProcessorCredentials processorCredentials) {
-        this.processorCredentials = processorCredentials;
-        Log.d(TAG, "set Processor Credentials in converger application");
-    }
 }

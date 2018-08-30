@@ -96,9 +96,6 @@
                 android:resource="@xml/syncadapter" />
         </service>
 
-        <service
-            android:name=".config.LoadProcessorCredentialsIntentService"
-            android:exported="false" />
     </application>
 
 </manifest>
