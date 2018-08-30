@@ -73,5 +73,4 @@ public class ElavonConvergeProcessorApplication extends Application {
             Log.d(TAG, "Successfully scheduled periodic sync.");
         }
     }
-
 }

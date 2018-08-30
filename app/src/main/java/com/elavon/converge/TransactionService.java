@@ -189,7 +189,11 @@ public class TransactionService extends Service {
         }
 
         @Override
-        public void captureAllTransactionsWithOptions(String s, Bundle bundle, CaptureAllRequest captureAllRequest, IPoyntTransactionCaptureAllListener iPoyntTransactionCaptureAllListener) throws RemoteException {
+        public void captureAllTransactionsWithOptions(String requestId,
+                                                      Bundle bundle,
+                                                      CaptureAllRequest captureAllRequest,
+                                                      IPoyntTransactionCaptureAllListener iPoyntTransactionCaptureAllListener)
+                                                      throws RemoteException {
 
         }
 
