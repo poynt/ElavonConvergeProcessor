@@ -71,7 +71,7 @@ public class LoadBusinessIntentService extends IntentService {
     private void loadBusiness() {
         Log.d(TAG, "loading business data with processor from cloud");
         try {
-            mBusinessService.getBusinessWithProcessorData(new IPoyntBusinessProcessorDataListener.Stub() {
+            mBusinessService.getBusinessProcessorData(new IPoyntBusinessProcessorDataListener.Stub() {
                 @Override
                 public void onResponse(Business business, PoyntError poyntError) throws RemoteException {
                     if(poyntError != null) {
