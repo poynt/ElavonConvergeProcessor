@@ -23,6 +23,7 @@ public class ElavonConvergeProcessorApplication extends Application {
 
     public static ElavonConvergeProcessorApplication instance;
     private Business business;
+    private Business processorDataForBusiness;
     private PaymentSettings paymentSettings;
 
     public static ElavonConvergeProcessorApplication getInstance() {
@@ -34,6 +35,7 @@ public class ElavonConvergeProcessorApplication extends Application {
         super.onCreate();
         Log.d(TAG, "onCreate: ");
         instance = this;
+        Log.d(TAG, "loading business with Processor data service");
         startService(new Intent(this, LoadBusinessIntentService.class));
         schedulePeriodicSync();
     }
@@ -44,6 +46,14 @@ public class ElavonConvergeProcessorApplication extends Application {
 
     public PaymentSettings getPaymentSettings() {
         return paymentSettings;
+    }
+
+    public Business getProcessorDataForBusiness() {
+        return processorDataForBusiness;
+    }
+
+    public void setProcessorDataForBusiness(Business processorDataForBusiness) {
+        this.processorDataForBusiness = processorDataForBusiness;
     }
 
     public void setBusiness(Business business) {

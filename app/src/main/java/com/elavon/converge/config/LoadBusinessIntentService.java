@@ -13,6 +13,7 @@ import com.elavon.converge.ElavonConvergeProcessorApplication;
 import co.poynt.api.model.Business;
 import co.poynt.os.model.Intents;
 import co.poynt.os.model.PoyntError;
+import co.poynt.os.services.v1.IPoyntBusinessProcessorDataListener;
 import co.poynt.os.services.v1.IPoyntBusinessReadListener;
 import co.poynt.os.services.v1.IPoyntBusinessService;
 
@@ -34,8 +35,10 @@ public class LoadBusinessIntentService extends IntentService {
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
+            Log.d(TAG, "business services connected");
             mBusinessService = IPoyntBusinessService.Stub.asInterface(service);
             loadBusiness();
+            loadProcessorDataForBusiness();
         }
 
         @Override
@@ -60,19 +63,39 @@ public class LoadBusinessIntentService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         if (mBusinessService != null){
             loadBusiness();
+            loadProcessorDataForBusiness();
         }else{
             bindService(Intents.getComponentIntent(Intents.COMPONENT_POYNT_BUSINESS_SERVICE), serviceConnection,
                     BIND_AUTO_CREATE);
         }
     }
 
-    private void loadBusiness(){
+    private void loadBusiness() {
         try {
             mBusinessService.getBusiness(new IPoyntBusinessReadListener.Stub() {
                 @Override
                 public void onResponse(Business business, PoyntError poyntError) throws RemoteException {
                     if (business != null){
                         ElavonConvergeProcessorApplication.getInstance().setBusiness(business);
+                    }
+                }
+            });
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadProcessorDataForBusiness() {
+        Log.d(TAG, "loading business data with processor from cloud");
+        try {
+            mBusinessService.getBusinessProcessorData(new IPoyntBusinessProcessorDataListener.Stub() {
+                @Override
+                public void onResponse(Business business, PoyntError poyntError) throws RemoteException {
+                    if(poyntError != null) {
+                        Log.d(TAG, "loading business data with processor from cloud failed");
+                    } else {
+                        Log.d(TAG, "business data with processor from cloud succeded");
+                        ElavonConvergeProcessorApplication.getInstance().setProcessorDataForBusiness(business);
                     }
                 }
             });
