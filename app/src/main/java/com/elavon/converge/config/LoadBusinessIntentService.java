@@ -38,6 +38,7 @@ public class LoadBusinessIntentService extends IntentService {
             Log.d(TAG, "business services connected");
             mBusinessService = IPoyntBusinessService.Stub.asInterface(service);
             loadBusiness();
+            loadProcessorDataForBusiness();
         }
 
         @Override
@@ -62,6 +63,7 @@ public class LoadBusinessIntentService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         if (mBusinessService != null){
             loadBusiness();
+            loadProcessorDataForBusiness();
         }else{
             bindService(Intents.getComponentIntent(Intents.COMPONENT_POYNT_BUSINESS_SERVICE), serviceConnection,
                     BIND_AUTO_CREATE);
@@ -69,6 +71,21 @@ public class LoadBusinessIntentService extends IntentService {
     }
 
     private void loadBusiness() {
+        try {
+            mBusinessService.getBusiness(new IPoyntBusinessReadListener.Stub() {
+                @Override
+                public void onResponse(Business business, PoyntError poyntError) throws RemoteException {
+                    if (business != null){
+                        ElavonConvergeProcessorApplication.getInstance().setBusiness(business);
+                    }
+                }
+            });
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadProcessorDataForBusiness() {
         Log.d(TAG, "loading business data with processor from cloud");
         try {
             mBusinessService.getBusinessProcessorData(new IPoyntBusinessProcessorDataListener.Stub() {
@@ -78,7 +95,7 @@ public class LoadBusinessIntentService extends IntentService {
                         Log.d(TAG, "loading business data with processor from cloud failed");
                     } else {
                         Log.d(TAG, "business data with processor from cloud succeded");
-                        ElavonConvergeProcessorApplication.getInstance().setBusiness(business);
+                        ElavonConvergeProcessorApplication.getInstance().setProcessorDataForBusiness(business);
                     }
                 }
             });
