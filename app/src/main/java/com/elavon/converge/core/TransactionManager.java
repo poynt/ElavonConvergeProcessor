@@ -551,7 +551,7 @@ public class TransactionManager {
                             @Override
                             public void onResponse(final ElavonTransactionResponse elavonResponse) {
                                 Log.d(TAG, elavonResponse != null ? elavonResponse.toString() : "n/a");
-                                if (elavonResponse.isSuccess()) {
+                                if (elavonResponse.isSuccess() || elavonResponse.getErrorCode() == 5040) { // Because 5040 means txn is already voided. Typically happens when txn was voided from web and the sync hasn't happened yet. So we need to send a false success.
                                     Log.i(TAG, "voidTransaction: " + transaction.getId() + " SUCCESS");
                                     if (listener != null) {
                                         convergeMapper.mapTransactionResponse(elavonResponse, transaction);
