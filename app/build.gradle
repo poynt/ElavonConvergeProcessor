@@ -36,7 +36,7 @@ android {
     }
     signingConfigs {
         release {
-            storeFile file("keys/release.keystore")
+            storeFile file(System.env.HOME + "/.keys/converge/release.keystore")
             keyAlias "release"
             keyPassword "poynt123"
             storePassword "poynt123"
