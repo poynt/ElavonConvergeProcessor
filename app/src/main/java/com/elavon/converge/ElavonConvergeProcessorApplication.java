@@ -10,8 +10,16 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.elavon.converge.config.LoadBusinessIntentService;
+import com.elavon.converge.inject.AppComponent;
+import com.elavon.converge.inject.AppModule;
+import com.elavon.converge.inject.DaggerAppComponent;
+import com.elavon.converge.processor.ConvergeClient;
+
+import javax.inject.Inject;
 
 import co.poynt.api.model.Business;
+import co.poynt.api.model.Store;
+import co.poynt.api.model.StoreDevice;
 import co.poynt.os.model.PaymentSettings;
 
 import static co.poynt.os.Constants.Accounts.POYNT_ACCOUNT_TYPE;
@@ -26,6 +34,9 @@ public class ElavonConvergeProcessorApplication extends Application {
     private Business processorDataForBusiness;
     private PaymentSettings paymentSettings;
 
+    @Inject
+    protected ConvergeClient convergeClient;
+
     public static ElavonConvergeProcessorApplication getInstance() {
         return instance;
     }
@@ -35,6 +46,8 @@ public class ElavonConvergeProcessorApplication extends Application {
         super.onCreate();
         Log.d(TAG, "onCreate: ");
         instance = this;
+        final AppComponent component = DaggerAppComponent.builder().appModule(new AppModule(this.getApplicationContext())).build();
+        component.inject(this);
         Log.d(TAG, "loading business with Processor data service");
         startService(new Intent(this, LoadBusinessIntentService.class));
         schedulePeriodicSync();
@@ -54,6 +67,28 @@ public class ElavonConvergeProcessorApplication extends Application {
 
     public void setProcessorDataForBusiness(Business processorDataForBusiness) {
         this.processorDataForBusiness = processorDataForBusiness;
+        Log.d(TAG, processorDataForBusiness.toString());
+        if (processorDataForBusiness != null) {
+            String userId = processorDataForBusiness.getProcessorData().get("com.elavon.converge:SSLUserId");
+            String merchantId = null;
+            String pin = null;
+            Store store = processorDataForBusiness.getStores().get(0);
+            if (store != null) {
+                merchantId = store.getProcessorData().get("com.elavon.converge:SSLMerchantId");
+                StoreDevice storeDevice = store.getStoreDevices().get(0);
+                if (storeDevice != null) {
+                    pin = storeDevice.getProcessorData().get("com.elavon.converge:SSLPin");
+                }
+            }
+            if (pin != null && userId != null && merchantId != null) {
+                Log.i(TAG, "Successfully loaded converge merchant credentials for userId:"
+                        + userId);
+                convergeClient.updateCredentials(merchantId, userId, pin);
+            } else {
+                Log.e(TAG, "Unable to load converge merchant credentials!");
+                throw new RuntimeException("Converge Merchant Credentials MISSING! Please verify business settings.");
+            }
+        }
     }
 
     public void setBusiness(Business business) {

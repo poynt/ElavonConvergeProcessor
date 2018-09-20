@@ -1,5 +1,7 @@
 package com.elavon.converge.processor;
 
+import android.util.Log;
+
 import com.elavon.converge.exception.ConvergeClientException;
 import com.elavon.converge.model.ElavonRequest;
 import com.elavon.converge.model.ElavonResponse;
@@ -22,10 +24,11 @@ import okhttp3.Response;
 public class ConvergeClient {
 
     private static final MediaType FORM_URL_ENCODED_TYPE = MediaType.parse("application/x-www-form-urlencoded; charset=utf-8");
+    private static final String TAG = ConvergeClient.class.getName();
 
-    protected final String merchantId;
-    protected final String userId;
-    protected final String pin;
+    protected String merchantId;
+    protected String userId;
+    protected String pin;
     protected final String host;
     protected final OkHttpClient client;
     protected final XmlMapper xmlMapper;
@@ -44,6 +47,17 @@ public class ConvergeClient {
         this.host = host;
         this.client = client;
         this.xmlMapper = xmlMapper;
+    }
+
+    public void updateCredentials(
+            final String merchantId,
+            final String userId,
+            final String pin
+    ) {
+        Log.d(TAG, "Updating Converge Credentials");
+        this.merchantId = merchantId;
+        this.userId = userId;
+        this.pin = pin;
     }
 
     public <T extends ElavonResponse> void call(final ElavonRequest model, final ConvergeCallback<T> callback) {
