@@ -1,5 +1,6 @@
 package com.elavon.converge.processor;
 
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.elavon.converge.exception.ConvergeClientException;
@@ -107,16 +108,20 @@ public class ConvergeClient {
     }
 
     private Request getRequest(final ElavonRequest request) {
-        // set credentials
-        request.setMerchantId(merchantId);
-        request.setUserId(userId);
-        request.setPin(pin);
-        request.setVendorId("POYNT000");
         try {
-            return new Request.Builder()
-                    .url(host)
-                    .post(RequestBody.create(FORM_URL_ENCODED_TYPE, "xmldata=" + URLEncoder.encode(xmlMapper.write(request), "UTF-8")))
-                    .build();
+            if(!TextUtils.isEmpty(userId) && !TextUtils.isEmpty(merchantId) && !TextUtils.isEmpty(pin)) {
+                // set credentials
+                request.setMerchantId(merchantId);
+                request.setUserId(userId);
+                request.setPin(pin);
+                request.setVendorId("POYNT000");
+                return new Request.Builder()
+                        .url(host)
+                        .post(RequestBody.create(FORM_URL_ENCODED_TYPE, "xmldata=" + URLEncoder.encode(xmlMapper.write(request), "UTF-8")))
+                        .build();
+            } else {
+                throw new ConvergeClientException("Credentials data not updated", null);
+            }
         } catch (Exception e) {
             throw new ConvergeClientException("Invalid XML request", e);
         }
