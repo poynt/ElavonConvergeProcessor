@@ -161,13 +161,33 @@ public class AppModule {
             clientBuilder.addInterceptor(logging);
         }
 
-        return new ConvergeClient(
-                config.getCredential().getMerchantId(),
-                config.getCredential().getUserId(),
-                config.getCredential().getPin(),
-                config.getConvergeClient().getHost(),
-                clientBuilder.build(),
-                xmlMapper);
+        /*
+         * If Config is TEST -> credentials will be updated from credentials.json or credentials file from raw folder,
+         * If Config is LIVE -> credentials will be downloaded from cloud and updated in shared pref as well as in ConvergeClient.
+         */
+        try {
+            ConvergeClient convergeClient = null;
+            if(config != null && config.getCredential() != null) {
+                convergeClient = new ConvergeClient(
+                        config.getCredential().getMerchantId(),
+                        config.getCredential().getUserId(),
+                        config.getCredential().getPin(),
+                        config.getConvergeClient().getHost(),
+                        clientBuilder.build(),
+                        xmlMapper);
+            } else {
+                convergeClient = new ConvergeClient(
+                        "",
+                        "",
+                        "",
+                        config.getConvergeClient().getHost(),
+                        clientBuilder.build(),
+                        xmlMapper);
+            }
+            return convergeClient;
+        } catch (Exception e) {
+            throw new AppInitException("Failed to initialize converge client", e);
+        }
     }
 
     @Provides

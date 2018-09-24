@@ -2,6 +2,7 @@ package com.elavon.converge.config;
 
 import android.content.res.Resources;
 import android.os.Environment;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.elavon.converge.R;
@@ -28,6 +29,7 @@ public class ConfigLoader {
 
     public Config load() {
         final int configResource;
+        String credentialText = null;
         switch (environment) {
             case LIVE:
                 configResource = R.raw.config_live;
@@ -35,33 +37,34 @@ public class ConfigLoader {
             case TEST:
             default:
                 configResource = R.raw.config_test;
+                File f = new File(Environment.getExternalStorageDirectory() + "/credential.json");
+                if (f.exists()) {
+                    Log.i(TAG, "Found custom credential file in sdcard - using it for testing");
+                    try {
+                        credentialText = FileUtil.readFile(new FileInputStream(f));
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                        Log.i(TAG, "Failed to load credentials from sdcard - falling back to resource file");
+                        credentialText = FileUtil.readFile(resources.openRawResource(R.raw.credential));
+                    }
+                } else {
+                    Log.i(TAG, "Loading credentials from resource file");
+                    credentialText = FileUtil.readFile(resources.openRawResource(R.raw.credential));
+                }
                 break;
         }
 
         final String configText = FileUtil.readFile(resources.openRawResource(configResource));
 
-        String credentialText;
         // check if we have a credential file in /sdcard - if so use it for testing otherwise use the bundled credential
-        File f = new File(Environment.getExternalStorageDirectory() + "/credential.json");
-        if (f.exists()) {
-            Log.i(TAG, "Found custom credential file in sdcard - using it for testing");
-            try {
-                credentialText = FileUtil.readFile(new FileInputStream(f));
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-                Log.i(TAG, "Failed to load credentials from sdcard - falling back to resource file");
-                credentialText = FileUtil.readFile(resources.openRawResource(R.raw.credential));
-            }
-        } else {
-            Log.i(TAG, "Loading credentials from resource file");
-            credentialText = FileUtil.readFile(resources.openRawResource(R.raw.credential));
-        }
         // TODO - remove this logging before going live
         Log.i(TAG, credentialText);
 
         final Config config = gson.fromJson(configText, Config.class);
-        final Config.Credential credential = gson.fromJson(credentialText, Config.Credential.class);
-        config.setCredential(credential);
+        if(!TextUtils.isEmpty(credentialText)) {
+            final Config.Credential credential = gson.fromJson(credentialText, Config.Credential.class);
+            config.setCredential(credential);
+        }
         return config;
     }
 }
