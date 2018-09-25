@@ -15,7 +15,7 @@ allprojects {
 }
 
 def computeVersionCode() {
-    return 5
+    return 6
 }
 
 def computeVersionName() {
