@@ -58,7 +58,7 @@ public class ConfigLoader {
 
         // check if we have a credential file in /sdcard - if so use it for testing otherwise use the bundled credential
         // TODO - remove this logging before going live
-        Log.i(TAG, credentialText);
+        Log.d(TAG, "config text is: " + credentialText);
 
         final Config config = gson.fromJson(configText, Config.class);
         if(!TextUtils.isEmpty(credentialText)) {

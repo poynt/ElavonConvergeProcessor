@@ -88,19 +88,17 @@ public class LoadBusinessIntentService extends IntentService {
     private void loadProcessorDataForBusiness() {
         Log.d(TAG, "loading business data with processor from cloud");
         try {
-            if(!ElavonConvergeProcessorApplication.getInstance().isMerchantCredsAvailableInPref()) {
-                mBusinessService.getBusinessProcessorData(new IPoyntBusinessProcessorDataListener.Stub() {
-                    @Override
-                    public void onResponse(Business business, PoyntError poyntError) throws RemoteException {
-                        if (poyntError != null) {
-                            Log.d(TAG, "loading business data with processor from cloud failed");
-                        } else {
-                            Log.d(TAG, "business data with processor from cloud succeded");
-                            ElavonConvergeProcessorApplication.getInstance().setProcessorDataForBusiness(business);
-                        }
+            mBusinessService.getBusinessProcessorData(new IPoyntBusinessProcessorDataListener.Stub() {
+                @Override
+                public void onResponse(Business business, PoyntError poyntError) throws RemoteException {
+                    if (poyntError != null) {
+                        Log.d(TAG, "loading business data with processor from cloud failed");
+                    } else {
+                        Log.d(TAG, "business data with processor from cloud succeded");
+                        ElavonConvergeProcessorApplication.getInstance().setProcessorDataForBusiness(business);
                     }
-                });
-            }
+                }
+            });
         } catch (RemoteException e) {
             e.printStackTrace();
         }

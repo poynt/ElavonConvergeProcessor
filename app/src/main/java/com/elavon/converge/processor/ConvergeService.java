@@ -41,6 +41,8 @@ public class ConvergeService {
             final int retryCount,
             final Date originalTime) {
 
+        Log.d(TAG, convergeClient.toString());
+
         if (retryCount > maxRetryCount) {
             Log.e(TAG, "Max retry count reached. Starting reversal...");
             callback.onFailure(
