@@ -55,7 +55,7 @@ public class ConvergeClient {
             final String userId,
             final String pin
     ) {
-        Log.d(TAG, "Updating Converge Credentials");
+        Log.d(TAG, "Updating Converge Credentials with mechantId: " + merchantId + " userId: " + userId + "and pin: " + pin);
         this.merchantId = merchantId;
         this.userId = userId;
         this.pin = pin;
@@ -112,7 +112,9 @@ public class ConvergeClient {
             if(!TextUtils.isEmpty(userId) && !TextUtils.isEmpty(merchantId) && !TextUtils.isEmpty(pin)) {
                 // set credentials
                 request.setMerchantId(merchantId);
+                Log.d(TAG, "set request merchantId to : " + merchantId);
                 request.setUserId(userId);
+                Log.d(TAG, "set request pin to: " + pin);
                 request.setPin(pin);
                 request.setVendorId("POYNT000");
                 return new Request.Builder()

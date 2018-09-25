@@ -7,6 +7,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 
+import com.elavon.converge.config.LoadBusinessIntentService;
 import com.elavon.converge.core.TransactionManager;
 import com.elavon.converge.inject.AppComponent;
 import com.elavon.converge.inject.AppModule;
@@ -57,8 +58,11 @@ public class TransactionService extends Service {
 
     @Override
     public void onCreate() {
-        final AppComponent component = DaggerAppComponent.builder().appModule(new AppModule(this.getApplicationContext())).build();
-        component.inject(this);
+        if(!ElavonConvergeProcessorApplication.getInstance().isMerchantCredsAvailableInPref()) {
+            Log.d(TAG, "loading business with Processor data service");
+            startService(new Intent(this, LoadBusinessIntentService.class));
+        }
+        ElavonConvergeProcessorApplication.getInstance().getAppComponent().inject(this);
     }
 
     @Override

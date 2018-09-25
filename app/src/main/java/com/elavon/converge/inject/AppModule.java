@@ -40,6 +40,8 @@ import okhttp3.logging.HttpLoggingInterceptor;
 @Module
 public class AppModule {
 
+    private static final String TAG = AppModule.class.getSimpleName();
+
     private final Context context;
     private final Config config;
 
@@ -175,14 +177,15 @@ public class AppModule {
                         config.getConvergeClient().getHost(),
                         clientBuilder.build(),
                         xmlMapper);
+                Log.d(TAG, "build converge client with pin data" + convergeClient.toString());
             } else {
                 convergeClient = new ConvergeClient(
                         "",
                         "",
                         "",
-                        config.getConvergeClient().getHost(),
-                        clientBuilder.build(),
+                        config.getConvergeClient().getHost(),clientBuilder.build(),
                         xmlMapper);
+                Log.d(TAG, "build converge client without pin data" + convergeClient.toString());
             }
             return convergeClient;
         } catch (Exception e) {

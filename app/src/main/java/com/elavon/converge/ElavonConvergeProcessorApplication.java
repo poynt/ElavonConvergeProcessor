@@ -35,6 +35,7 @@ public class ElavonConvergeProcessorApplication extends Application {
     private Business business;
     private Business processorDataForBusiness;
     private PaymentSettings paymentSettings;
+    private AppComponent mAppComponent;
 
     @Inject
     protected ConvergeClient convergeClient;
@@ -48,8 +49,8 @@ public class ElavonConvergeProcessorApplication extends Application {
         super.onCreate();
         Log.d(TAG, "onCreate: ");
         instance = this;
-        final AppComponent component = DaggerAppComponent.builder().appModule(new AppModule(this.getApplicationContext())).build();
-        component.inject(this);
+        mAppComponent = DaggerAppComponent.builder().appModule(new AppModule(this.getApplicationContext())).build();
+        mAppComponent.inject(this);
         Log.d(TAG, "loading business with Processor data service");
         startService(new Intent(this, LoadBusinessIntentService.class));
     }
@@ -71,14 +72,17 @@ public class ElavonConvergeProcessorApplication extends Application {
         Log.d(TAG, processorDataForBusiness.toString());
         if (processorDataForBusiness != null) {
             String userId = processorDataForBusiness.getProcessorData().get(Constants.SSL_USER_ID);
+            Log.d(TAG, "fetched user id is: " + userId);
             String merchantId = null;
             String pin = null;
             Store store = processorDataForBusiness.getStores().get(0);
             if (store != null) {
                 merchantId = store.getProcessorData().get(Constants.SSL_MERCHANT_ID);
+                Log.d(TAG, "fetched SSL merchant id is: " + merchantId);
                 StoreDevice storeDevice = store.getStoreDevices().get(0);
                 if (storeDevice != null) {
                     pin = storeDevice.getProcessorData().get(Constants.SSL_PIN);
+                    Log.d(TAG, "fetch SSL pin from cloud is: " + pin);
                 }
             }
             updateProcessorCredentialsInSharedPref(userId, merchantId, pin);
@@ -129,6 +133,7 @@ public class ElavonConvergeProcessorApplication extends Application {
             Log.i(TAG, "Successfully loaded converge merchant credentials for userId:"
                     + userId);
             convergeClient.updateCredentials(merchantId, userId, pin);
+            Log.d(TAG, convergeClient.toString());
         } else {
             Log.e(TAG, "Unable to load converge merchant credentials!");
             throw new RuntimeException("Converge Merchant Credentials MISSING! Please verify business settings.");
@@ -160,5 +165,9 @@ public class ElavonConvergeProcessorApplication extends Application {
                     DATASYNC_POLL_FREQUENCY);
             Log.d(TAG, "Successfully scheduled periodic sync.");
         }
+    }
+
+    public AppComponent getAppComponent() {
+        return mAppComponent;
     }
 }
