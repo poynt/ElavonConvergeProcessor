@@ -64,7 +64,7 @@ public class LoadBusinessIntentService extends IntentService {
         if (mBusinessService != null){
             loadBusiness();
             loadProcessorDataForBusiness();
-        }else{
+        } else{
             bindService(Intents.getComponentIntent(Intents.COMPONENT_POYNT_BUSINESS_SERVICE), serviceConnection,
                     BIND_AUTO_CREATE);
         }
