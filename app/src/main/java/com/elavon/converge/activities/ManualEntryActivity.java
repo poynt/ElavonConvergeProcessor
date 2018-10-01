@@ -17,6 +17,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.EditText;
 
+import com.elavon.converge.ElavonConvergeProcessorApplication;
 import com.elavon.converge.R;
 import com.elavon.converge.core.TransactionManager;
 import com.elavon.converge.inject.AppComponent;
@@ -46,7 +47,7 @@ public class ManualEntryActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        final AppComponent component = DaggerAppComponent.builder().appModule(new AppModule(this.getApplicationContext())).build();
+        final AppComponent component = ElavonConvergeProcessorApplication.getInstance().getAppComponent();
         component.inject(this);
         //Remove title bar
         requestWindowFeature(Window.FEATURE_NO_TITLE);

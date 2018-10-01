@@ -177,7 +177,7 @@ public class AppModule {
                         config.getConvergeClient().getHost(),
                         clientBuilder.build(),
                         xmlMapper);
-                Log.d(TAG, "build converge client with pin data" + convergeClient.toString());
+                Log.d(TAG, "build converge client with pin data " + convergeClient.toString());
             } else {
                 convergeClient = new ConvergeClient(
                         "",
@@ -185,7 +185,7 @@ public class AppModule {
                         "",
                         config.getConvergeClient().getHost(),clientBuilder.build(),
                         xmlMapper);
-                Log.d(TAG, "build converge client without pin data" + convergeClient.toString());
+                Log.d(TAG, "build converge client without pin data " + convergeClient.toString());
             }
             return convergeClient;
         } catch (Exception e) {
