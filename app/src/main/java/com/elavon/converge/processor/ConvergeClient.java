@@ -88,7 +88,9 @@ public class ConvergeClient {
                 callback.onFailure(e);
             }
         };
-        client.newCall(request).enqueue(cb);
+        if(request != null) {
+            client.newCall(request).enqueue(cb);
+        }
     }
 
     public <T extends ElavonResponse> T callSync(final ElavonRequest model, final Class<T> responseClass) {
@@ -122,7 +124,8 @@ public class ConvergeClient {
                         .post(RequestBody.create(FORM_URL_ENCODED_TYPE, "xmldata=" + URLEncoder.encode(xmlMapper.write(request), "UTF-8")))
                         .build();
             } else {
-                throw new ConvergeClientException("Credentials data not updated from cloud, can't transact.", null);
+                Log.e(TAG, "Credentials data not updated from cloud, can't transact.", null);
+                return null;
             }
         } catch (Exception e) {
             throw new ConvergeClientException("Invalid XML request", e);
