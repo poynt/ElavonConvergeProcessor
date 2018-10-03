@@ -122,7 +122,7 @@ public class ConvergeClient {
                         .post(RequestBody.create(FORM_URL_ENCODED_TYPE, "xmldata=" + URLEncoder.encode(xmlMapper.write(request), "UTF-8")))
                         .build();
             } else {
-                throw new ConvergeClientException("Credentials data not updated", null);
+                throw new ConvergeClientException("Credentials data not updated from cloud, can't transact.", null);
             }
         } catch (Exception e) {
             throw new ConvergeClientException("Invalid XML request", e);
