@@ -63,33 +63,40 @@ public class ConvergeClient {
 
     public <T extends ElavonResponse> void call(final ElavonRequest model, final ConvergeCallback<T> callback) {
 
-        final Request request = getRequest(model);
-        final Callback cb = new Callback() {
-            @Override
-            public void onResponse(final Call call, final Response response) throws IOException {
-                if (response.isSuccessful()) {
-                    final T body;
-                    try {
-                        final String xml = response.body().string();
-                        final Class<T> clazz = ((Class) ((ParameterizedType) callback.getClass().getGenericSuperclass()).getActualTypeArguments()[0]);
-                        body = getResponse(xml, clazz);
-                    } catch (final Exception e) {
-                        callback.onFailure(e);
-                        return;
+        try {
+            final Request request = getRequest(model);
+            final Callback cb = new Callback() {
+                @Override
+                public void onResponse(final Call call, final Response response) throws IOException {
+                    if (response.isSuccessful()) {
+                        final T body;
+                        try {
+                            final String xml = response.body().string();
+                            final Class<T> clazz = ((Class) ((ParameterizedType) callback.getClass().getGenericSuperclass()).getActualTypeArguments()[0]);
+                            body = getResponse(xml, clazz);
+                        } catch (final Exception e) {
+                            callback.onFailure(e);
+                            return;
+                        }
+                        callback.onResponse(body);
+                    } else {
+                        callback.onFailure(new ConvergeClientException("Failed request with http status code: " + response.code()));
                     }
-                    callback.onResponse(body);
-                } else {
-                    callback.onFailure(new ConvergeClientException("Failed request with http status code: " + response.code()));
                 }
-            }
 
-            @Override
-            public void onFailure(final Call call, final IOException e) {
-                callback.onFailure(e);
+                @Override
+                public void onFailure(final Call call, final IOException e) {
+                    callback.onFailure(e);
+                }
+            };
+            if (request != null) {
+                client.newCall(request).enqueue(cb);
+            } else {
+                callback.onFailure(new ConvergeClientException("Insufficient authorization for transaction."));
             }
-        };
-        if(request != null) {
-            client.newCall(request).enqueue(cb);
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage(), e);
+            callback.onFailure(new ConvergeClientException("Failed request with exception." + e.getMessage()));
         }
     }
 
@@ -124,8 +131,7 @@ public class ConvergeClient {
                         .post(RequestBody.create(FORM_URL_ENCODED_TYPE, "xmldata=" + URLEncoder.encode(xmlMapper.write(request), "UTF-8")))
                         .build();
             } else {
-                Log.e(TAG, "Credentials data not updated from cloud, can't transact.", null);
-                return null;
+                throw new ConvergeClientException("Credentials data not updated from cloud, can't transact.", null);
             }
         } catch (Exception e) {
             throw new ConvergeClientException("Invalid XML request", e);
