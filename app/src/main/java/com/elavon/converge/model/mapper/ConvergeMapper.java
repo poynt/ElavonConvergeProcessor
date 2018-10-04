@@ -574,7 +574,8 @@ public class ConvergeMapper {
         }
 
         // set  EMV response tags - if it's EMV transaction
-        if (transaction.getFundingSource() != null
+        if (transaction != null
+                && transaction.getFundingSource() != null
                 && transaction.getFundingSource().getEntryDetails().getEntryMode()
                 == INTEGRATED_CIRCUIT_CARD
                 || transaction.getFundingSource().getEntryDetails().getEntryMode()
