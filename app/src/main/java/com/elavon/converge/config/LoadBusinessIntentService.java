@@ -94,7 +94,8 @@ public class LoadBusinessIntentService extends IntentService {
                 @Override
                 public void onResponse(Business business, PoyntError poyntError) throws RemoteException {
                     if (poyntError != null) {
-                        Log.d(TAG, "downaloading processor data with business from cloud failed");
+                        Log.d(TAG, "downloading processor data with business from cloud failed"
+                                + poyntError.getReason() != null ? " with reason " + poyntError.getReason() : "");
                     } else {
                         Log.d(TAG, "downaloading processor data with business from cloud succeded");
                         ElavonConvergeProcessorApplication.getInstance().setProcessorDataForBusiness(business);
