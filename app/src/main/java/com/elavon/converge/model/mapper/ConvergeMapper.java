@@ -576,10 +576,11 @@ public class ConvergeMapper {
         // set  EMV response tags - if it's EMV transaction
         if (transaction != null
                 && transaction.getFundingSource() != null
-                && transaction.getFundingSource().getEntryDetails().getEntryMode()
+                && transaction.getFundingSource().getEntryDetails() != null
+                && (transaction.getFundingSource().getEntryDetails().getEntryMode()
                 == INTEGRATED_CIRCUIT_CARD
                 || transaction.getFundingSource().getEntryDetails().getEntryMode()
-                == CONTACTLESS_INTEGRATED_CIRCUIT_CARD) {
+                == CONTACTLESS_INTEGRATED_CIRCUIT_CARD)) {
             Map<String, String> emvTags = new HashMap<>();
 
             // NOTE do not pass CSN, atc and other non relevant tags in response as Poynt
