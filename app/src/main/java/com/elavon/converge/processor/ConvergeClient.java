@@ -89,11 +89,7 @@ public class ConvergeClient {
                     callback.onFailure(e);
                 }
             };
-            if (request != null) {
-                client.newCall(request).enqueue(cb);
-            } else {
-                callback.onFailure(new ConvergeClientException("Insufficient authorization for transaction."));
-            }
+            client.newCall(request).enqueue(cb);
         } catch (Exception e) {
             Log.e(TAG, e.getMessage(), e);
             callback.onFailure(new ConvergeClientException("Failed request with exception." + e.getMessage()));
@@ -102,16 +98,15 @@ public class ConvergeClient {
 
     public <T extends ElavonResponse> T callSync(final ElavonRequest model, final Class<T> responseClass) {
 
-        final Request request = getRequest(model);
-
         try {
+            final Request request = getRequest(model);
             final Response response = client.newCall(request).execute();
             if (response.isSuccessful()) {
                 return getResponse(response.body().string(), responseClass);
             } else {
                 throw new ConvergeClientException("Call not successful. Message: " + response.message());
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new ConvergeClientException("Call not successful", e);
         }
     }
