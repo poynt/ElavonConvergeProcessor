@@ -93,13 +93,13 @@ public class ElavonConvergeProcessorApplication extends Application {
 
     public boolean isMerchantCredsAvailableInPref() {
         boolean merchantCredsExists = false;
-
+        Log.d(TAG, "Checking for Merchant credentials in Shared Preference.");
         try {
             SharedPreferences prefs = getSharedPreferences(Constants.MERCHANT_CREDS_PREFS, MODE_PRIVATE);
             String userId = prefs.getString(Constants.SSL_USER_ID, null);
             String merchantId = prefs.getString(Constants.SSL_MERCHANT_ID, null);
             String sslPin = prefs.getString(Constants.SSL_PIN, null);
-
+            Log.d(TAG, "Merchant credentials from Shared Preference " + userId + " " + merchantId + " ");
             if (!TextUtils.isEmpty(userId) && !TextUtils.isEmpty(merchantId)
                     && !TextUtils.isEmpty(sslPin)) {
                 merchantCredsExists = true;
@@ -122,6 +122,7 @@ public class ElavonConvergeProcessorApplication extends Application {
                 editor.putString(Constants.SSL_MERCHANT_ID, merchantId);
                 editor.putString(Constants.SSL_PIN, pin);
                 editor.commit();
+                Log.d(TAG, "Updated Merchant credentials to Shared Preference.");
             }
         } catch (Exception e) {
             Log.e(TAG, "Exception while updating merchant creds to shared pref");

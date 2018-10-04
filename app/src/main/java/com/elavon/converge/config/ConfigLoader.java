@@ -37,20 +37,6 @@ public class ConfigLoader {
             case TEST:
             default:
                 configResource = R.raw.config_test;
-                File f = new File(Environment.getExternalStorageDirectory() + "/credential.json");
-                if (f.exists()) {
-                    Log.i(TAG, "Found custom credential file in sdcard - using it for testing");
-                    try {
-                        credentialText = FileUtil.readFile(new FileInputStream(f));
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                        Log.i(TAG, "Failed to load credentials from sdcard - falling back to resource file");
-                        credentialText = FileUtil.readFile(resources.openRawResource(R.raw.credential));
-                    }
-                } else {
-                    Log.i(TAG, "Loading credentials from resource file");
-                    credentialText = FileUtil.readFile(resources.openRawResource(R.raw.credential));
-                }
                 break;
         }
 

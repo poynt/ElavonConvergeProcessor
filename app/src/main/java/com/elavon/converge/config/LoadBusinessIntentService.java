@@ -55,6 +55,7 @@ public class LoadBusinessIntentService extends IntentService {
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.d(TAG, "Creating Business Intent Service for downloading business and processor data.");
         bindService(Intents.getComponentIntent(Intents.COMPONENT_POYNT_BUSINESS_SERVICE), serviceConnection,
                 BIND_AUTO_CREATE);
     }
@@ -62,9 +63,10 @@ public class LoadBusinessIntentService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         if (mBusinessService != null){
+            Log.d(TAG, "onHandleIntent- Business Service connected and is ready to load business and processor data.");
             loadBusiness();
             loadProcessorDataForBusiness();
-        }else{
+        } else{
             bindService(Intents.getComponentIntent(Intents.COMPONENT_POYNT_BUSINESS_SERVICE), serviceConnection,
                     BIND_AUTO_CREATE);
         }
@@ -86,21 +88,22 @@ public class LoadBusinessIntentService extends IntentService {
     }
 
     private void loadProcessorDataForBusiness() {
-        Log.d(TAG, "loading business data with processor from cloud");
+        Log.d(TAG, "downaloading processor data for business from cloud");
         try {
             mBusinessService.getBusinessProcessorData(new IPoyntBusinessProcessorDataListener.Stub() {
                 @Override
                 public void onResponse(Business business, PoyntError poyntError) throws RemoteException {
                     if (poyntError != null) {
-                        Log.d(TAG, "loading business data with processor from cloud failed");
+                        Log.d(TAG, "downaloading processor data with business from cloud failed");
                     } else {
-                        Log.d(TAG, "business data with processor from cloud succeded");
+                        Log.d(TAG, "downaloading processor data with business from cloud succeded");
                         ElavonConvergeProcessorApplication.getInstance().setProcessorDataForBusiness(business);
                     }
                 }
             });
         } catch (RemoteException e) {
             e.printStackTrace();
+            Log.d(TAG, "Exception while downloading Processor data with business.");
         }
     }
 
