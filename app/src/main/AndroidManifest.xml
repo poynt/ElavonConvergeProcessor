@@ -4,6 +4,7 @@
 
     <uses-permission android:name="poynt.permission.SECURITY_SERVICE" />
     <uses-permission android:name="poynt.permission.BUSINESS_SERVICE" />
+    <uses-permission android:name="poynt.permission.DOWNLOAD_MERCHANT_CREDENTIALS" />
     <uses-permission android:name="poynt.permission.CONFIGURATION_SERVICE" />
     <uses-permission android:name="poynt.permission.TRANSACTION_SERVICE" />
     <uses-permission android:name="co.poynt.orders.ACCESS_ORDERS" />
