@@ -44,7 +44,7 @@ android {
     }
     buildTypes {
         debug {
-            signingConfig signingConfigs.release
+            signingConfig signingConfigs.debug
             versionNameSuffix "-d"
         }
         release {

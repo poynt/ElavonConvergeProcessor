@@ -20,6 +20,7 @@ import com.elavon.converge.model.mapper.MsrMapper;
 import com.elavon.converge.processor.ConvergeClient;
 import com.elavon.converge.processor.ConvergeService;
 import com.elavon.converge.processor.TLSSocketFactory;
+import com.elavon.converge.util.DeviceUserFetcher;
 import com.elavon.converge.xml.XmlMapper;
 
 import java.security.KeyStore;
@@ -133,7 +134,13 @@ public class AppModule {
 
     @Provides
     @Singleton
-    public ConvergeClient provideConvergeClient(final XmlMapper xmlMapper) {
+    public DeviceUserFetcher provideDeviceUserFetcher(){
+        return new DeviceUserFetcher(context);
+    }
+
+    @Provides
+    @Singleton
+    public ConvergeClient provideConvergeClient(final XmlMapper xmlMapper, final DeviceUserFetcher deviceUserFetcher) {
 
         final ConnectionSpec spec = new ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS).tlsVersions(TlsVersion.TLS_1_2).build();
         final TrustManagerFactory tmf;
@@ -176,7 +183,7 @@ public class AppModule {
                         config.getCredential().getPin(),
                         config.getConvergeClient().getHost(),
                         clientBuilder.build(),
-                        xmlMapper);
+                        xmlMapper, deviceUserFetcher);
                 Log.d(TAG, "build converge client with pin data " + convergeClient.toString());
             } else {
                 convergeClient = new ConvergeClient(
@@ -184,7 +191,7 @@ public class AppModule {
                         "",
                         "",
                         config.getConvergeClient().getHost(),clientBuilder.build(),
-                        xmlMapper);
+                        xmlMapper, deviceUserFetcher);
                 Log.d(TAG, "build converge client without pin data " + convergeClient.toString());
             }
             return convergeClient;

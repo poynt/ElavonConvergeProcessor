@@ -24,12 +24,23 @@ public abstract class ElavonRequest {
     @Element(name = "ssl_transaction_type")
     private ElavonTransactionType transactionType;
 
+    @Element(name = "Poynt_Device_User")
+    private String deviceUser;
+
     public String getMerchantId() {
         return merchantId;
     }
 
     public void setMerchantId(String merchantId) {
         this.merchantId = merchantId;
+    }
+
+    public void setDeviceUser(String deviceUser) {
+        this.deviceUser = deviceUser;
+    }
+
+    public String getDeviceUser() {
+        return deviceUser;
     }
 
     public String getUserId() {
