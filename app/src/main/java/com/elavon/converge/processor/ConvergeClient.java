@@ -1,5 +1,6 @@
 package com.elavon.converge.processor;
 
+import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -113,7 +114,7 @@ public class ConvergeClient {
 
     private Request getRequest(final ElavonRequest request) {
         try {
-            if(!TextUtils.isEmpty(userId) && !TextUtils.isEmpty(merchantId) && !TextUtils.isEmpty(pin)) {
+            if (!TextUtils.isEmpty(userId) && !TextUtils.isEmpty(merchantId) && !TextUtils.isEmpty(pin)) {
                 // set credentials
                 request.setMerchantId(merchantId);
                 Log.d(TAG, "set request merchantId to : " + merchantId);
@@ -121,6 +122,19 @@ public class ConvergeClient {
                 Log.d(TAG, "set request pin to: " + pin);
                 request.setPin(pin);
                 request.setVendorId("POYNT000");
+                request.setAppVersion("1.0.0");
+                String model = Build.MODEL;
+                switch (model) {
+                    case "Poynt-P61":
+                        request.setAppName("P61");
+                        break;
+                    case "Poynt-P61B":
+                        request.setAppName("P61B");
+                        break;
+                    case "Poynt-P5":
+                        request.setAppName("P5");
+                        break;
+                }
                 return new Request.Builder()
                         .url(host)
                         .post(RequestBody.create(FORM_URL_ENCODED_TYPE, "xmldata=" + URLEncoder.encode(xmlMapper.write(request), "UTF-8")))
