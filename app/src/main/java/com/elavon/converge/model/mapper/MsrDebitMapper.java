@@ -46,12 +46,9 @@ public class MsrDebitMapper extends InterfaceMapper {
         request.setEncryptedTrackData(t.getFundingSource().getCard().getTrack2data());
         request.setKsn(t.getFundingSource().getCard().getKeySerialNumber());
         request.setPosMode(ElavonPosMode.ICC_DUAL);
+        request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getOrderAmount(), t.getAmounts().getCurrency()));
         if (t.getAmounts().getCashbackAmount() != null) {
             request.setCashbackAmount(CurrencyUtil.getAmount(t.getAmounts().getCashbackAmount(), t.getAmounts().getCurrency()));
-            request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getOrderAmount() , t.getAmounts().getCurrency()).
-                    add(CurrencyUtil.getAmount(t.getAmounts().getCashbackAmount(), t.getAmounts().getCurrency())));
-        } else {
-            request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getOrderAmount(), t.getAmounts().getCurrency()));
         }
         if (t.getAmounts().getTipAmount() != null) {
             request.setTipAmount(CurrencyUtil.getAmount(t.getAmounts().getTipAmount(), t.getAmounts().getCurrency()));
