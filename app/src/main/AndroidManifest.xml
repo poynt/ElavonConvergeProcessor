@@ -63,6 +63,10 @@
                 <action android:name="poynt.intent.action.BUSINESS_UPDATED" />
             </intent-filter>
         </receiver>
+        <service
+            android:name=".config.GetUserIntentService"
+            android:exported="false" />
+
 
         <activity
             android:name=".activities.ManualEntryActivity"

@@ -3,10 +3,10 @@ package com.elavon.converge.processor;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.elavon.converge.ElavonConvergeProcessorApplication;
 import com.elavon.converge.exception.ConvergeClientException;
 import com.elavon.converge.model.ElavonRequest;
 import com.elavon.converge.model.ElavonResponse;
-import com.elavon.converge.util.DeviceUserFetcher;
 import com.elavon.converge.util.RequestUtil;
 import com.elavon.converge.xml.XmlMapper;
 
@@ -24,7 +24,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class ConvergeClient implements DeviceUserFetcher.OnUserFetchListener {
+public class ConvergeClient {
 
     private static final MediaType FORM_URL_ENCODED_TYPE = MediaType.parse("application/x-www-form-urlencoded; charset=utf-8");
     private static final String TAG = ConvergeClient.class.getName();
@@ -35,10 +35,6 @@ public class ConvergeClient implements DeviceUserFetcher.OnUserFetchListener {
     protected final String host;
     protected final OkHttpClient client;
     protected final XmlMapper xmlMapper;
-    protected String firstName;
-    protected String lastName;
-    protected String nickname;
-    private DeviceUserFetcher userFetcher;
 
     @Inject
     public ConvergeClient(
@@ -47,15 +43,15 @@ public class ConvergeClient implements DeviceUserFetcher.OnUserFetchListener {
             final String pin,
             final String host,
             final OkHttpClient client,
-            final XmlMapper xmlMapper, final DeviceUserFetcher userFetcher) {
+            final XmlMapper xmlMapper) {
         this.merchantId = merchantId;
         this.userId = userId;
         this.pin = pin;
         this.host = host;
         this.client = client;
         this.xmlMapper = xmlMapper;
-        this.userFetcher = userFetcher;
-        userFetcher.fetchUser(this);
+//        this.userFetcher = userFetcher;
+//        userFetcher.fetchUser(this);
 
     }
 
@@ -70,13 +66,7 @@ public class ConvergeClient implements DeviceUserFetcher.OnUserFetchListener {
         this.pin = pin;
     }
 
-    @Override
-    public void onDeviceUserFetched(final String firstName, final String lastName, final String nickname) {
-        Log.d(TAG, "User received: first name: " + firstName + " last name: " + lastName + " nick name: " + nickname);
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.nickname = nickname;
-    }
+
 
     public <T extends ElavonResponse> void call(final ElavonRequest model, final ConvergeCallback<T> callback) {
 
@@ -138,8 +128,8 @@ public class ConvergeClient implements DeviceUserFetcher.OnUserFetchListener {
                 Log.d(TAG, "set request pin to: " + pin);
                 request.setPin(pin);
                 request.setVendorId("POYNT000");
-                request.setDeviceUser(RequestUtil.getDeviceUserValue(firstName, lastName, nickname));
-                userFetcher.fetchUser(this);
+                ElavonConvergeProcessorApplication application = ElavonConvergeProcessorApplication.getInstance();
+                request.setDeviceUser(RequestUtil.getDeviceUserValue(application.getCurrentUserFirstName(), application.getCurrentUserLastName(), application.getCurrentUserNickName()));
                 return new Request.Builder()
                         .url(host)
                         .post(RequestBody.create(FORM_URL_ENCODED_TYPE, "xmldata=" + URLEncoder.encode(xmlMapper.write(request), "UTF-8")))

@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.elavon.converge.config.GetUserIntentService;
 import com.elavon.converge.config.LoadBusinessIntentService;
 import com.elavon.converge.inject.AppComponent;
 import com.elavon.converge.inject.AppModule;
@@ -35,6 +36,7 @@ public class ElavonConvergeProcessorApplication extends Application {
     private Business business;
     private Business processorDataForBusiness;
     private PaymentSettings paymentSettings;
+    private String currentUserFirstName, currentUserLastName, currentUserNickName;
     private AppComponent mAppComponent;
 
     @Inject
@@ -53,6 +55,13 @@ public class ElavonConvergeProcessorApplication extends Application {
         mAppComponent.inject(this);
         Log.d(TAG, "loading business with Processor data service");
         startService(new Intent(this, LoadBusinessIntentService.class));
+        loadUser();
+
+    }
+
+    public void loadUser(){
+        Log.d(TAG, "Loading device user");
+        startService(new Intent(this, GetUserIntentService.class));
     }
 
     public Business getBusiness() {
@@ -170,5 +179,24 @@ public class ElavonConvergeProcessorApplication extends Application {
 
     public AppComponent getAppComponent() {
         return mAppComponent;
+    }
+
+
+    public void setCurrentUserInfo(String nickName, String firstName, String lastName){
+        currentUserNickName = nickName;
+        currentUserFirstName = firstName;
+        currentUserLastName = lastName;
+    }
+
+    public String getCurrentUserFirstName() {
+        return currentUserFirstName;
+    }
+
+    public String getCurrentUserLastName() {
+        return currentUserLastName;
+    }
+
+    public String getCurrentUserNickName() {
+        return currentUserNickName;
     }
 }
