@@ -75,9 +75,12 @@ public class KeyedEbtMapper extends InterfaceMapper {
             request.setExpDate(CardUtil.getCardExpiry(t.getFundingSource().getCard()));
         }
 
-        request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getTransactionAmount(), t.getAmounts().getCurrency()));
         if (t.getAmounts().getCashbackAmount() != null) {
             request.setCashbackAmount(CurrencyUtil.getAmount(t.getAmounts().getCashbackAmount(), t.getAmounts().getCurrency()));
+            request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getTransactionAmount(), t.getAmounts().getCurrency()).add(
+                    CurrencyUtil.getAmount(t.getAmounts().getCashbackAmount(), t.getAmounts().getCurrency())));
+        } else {
+            request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getTransactionAmount(), t.getAmounts().getCurrency()));
         }
         if (ebtType == EBTType.FOOD_STAMP_ELECTRONIC_VOUCHER) {
             request.setApprovalCode(t.getFundingSource().getEbtDetails().getElectronicVoucherApprovalCode());
