@@ -216,7 +216,7 @@ public class VirtualTerminalService {
                                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                                     @Override
                                     public void run() {
-                                        virtualTerminalListener.showAlert("Invalid card, please try again!");
+                                        virtualTerminalListener.onProcessed(null, response.getErrorMessage());
                                     }
                                 });
                                 return;
