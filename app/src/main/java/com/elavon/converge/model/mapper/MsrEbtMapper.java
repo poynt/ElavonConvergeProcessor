@@ -80,6 +80,8 @@ public class MsrEbtMapper extends InterfaceMapper {
         if (t.getAmounts().getCashbackAmount() != null) {
             request.setCashbackAmount(CurrencyUtil.getAmount(t.getAmounts().getCashbackAmount(),
                     t.getAmounts().getCurrency()));
+            request.setAmount(request.getAmount().add(
+                    CurrencyUtil.getAmount(t.getAmounts().getCashbackAmount(), t.getAmounts().getCurrency())));
         }
 
         if (t.getFundingSource().getVerificationData() != null) {
