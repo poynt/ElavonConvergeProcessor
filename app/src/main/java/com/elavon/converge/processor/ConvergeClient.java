@@ -1,5 +1,6 @@
 package com.elavon.converge.processor;
 
+import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -130,6 +131,19 @@ public class ConvergeClient {
                 request.setVendorId("POYNT000");
                 ElavonConvergeProcessorApplication application = ElavonConvergeProcessorApplication.getInstance();
                 request.setDeviceUser(RequestUtil.getDeviceUserValue(application.getCurrentUserFirstName(), application.getCurrentUserLastName(), application.getCurrentUserNickName()));
+                request.setAppVersion("1.0.0");
+                String model = Build.MODEL;
+                switch (model) {
+                    case "Poynt-P61":
+                        request.setAppName("P61");
+                        break;
+                    case "Poynt-P61B":
+                        request.setAppName("P61B");
+                        break;
+                    case "Poynt-P5":
+                        request.setAppName("P5");
+                        break;
+                }
                 return new Request.Builder()
                         .url(host)
                         .post(RequestBody.create(FORM_URL_ENCODED_TYPE, "xmldata=" + URLEncoder.encode(xmlMapper.write(request), "UTF-8")))

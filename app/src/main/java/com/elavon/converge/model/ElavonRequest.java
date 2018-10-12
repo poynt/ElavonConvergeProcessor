@@ -24,8 +24,16 @@ public abstract class ElavonRequest {
     @Element(name = "ssl_transaction_type")
     private ElavonTransactionType transactionType;
 
+
     @Element(name = "Poynt_Device_User")
     private String deviceUser;
+
+    @Element(name = "ssl_vendor_app_version")
+    private String appVersion;
+
+    @Element(name = "ssl_vendor_app_name")
+    private String appName;
+
 
     public String getMerchantId() {
         return merchantId;
@@ -81,5 +89,21 @@ public abstract class ElavonRequest {
 
     public void setVendorId(String vendorId) {
         this.vendorId = vendorId;
+    }
+
+    public String getAppVersion() {
+        return appVersion;
+    }
+
+    public void setAppVersion(String appVersion) {
+        this.appVersion = appVersion;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
     }
 }
