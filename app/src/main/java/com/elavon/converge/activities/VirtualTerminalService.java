@@ -5,6 +5,8 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
 
+import co.poynt.api.model.Business;
+import com.elavon.converge.ElavonConvergeProcessorApplication;
 import com.elavon.converge.core.TransactionManager;
 import com.elavon.converge.model.ElavonTransactionResponse;
 import com.elavon.converge.processor.ConvergeCallback;
@@ -281,6 +283,9 @@ public class VirtualTerminalService {
         final Transaction transaction = new Transaction();
         if (payment.isNonReferencedCredit()) {
             transaction.setAction(TransactionAction.REFUND);
+        } else if (payment.isAuthzOnly()) {
+            transaction.setAuthOnly(true);
+            transaction.setAction(TransactionAction.AUTHORIZE);
         } else {
             transaction.setAction(TransactionAction.SALE);
         }
@@ -369,8 +374,12 @@ public class VirtualTerminalService {
         transaction.setFundingSource(fundingSource);
 
         final ClientContext clientContext = new ClientContext();
-        // TODO get employee id
+//        // TODO get employee id
         clientContext.setEmployeeUserId(0L);
+        Business business = ElavonConvergeProcessorApplication.getInstance().getBusiness();
+        if (business != null) {
+            clientContext.setBusinessId(business.getId());
+        }
         transaction.setContext(clientContext);
 
 
