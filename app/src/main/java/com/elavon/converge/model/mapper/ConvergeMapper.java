@@ -46,6 +46,7 @@ import co.poynt.api.model.Processor;
 import co.poynt.api.model.ProcessorResponse;
 import co.poynt.api.model.ProcessorStatus;
 import co.poynt.api.model.Transaction;
+import co.poynt.api.model.TransactionAction;
 import co.poynt.api.model.TransactionAmounts;
 import co.poynt.api.model.TransactionReference;
 import co.poynt.api.model.TransactionStatus;
@@ -642,6 +643,12 @@ public class ConvergeMapper {
 
         if (transaction.isSignatureCaptured() == null) {
             transaction.setSignatureCaptured(false);
+        }
+
+        if (transaction.getAction() == TransactionAction.CAPTURE &&
+                transaction.getStatus() == TransactionStatus.CAPTURED) {
+            transaction.setParentId(transaction.getId());
+            transaction.setId(UUID.randomUUID());
         }
     }
 
