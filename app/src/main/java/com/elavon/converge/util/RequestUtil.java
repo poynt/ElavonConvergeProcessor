@@ -8,17 +8,18 @@ public class RequestUtil {
     public static String getDeviceUserValue(String firstName, String lastName, String nickname) {
         StringBuilder userBuilder = new StringBuilder();
         if (nickname != null && nickname.length() > 0) {
-            if((firstName != null && firstName.length() > 0) ||
-                    (lastName != null && lastName.length() > 0)) {
-                userBuilder.append(nickname).append(HYPHEN);
-            }
+            userBuilder.append(nickname);
         }
         if (firstName != null && firstName.length() > 0) {
-            if(lastName != null && lastName.length() > 0) {
-                userBuilder.append(firstName).append(HYPHEN);
+            if (userBuilder.length() > 0) {
+                userBuilder.append(HYPHEN);
             }
+            userBuilder.append(firstName);
         }
         if (lastName != null && lastName.length() > 0) {
+            if (firstName != null && firstName.length() > 0){
+                userBuilder.append(HYPHEN);
+            }
             userBuilder.append(lastName);
         }
         if (userBuilder.length() < 1) {
