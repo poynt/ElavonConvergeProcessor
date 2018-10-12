@@ -33,6 +33,7 @@ import co.poynt.api.model.EntryMode;
 import co.poynt.api.model.FundingSourceEntryDetails;
 import co.poynt.api.model.Transaction;
 import co.poynt.api.model.TransactionAction;
+import co.poynt.api.model.TransactionStatus;
 import co.poynt.os.model.Intents;
 import co.poynt.os.model.PoyntError;
 import co.poynt.os.services.v1.IPoyntTransactionBalanceInquiryListener;
@@ -249,6 +250,8 @@ public class TransactionManager {
                     public void onResponse(final ElavonTransactionResponse elavonResponse) {
                         try {
                             if (elavonResponse.isSuccess()) {
+                                transaction.setAction(TransactionAction.CAPTURE);
+                                convergeMapper.mapTransactionResponse(elavonResponse, transaction);
                                 listener.onResponse(transaction, requestId, null);
                             } else {
                                 listener.onResponse(transaction, requestId, new PoyntError(PoyntError.CODE_API_ERROR));
