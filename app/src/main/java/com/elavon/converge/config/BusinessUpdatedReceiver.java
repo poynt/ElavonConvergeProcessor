@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import com.elavon.converge.ElavonConvergeProcessorApplication;
+
 public class BusinessUpdatedReceiver extends BroadcastReceiver {
     private static final String TAG = BusinessUpdatedReceiver.class.getSimpleName();
 
@@ -13,5 +15,6 @@ public class BusinessUpdatedReceiver extends BroadcastReceiver {
         Log.d(TAG, "onReceive: " + intent.getAction());
         Intent serviceIntent = new Intent(context, LoadBusinessIntentService.class);
         context.startService(serviceIntent);
+        ElavonConvergeProcessorApplication.getInstance().loadUser();
     }
 }
