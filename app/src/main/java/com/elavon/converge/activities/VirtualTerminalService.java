@@ -1,6 +1,9 @@
 package com.elavon.converge.activities;
 
+
 import android.content.Intent;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.RemoteException;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
@@ -31,6 +34,7 @@ import co.poynt.api.model.TransactionAction;
 import co.poynt.api.model.TransactionAmounts;
 import co.poynt.api.model.TransactionStatus;
 import co.poynt.api.model.VerificationData;
+import co.poynt.os.model.Intents;
 import co.poynt.os.model.Payment;
 import co.poynt.os.model.PoyntError;
 import co.poynt.os.services.v1.IPoyntTransactionServiceListener;
@@ -211,7 +215,12 @@ public class VirtualTerminalService {
                         public void onResponse(final ElavonTransactionResponse response) {
                             if (response.getToken() == null) {
                                 Log.e(TAG, "Failed to tokenize the card");
-                                virtualTerminalListener.showAlert("Invalid card, please try again!");
+                                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        virtualTerminalListener.onProcessed(null, response.getErrorMessage());
+                                    }
+                                });
                                 return;
                             }
 
