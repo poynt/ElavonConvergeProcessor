@@ -216,6 +216,7 @@ public class MsrMapper extends InterfaceMapper {
             request.setEntryMode(ElavonEntryMode.SWIPED);
         }
         request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getTransactionAmount(), t.getAmounts().getCurrency()));
+        request.setTipAmount(CurrencyUtil.getAmount(t.getAmounts().getTipAmount(), t.getAmounts().getCurrency()));
         request.setFirstName(t.getFundingSource().getCard().getCardHolderFirstName());
         request.setLastName(t.getFundingSource().getCard().getCardHolderLastName());
         request.setEncryptedTrackData(t.getFundingSource().getCard().getTrack2data());
