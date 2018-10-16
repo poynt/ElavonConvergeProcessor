@@ -131,6 +131,8 @@ public class AppModule {
                 emvMapper, keyedMapper, keyedEbtMapper, keyedGiftcardMapper, cashMapper);
     }
 
+
+
     @Provides
     @Singleton
     public ConvergeClient provideConvergeClient(final XmlMapper xmlMapper) {

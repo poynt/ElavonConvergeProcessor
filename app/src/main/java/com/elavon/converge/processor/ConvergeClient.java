@@ -4,9 +4,11 @@ import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.elavon.converge.ElavonConvergeProcessorApplication;
 import com.elavon.converge.exception.ConvergeClientException;
 import com.elavon.converge.model.ElavonRequest;
 import com.elavon.converge.model.ElavonResponse;
+import com.elavon.converge.util.RequestUtil;
 import com.elavon.converge.xml.XmlMapper;
 
 import java.io.IOException;
@@ -49,6 +51,9 @@ public class ConvergeClient {
         this.host = host;
         this.client = client;
         this.xmlMapper = xmlMapper;
+//        this.userFetcher = userFetcher;
+//        userFetcher.fetchUser(this);
+
     }
 
     public void updateCredentials(
@@ -61,6 +66,8 @@ public class ConvergeClient {
         this.userId = userId;
         this.pin = pin;
     }
+
+
 
     public <T extends ElavonResponse> void call(final ElavonRequest model, final ConvergeCallback<T> callback) {
 
@@ -122,6 +129,8 @@ public class ConvergeClient {
                 Log.d(TAG, "set request pin to: " + pin);
                 request.setPin(pin);
                 request.setVendorId("POYNT000");
+                ElavonConvergeProcessorApplication application = ElavonConvergeProcessorApplication.getInstance();
+                request.setDeviceUser(RequestUtil.getDeviceUserValue(application.getCurrentUserFirstName(), application.getCurrentUserLastName(), application.getCurrentUserNickName()));
                 request.setAppVersion("1.0.0");
                 String model = Build.MODEL;
                 switch (model) {

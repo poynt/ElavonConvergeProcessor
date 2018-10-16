@@ -3,6 +3,9 @@ package com.elavon.converge.model.mapper;
 import android.util.Base64;
 import android.util.Log;
 
+import co.poynt.api.model.Business;
+import co.poynt.api.model.ClientContext;
+import com.elavon.converge.ElavonConvergeProcessorApplication;
 import com.elavon.converge.exception.ConvergeMapperException;
 import com.elavon.converge.model.ElavonResponse;
 import com.elavon.converge.model.ElavonSettleRequest;
@@ -649,6 +652,23 @@ public class ConvergeMapper {
                 transaction.getStatus() == TransactionStatus.CAPTURED) {
             transaction.setParentId(transaction.getId());
             transaction.setId(UUID.randomUUID());
+        }
+
+        Business business = ElavonConvergeProcessorApplication.getInstance().getBusiness();
+        if (transaction.getContext() == null) {
+            ClientContext clientContext = new ClientContext();
+            clientContext.setEmployeeUserId(0L);
+            if (business != null) {
+                clientContext.setBusinessId(business.getId());
+            }
+            transaction.setContext(clientContext);
+        } else {
+            ClientContext clientContext = transaction.getContext();
+            if (clientContext.getBusinessId() == null) {
+                if (business != null) {
+                    clientContext.setBusinessId(business.getId());
+                }
+            }
         }
     }
 

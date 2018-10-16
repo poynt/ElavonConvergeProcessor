@@ -1,10 +1,15 @@
 package com.elavon.converge.activities;
 
+
 import android.content.Intent;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.RemoteException;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
 
+import co.poynt.api.model.Business;
+import com.elavon.converge.ElavonConvergeProcessorApplication;
 import com.elavon.converge.core.TransactionManager;
 import com.elavon.converge.model.ElavonTransactionResponse;
 import com.elavon.converge.processor.ConvergeCallback;
@@ -29,6 +34,7 @@ import co.poynt.api.model.TransactionAction;
 import co.poynt.api.model.TransactionAmounts;
 import co.poynt.api.model.TransactionStatus;
 import co.poynt.api.model.VerificationData;
+import co.poynt.os.model.Intents;
 import co.poynt.os.model.Payment;
 import co.poynt.os.model.PoyntError;
 import co.poynt.os.services.v1.IPoyntTransactionServiceListener;
@@ -209,7 +215,12 @@ public class VirtualTerminalService {
                         public void onResponse(final ElavonTransactionResponse response) {
                             if (response.getToken() == null) {
                                 Log.e(TAG, "Failed to tokenize the card");
-                                virtualTerminalListener.showAlert("Invalid card, please try again!");
+                                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        virtualTerminalListener.onProcessed(null, response.getErrorMessage());
+                                    }
+                                });
                                 return;
                             }
 
@@ -281,6 +292,9 @@ public class VirtualTerminalService {
         final Transaction transaction = new Transaction();
         if (payment.isNonReferencedCredit()) {
             transaction.setAction(TransactionAction.REFUND);
+        } else if (payment.isAuthzOnly()) {
+            transaction.setAuthOnly(true);
+            transaction.setAction(TransactionAction.AUTHORIZE);
         } else {
             transaction.setAction(TransactionAction.SALE);
         }
@@ -291,7 +305,7 @@ public class VirtualTerminalService {
         final TransactionAmounts amounts = new TransactionAmounts();
         amounts.setCurrency("USD");
         amounts.setOrderAmount(payment.getAmount());
-        amounts.setTransactionAmount(payment.getAmount());
+        amounts.setTransactionAmount(payment.getAmount() + payment.getTipAmount());
         amounts.setTipAmount(payment.getTipAmount());
         transaction.setAmounts(amounts);
 
@@ -369,8 +383,12 @@ public class VirtualTerminalService {
         transaction.setFundingSource(fundingSource);
 
         final ClientContext clientContext = new ClientContext();
-        // TODO get employee id
+//        // TODO get employee id
         clientContext.setEmployeeUserId(0L);
+        Business business = ElavonConvergeProcessorApplication.getInstance().getBusiness();
+        if (business != null) {
+            clientContext.setBusinessId(business.getId());
+        }
         transaction.setContext(clientContext);
 
 
