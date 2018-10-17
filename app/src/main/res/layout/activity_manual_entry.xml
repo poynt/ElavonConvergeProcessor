@@ -1,17 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="400dp"
+    android:id="@+id/manualEntryLayout"
+    android:layout_width="540dp"
+    android:layout_height="600dp"
     android:layout_marginBottom="50dp"
-    android:layout_marginLeft="50dp"
-    android:layout_marginRight="50dp"
-    android:layout_marginTop="200dp"
     tools:context="com.elavon.converge.activities.ManualEntryActivity">
+
+    <LinearLayout android:id="@+id/manualEntryHeader"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@drawable/top_radius_corner_shape"
+        >
+
+        <ImageView
+            android:id="@+id/manualEntryIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:layout_marginLeft="25dp"
+            android:src="@mipmap/manual_entry_button_ic"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"/>
+
+        <TextView
+            android:id="@+id/manualEntryText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:layout_marginLeft="75dp"
+            android:text="@string/manual_entry_text"
+            android:textColor="@color/white"
+            android:textSize="20sp" />
+    </LinearLayout>
 
     <WebView
         android:id="@+id/manualEntryWebView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:layout_marginTop="50dp"/>
+
+    <RelativeLayout
+        android:layout_height="60dp"
+        android:layout_width="match_parent"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/bottom_radius_corner_shape"
+        >
+
+        <ImageView
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_marginTop="9dp"
+            android:layout_marginBottom="10dp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentStart="true"
+            android:src="@mipmap/footer_lock"/>
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:id="@+id/footerLogo"
+            android:layout_alignParentRight="true"
+            android:src="@mipmap/footer_logo"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@id/footerLogo"
+            android:text="@string/poweredBy"
+            android:textColor="@color/power_by_blue"
+            android:textSize="13dp"
+            android:textStyle="italic"
+            />
+
+    </RelativeLayout>
+
 
 </RelativeLayout>
