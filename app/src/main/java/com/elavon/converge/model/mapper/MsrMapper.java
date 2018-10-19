@@ -215,7 +215,8 @@ public class MsrMapper extends InterfaceMapper {
         } else if (entryDetails.getEntryMode() == EntryMode.TRACK_DATA_FROM_MAGSTRIPE) {
             request.setEntryMode(ElavonEntryMode.SWIPED);
         }
-        request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getTransactionAmount(), t.getAmounts().getCurrency()));
+        //This should only be the order amount. converge has another field for tip amount.
+        request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getOrderAmount(), t.getAmounts().getCurrency()));
         if(t.getAmounts().getTipAmount() != null) {
             request.setTipAmount(CurrencyUtil.getAmount(t.getAmounts().getTipAmount(), t.getAmounts().getCurrency()));
         }
