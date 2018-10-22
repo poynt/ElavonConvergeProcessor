@@ -31,6 +31,7 @@ public class MsrMapper extends InterfaceMapper {
         if (transaction.getFundingSource().getEntryDetails().isIccFallback()
                 == Boolean.TRUE) {
             request.setTransactionType(ElavonTransactionType.EMV_SWIPE_AUTH_ONLY);
+            request.setEntryMode(ElavonEntryMode.ICC_FALLBACK);
         } else {
             request.setTransactionType(ElavonTransactionType.AUTH_ONLY);
         }
@@ -103,6 +104,7 @@ public class MsrMapper extends InterfaceMapper {
         if (transaction.getFundingSource().getEntryDetails().isIccFallback()
                 == Boolean.TRUE) {
             request.setTransactionType(ElavonTransactionType.EMV_SWIPE_SALE);
+            request.setEntryMode(ElavonEntryMode.ICC_FALLBACK);
         } else {
             request.setTransactionType(isForce(transaction) ? ElavonTransactionType.FORCE : ElavonTransactionType.SALE);
         }
