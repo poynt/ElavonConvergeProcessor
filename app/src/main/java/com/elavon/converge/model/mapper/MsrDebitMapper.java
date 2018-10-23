@@ -3,6 +3,7 @@ package com.elavon.converge.model.mapper;
 import com.elavon.converge.exception.ConvergeMapperException;
 import com.elavon.converge.model.ElavonTransactionRequest;
 import com.elavon.converge.model.type.AccountType;
+import com.elavon.converge.model.type.ElavonEntryMode;
 import com.elavon.converge.model.type.ElavonPosMode;
 import com.elavon.converge.model.type.ElavonTransactionType;
 import com.elavon.converge.util.CardUtil;
@@ -23,18 +24,43 @@ public class MsrDebitMapper extends InterfaceMapper {
 
     @Override
     ElavonTransactionRequest createRefund(final Transaction t) {
+        ElavonTransactionRequest request = null;
+        // if action in transaction is refund but no parent id then it's
+        // a Non-Ref Credit otherwise it's a regular refund
+        if (t.getParentId() != null) {
+            request = new ElavonTransactionRequest();
+            request.setTransactionType(ElavonTransactionType.RETURN);
+            request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getTransactionAmount(), t.getAmounts().getCurrency()));
+            // add retrieval ref number if we have it
+            if (t.getProcessorResponse() != null) {
+                request.setTxnId(t.getProcessorResponse().getRetrievalRefNum());
+            }
+        } else {
+            request = createRefundRequest(t);
+            request.setTransactionType(ElavonTransactionType.CREDIT);
+        }
+        return request;
+    }
+
+    private ElavonTransactionRequest createRefundRequest(Transaction t) {
         final ElavonTransactionRequest request = new ElavonTransactionRequest();
-        request.setTransactionType(ElavonTransactionType.DEBIT_RETURN);
+        request.setPoyntUserId(t.getContext().getEmployeeUserId().toString());
+        request.setPosMode(ElavonPosMode.ICC_DUAL);
+        request.setEntryMode(ElavonEntryMode.CONTACTLESS);
+        request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getTransactionAmount(), t.getAmounts().getCurrency()));
+        if (t.getAmounts().getTipAmount() != null) {
+            request.setTipAmount((CurrencyUtil.getAmount(t.getAmounts().getTipAmount(), t.getAmounts().getCurrency())));
+        }
+        request.setFirstName(t.getFundingSource().getCard().getCardHolderFirstName());
+        request.setLastName(t.getFundingSource().getCard().getCardHolderLastName());
         request.setEncryptedTrackData(t.getFundingSource().getCard().getTrack2data());
         request.setKsn(t.getFundingSource().getCard().getKeySerialNumber());
-        request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getTransactionAmount(), t.getAmounts().getCurrency()));
+        request.setCardLast4(t.getFundingSource().getCard().getNumberLast4());
+        if (t.getFundingSource().getVerificationData() != null) {
+            request.setPinBlock(t.getFundingSource().getVerificationData().getPin());
+            request.setPinKsn(t.getFundingSource().getVerificationData().getKeySerialNumber());
+        }
 
-        // TODO get account type from transaction
-        request.setAccountType(AccountType.CHECKING);
-        request.setPinKsn(t.getFundingSource().getVerificationData().getKeySerialNumber());
-        request.setKeyPointer("T");
-        request.setPinBlock(t.getFundingSource().getVerificationData().getPin());
-        request.setReferenceNumber(t.getProcessorResponse().getRetrievalRefNum());
         return request;
     }
 

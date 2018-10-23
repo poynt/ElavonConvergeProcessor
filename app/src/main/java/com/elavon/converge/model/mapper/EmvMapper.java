@@ -54,9 +54,37 @@ public class EmvMapper extends InterfaceMapper {
                 request.setTxnId(t.getProcessorResponse().getRetrievalRefNum());
             }
         } else {
-            request = createRequest(t);
+            request = createRefundRequest(t);
             request.setTransactionType(ElavonTransactionType.CREDIT);
         }
+        return request;
+    }
+
+    private ElavonTransactionRequest createRefundRequest(Transaction t) {
+        final ElavonTransactionRequest request = new ElavonTransactionRequest();
+        request.setPoyntUserId(t.getContext().getEmployeeUserId().toString());
+        request.setPosMode(ElavonPosMode.ICC_DUAL);
+        FundingSourceEntryDetails entryDetails = t.getFundingSource().getEntryDetails();
+        if (entryDetails.getEntryMode() == EntryMode.CONTACTLESS_INTEGRATED_CIRCUIT_CARD
+                || entryDetails.getEntryMode() == EntryMode.CONTACTLESS_MAGSTRIPE) {
+            request.setEntryMode(ElavonEntryMode.EMV_PROXIMITY_READ);
+        } else if (entryDetails.getEntryMode() == EntryMode.INTEGRATED_CIRCUIT_CARD) {
+            request.setEntryMode(ElavonEntryMode.EMV_WITH_CVV);
+        }
+        request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getTransactionAmount(), t.getAmounts().getCurrency()));
+        if (t.getAmounts().getTipAmount() != null) {
+            request.setTipAmount((CurrencyUtil.getAmount(t.getAmounts().getTipAmount(), t.getAmounts().getCurrency())));
+        }
+        request.setFirstName(t.getFundingSource().getCard().getCardHolderFirstName());
+        request.setLastName(t.getFundingSource().getCard().getCardHolderLastName());
+        request.setEncryptedTrackData(t.getFundingSource().getCard().getTrack2data());
+        request.setKsn(t.getFundingSource().getCard().getKeySerialNumber());
+        request.setCardLast4(t.getFundingSource().getCard().getNumberLast4());
+        if (t.getFundingSource().getVerificationData() != null) {
+            request.setPinBlock(t.getFundingSource().getVerificationData().getPin());
+            request.setPinKsn(t.getFundingSource().getVerificationData().getKeySerialNumber());
+        }
+
         return request;
     }
 
