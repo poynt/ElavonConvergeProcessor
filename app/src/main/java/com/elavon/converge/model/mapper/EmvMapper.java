@@ -12,6 +12,7 @@ import com.elavon.converge.util.CurrencyUtil;
 import com.elavon.converge.util.HexDump;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -127,10 +128,17 @@ public class EmvMapper extends InterfaceMapper {
 
     private String getTlvTags(final Transaction t) {
         final StringBuilder builder = new StringBuilder();
+        ArrayList<Map.Entry<String, String>> tlvList = new ArrayList<>();
         for (final Map.Entry<String, String> tag : t.getFundingSource().getEmvData().getEmvTags().entrySet()) {
             final String kHex = tag.getKey().substring(2);
             final String lHex = HexDump.toHexString((byte) (tag.getValue().length() / 2));
             Log.i(TAG, String.format("%s=%s", kHex, tag.getValue()));
+
+            //Adding the tags starting with DF to a list, to push all 3-byte tags to the end, based on Converge request
+            if(kHex.startsWith("DF") && kHex.length() == 6) {
+                tlvList.add(tag);
+                continue;
+            }
 
             // maps tags as per converge needs
             // 57 needs to be copied as D0
@@ -163,6 +171,18 @@ public class EmvMapper extends InterfaceMapper {
             builder.append("9F03");
             builder.append("06");
             builder.append("000000000000");
+        }
+
+        //Pushing all 3-byte tags to the end of tlv string, based on Converge request
+        if(tlvList != null && tlvList.size() > 0) {
+            for(Map.Entry<String, String> tag : tlvList) {
+                final String kHex = tag.getKey().substring(2);
+                final String lHex = HexDump.toHexString((byte) (tag.getValue().length() / 2));
+                builder.append(kHex);
+                builder.append(lHex);
+                builder.append(tag.getValue());
+                Log.d(TAG, MessageFormat.format("T:{0}, L:{1}, V:{2}", kHex, lHex, tag.getValue()));
+            }
         }
 
         /**
