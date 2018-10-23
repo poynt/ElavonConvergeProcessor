@@ -560,6 +560,8 @@ public class TransactionManager {
                                         convergeMapper.mapTransactionResponse(elavonResponse, transaction);
                                         try {
                                             // update the transactionId w/ new void txn Id and set parent
+                                            transaction.setAction(TransactionAction.REFUND);
+                                            transaction.setActionVoid(true);
                                             transaction.setParentId(transaction.getId());
                                             transaction.setId(UUID.randomUUID());
                                             listener.onResponse(transaction, requestId, null);
