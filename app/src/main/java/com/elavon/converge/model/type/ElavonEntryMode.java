@@ -11,7 +11,8 @@ public enum ElavonEntryMode {
     CONTACTLESS("04"), // for MSD
     EMV_WITH_CVV("05"),
     EMV_PROXIMITY_READ("06"), // for EMV CL
-    EMV_WITHOUT_CVV("07");
+    EMV_WITHOUT_CVV("07"),
+    ICC_FALLBACK("08");
 
     private final String value;
 
