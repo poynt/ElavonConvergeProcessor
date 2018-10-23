@@ -178,6 +178,7 @@ public class EmvMapper extends InterfaceMapper {
             for(Map.Entry<String, String> tag : tlvList) {
                 final String kHex = tag.getKey().substring(2);
                 final String lHex = HexDump.toHexString((byte) (tag.getValue().length() / 2));
+                builder.append(kHex);
                 builder.append(lHex);
                 builder.append(tag.getValue());
                 Log.d(TAG, MessageFormat.format("T:{0}, L:{1}, V:{2}", kHex, lHex, tag.getValue()));
