@@ -557,6 +557,12 @@ public class ConvergeMapper {
             // update the transaction amount
             TransactionAmounts amounts = transaction.getAmounts();
             if (etResponse.getAmount() != null) {
+                boolean isPartiallyCaptured = amounts.getTransactionAmount() > CurrencyUtil.getAmount(etResponse.getAmount(),
+                        transaction.getAmounts().getCurrency());
+                if(ElavonResponse.RESULT_MESSAGE.PARTIAL_APPROVAL.equals(etResponse.getResultMessage()) || isPartiallyCaptured){
+                    amounts.setOrderAmount(CurrencyUtil.getAmount(String.valueOf(etResponse.getAmount()),
+                            transaction.getAmounts().getCurrency()));
+                }
                 processorResponse.setApprovedAmount(CurrencyUtil.getAmount(etResponse.getAmount(),
                         transaction.getAmounts().getCurrency()));
                 amounts.setTransactionAmount(CurrencyUtil.getAmount(etResponse.getAmount(),
