@@ -252,6 +252,7 @@ public class TransactionManager {
                         try {
                             if (elavonResponse.isSuccess()) {
                                 transaction.setAction(TransactionAction.CAPTURE);
+                                transaction.setAmounts(adjustTransactionRequest.getAmounts());
                                 convergeMapper.mapTransactionResponse(elavonResponse, transaction);
                                 listener.onResponse(transaction, requestId, null);
                             } else {
