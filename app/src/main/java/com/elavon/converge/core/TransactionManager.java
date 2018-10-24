@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteException;
+import android.text.TextUtils;
 import android.util.Log;
 import android.util.LruCache;
 
@@ -546,10 +547,13 @@ public class TransactionManager {
                         // update action to VOID so when we return the voided transaction object
                         // it has correct status
                         transaction.setAction(TransactionAction.VOID);
+                        String trxnId = transaction.getProcessorResponse().getRetrievalRefNum();
+                        if(TextUtils.isEmpty(trxnId)) {
+                            trxnId = transaction.getProcessorResponse().getTransactionId();
+                        }
 
                         final ElavonTransactionRequest request = convergeMapper.getTransactionVoidRequest(
-                                transaction,
-                                transaction.getProcessorResponse().getRetrievalRefNum());
+                                transaction, trxnId);
                         convergeService.update(request, new ConvergeCallback<ElavonTransactionResponse>() {
                             @Override
                             public void onResponse(final ElavonTransactionResponse elavonResponse) {
