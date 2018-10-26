@@ -34,6 +34,9 @@ public class MsrMapper extends InterfaceMapper {
             request.setEntryMode(ElavonEntryMode.ICC_FALLBACK);
         } else {
             request.setTransactionType(ElavonTransactionType.AUTH_ONLY);
+            if(transaction.getAmounts().getTipAmount() != null) {
+                request.setAmount(CurrencyUtil.getAmount(transaction.getAmounts().getTipAmount() + transaction.getAmounts().getOrderAmount(), transaction.getAmounts().getCurrency()));
+            }
         }
         return request;
     }
