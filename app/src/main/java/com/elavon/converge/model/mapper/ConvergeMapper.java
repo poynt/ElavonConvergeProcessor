@@ -550,6 +550,11 @@ public class ConvergeMapper {
             processorResponse.setApprovalCode(etResponse.getApprovalCode());
         }
 
+        if(processorResponse != null && !StringUtil.isEmpty(etResponse.getAmount())) {
+            processorResponse.setApprovedAmount(CurrencyUtil.getAmount(etResponse.getAmount(),
+                    transaction.getAmounts().getCurrency()));
+        }
+
         if (etResponse.getResponseCode() == ResponseCodes.AA
                 || etResponse.getResponseCode() == ResponseCodes.AP
                 || ElavonResponse.RESULT_MESSAGE.APPROVAL.equals(etResponse.getResultMessage())
@@ -557,8 +562,6 @@ public class ConvergeMapper {
             // update the transaction amount
             TransactionAmounts amounts = transaction.getAmounts();
             if (etResponse.getAmount() != null) {
-                processorResponse.setApprovedAmount(CurrencyUtil.getAmount(etResponse.getAmount(),
-                        transaction.getAmounts().getCurrency()));
                 amounts.setTransactionAmount(CurrencyUtil.getAmount(etResponse.getAmount(),
                         transaction.getAmounts().getCurrency()));
                 if (etResponse.getCashbackAmount() != null) {
@@ -566,8 +569,6 @@ public class ConvergeMapper {
                             transaction.getAmounts().getCurrency()));
                 }
             } else if (etResponse.getBaseAmount() != null) {
-                processorResponse.setApprovedAmount(
-                        CurrencyUtil.getAmount(etResponse.getBaseAmount(), transaction.getAmounts().getCurrency()));
                 amounts.setTransactionAmount(CurrencyUtil.getAmount(etResponse.getBaseAmount(),
                         transaction.getAmounts().getCurrency()));
                 if (etResponse.getCashbackAmount() != null) {
