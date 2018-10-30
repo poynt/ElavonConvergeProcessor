@@ -34,6 +34,10 @@ public class MsrMapper extends InterfaceMapper {
             request.setEntryMode(ElavonEntryMode.ICC_FALLBACK);
         } else {
             request.setTransactionType(ElavonTransactionType.AUTH_ONLY);
+            //Because there's no info on Converge's doc for ssl_tip_amount in ccauthonly. 
+            //So updating request's total amount with the transaction amount.
+            request.setAmount(CurrencyUtil.getAmount(transaction.getAmounts().getTransactionAmount()
+                    , transaction.getAmounts().getCurrency()));
         }
         return request;
     }
