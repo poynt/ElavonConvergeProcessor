@@ -550,7 +550,7 @@ public class ConvergeMapper {
             processorResponse.setApprovalCode(etResponse.getApprovalCode());
         }
 
-        if(processorResponse != null && !StringUtil.isEmpty(etResponse.getAmount())) {
+        if(!StringUtil.isEmpty(etResponse.getAmount())) {
             processorResponse.setApprovedAmount(CurrencyUtil.getAmount(etResponse.getAmount(),
                     transaction.getAmounts().getCurrency()));
         }
