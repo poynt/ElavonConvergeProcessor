@@ -3,6 +3,7 @@ package com.elavon.converge.inject;
 import android.content.Context;
 import android.util.Log;
 
+import com.elavon.converge.BuildConfig;
 import com.elavon.converge.config.Config;
 import com.elavon.converge.config.ConfigLoader;
 import com.elavon.converge.core.TransactionManager;
@@ -47,7 +48,11 @@ public class AppModule {
 
     public AppModule(final Context context) {
         this.context = context;
-        this.config = new ConfigLoader(context.getResources(), Config.Environment.LIVE).load();
+        if(BuildConfig.DEBUG) {
+            this.config = new ConfigLoader(context.getResources(), Config.Environment.TEST).load();
+        } else {
+            this.config = new ConfigLoader(context.getResources(), Config.Environment.LIVE).load();
+        }
     }
 
     public AppModule(final Context context, final Config config) {
