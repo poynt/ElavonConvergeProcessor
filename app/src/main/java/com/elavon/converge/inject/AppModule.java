@@ -47,7 +47,7 @@ public class AppModule {
 
     public AppModule(final Context context) {
         this.context = context;
-        this.config = new ConfigLoader(context.getResources(), Config.Environment.TEST).load();
+        this.config = new ConfigLoader(context.getResources(), Config.Environment.LIVE).load();
     }
 
     public AppModule(final Context context, final Config config) {
