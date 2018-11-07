@@ -356,7 +356,8 @@ public class TransactionManager {
                             try {
                                 if (elavonResponse.isSuccess()) {
                                     // if it's MSR and if we have signature it's a separate call
-                                    if (transaction.getFundingSource().getEntryDetails().getEntryMode()
+                                    if (transaction.getFundingSource().getEntryDetails() != null
+                                            && transaction.getFundingSource().getEntryDetails().getEntryMode()
                                             == EntryMode.TRACK_DATA_FROM_MAGSTRIPE
                                             && adjustTransactionRequest.getSignature() != null) {
                                         updateSignature(transaction, adjustTransactionRequest, requestId, listener);
@@ -367,7 +368,8 @@ public class TransactionManager {
                                     Log.e(TAG, "Failed to update tip/emv tags");
                                     // if the original request also has signature - we should try saving it
                                     // if it's MSR and if we have signature it's a separate call
-                                    if (transaction.getFundingSource().getEntryDetails().getEntryMode()
+                                    if (transaction.getFundingSource().getEntryDetails() != null
+                                            && transaction.getFundingSource().getEntryDetails().getEntryMode()
                                             == EntryMode.TRACK_DATA_FROM_MAGSTRIPE
                                             && adjustTransactionRequest.getSignature() != null) {
                                         Log.i(TAG, "Saving signature");
