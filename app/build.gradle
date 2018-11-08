@@ -15,7 +15,7 @@ allprojects {
 }
 
 def computeVersionCode() {
-    return 10
+    return 11
 }
 
 def computeVersionName() {
@@ -44,7 +44,7 @@ android {
     }
     buildTypes {
         debug {
-            signingConfig signingConfigs.release
+            signingConfig signingConfigs.debug
             versionNameSuffix "-d"
         }
         release {
