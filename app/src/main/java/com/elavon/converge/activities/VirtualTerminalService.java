@@ -307,11 +307,10 @@ public class VirtualTerminalService {
         amounts.setOrderAmount(payment.getAmount());
         if(payment.isAuthzOnly()){
             amounts.setTransactionAmount(payment.getAmount() + payment.getTipAmount());
-            amounts.setTipAmount(payment.getTipAmount());
         }else {
             amounts.setTransactionAmount(payment.getAmount());
-            amounts.setTipAmount(payment.getTipAmount());
         }
+        amounts.setTipAmount(payment.getTipAmount());
         transaction.setAmounts(amounts);
 
         final Card card = new Card();
