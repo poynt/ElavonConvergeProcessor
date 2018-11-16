@@ -305,7 +305,7 @@ public class VirtualTerminalService {
         final TransactionAmounts amounts = new TransactionAmounts();
         amounts.setCurrency("USD");
         amounts.setOrderAmount(payment.getAmount());
-        amounts.setTransactionAmount(payment.getAmount() + payment.getTipAmount());
+        amounts.setTransactionAmount(payment.getAmount());
         amounts.setTipAmount(payment.getTipAmount());
         transaction.setAmounts(amounts);
 
