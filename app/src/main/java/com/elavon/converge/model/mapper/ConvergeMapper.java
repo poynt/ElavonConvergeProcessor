@@ -401,7 +401,11 @@ public class ConvergeMapper {
         Log.d(TAG, "Received response:" + etResponse);
 
         final ProcessorResponse processorResponse = new ProcessorResponse();
-        processorResponse.setProcessor(Processor.ELAVON);
+        /*
+         * As requested in AX-1963 Converge: set PROCESSOR=CONVERGE, not ELAVON
+         * Changed from Processor.ELAVON to Processor.CONVERGE
+         */
+        processorResponse.setProcessor(Processor.CONVERGE);
         processorResponse.setAcquirer(Processor.ELAVON);
 
         // always generate a hash of the card info
@@ -811,7 +815,11 @@ public class ConvergeMapper {
 
     public void mapBalanceInquiryResponse(final ElavonTransactionResponse etResponse, final BalanceInquiry balanceInquiry) {
         final ProcessorResponse processorResponse = new ProcessorResponse();
-        processorResponse.setProcessor(Processor.ELAVON);
+        /*
+         * As requested in AX-1963 Converge: set PROCESSOR=CONVERGE, not ELAVON
+         * Changed from Processor.ELAVON to Processor.CONVERGE
+         */
+        processorResponse.setProcessor(Processor.CONVERGE);
         processorResponse.setAcquirer(Processor.ELAVON);
         setStatusResponse(processorResponse, etResponse);
         setTransactionIdResponse(processorResponse, etResponse);
