@@ -21,6 +21,7 @@ import com.elavon.converge.processor.ConvergeClient;
 import javax.inject.Inject;
 
 import co.poynt.api.model.Business;
+import co.poynt.api.model.Order;
 import co.poynt.api.model.Store;
 import co.poynt.api.model.StoreDevice;
 import co.poynt.os.model.PaymentSettings;
@@ -38,6 +39,7 @@ public class ElavonConvergeProcessorApplication extends Application {
     private PaymentSettings paymentSettings;
     private String currentUserFirstName, currentUserLastName, currentUserNickName;
     private AppComponent mAppComponent;
+    private Order mOrder;
 
     @Inject
     protected ConvergeClient convergeClient;
@@ -198,5 +200,13 @@ public class ElavonConvergeProcessorApplication extends Application {
 
     public String getCurrentUserNickName() {
         return currentUserNickName;
+    }
+
+    public void setCurrentOrderItem(Order order) {
+        mOrder = order;
+    }
+
+    public Order getCurrentOrder() {
+        return mOrder;
     }
 }

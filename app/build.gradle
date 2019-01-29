@@ -36,7 +36,7 @@ android {
     }
     signingConfigs {
         release {
-            storeFile file(System.env.HOME + "/.keys/converge/release.keystore")
+            //storeFile file(System.env.HOME + "/.keys/converge/release.keystore")
             keyAlias "release"
             keyPassword "poynt123"
             storePassword "poynt123"
@@ -44,11 +44,11 @@ android {
     }
     buildTypes {
         debug {
-            signingConfig signingConfigs.release
+           // signingConfig signingConfigs.release
             versionNameSuffix "-d"
         }
         release {
-            signingConfig signingConfigs.release
+           // signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
@@ -70,7 +70,7 @@ dependencies {
 
     // Poynt SDK and Model Dependencies
     implementation 'co.poynt.api:android-api-model:1.2.118-SNAPSHOT@jar'
-    implementation 'co.poynt.android.sdk:poynt-sdk:1.2.32-SNAPSHOT@aar'
+    implementation 'co.poynt.android.sdk:poynt-sdk:development-SNAPSHOT@aar'
     implementation 'com.google.code.gson:gson:2.8.0'
     // bit byte manipulation
     implementation 'com.github.devnied:bit-lib4j:1.4.10@jar'

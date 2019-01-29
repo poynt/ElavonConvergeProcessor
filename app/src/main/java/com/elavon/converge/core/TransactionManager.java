@@ -11,6 +11,7 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.util.LruCache;
 
+import com.elavon.converge.ElavonConvergeProcessorApplication;
 import com.elavon.converge.exception.ConvergeClientException;
 import com.elavon.converge.model.ElavonSettleResponse;
 import com.elavon.converge.model.ElavonTransactionRequest;

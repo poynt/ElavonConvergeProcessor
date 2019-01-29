@@ -67,7 +67,6 @@
             android:name=".config.GetUserIntentService"
             android:exported="false" />
 
-
         <activity
             android:name=".activities.ManualEntryActivity"
             android:label="@string/app_name"
