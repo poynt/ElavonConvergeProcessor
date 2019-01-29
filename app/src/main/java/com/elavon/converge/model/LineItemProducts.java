@@ -15,5 +15,5 @@ public class LineItemProducts {
     }
 
     @ElementList(name = "product", required = false)
-    List<Product> product;
+    private List<Product> product;
 }

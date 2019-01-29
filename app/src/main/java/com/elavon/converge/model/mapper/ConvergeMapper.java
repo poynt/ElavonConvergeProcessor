@@ -155,7 +155,7 @@ public class ConvergeMapper {
                 } else {
                     request = mapper.createAuth(transaction);
                 }
-               // addCurrentOrder(request);
+                addCurrentOrder(request);
                 break;
             case REFUND:
                 request = mapper.createRefund(transaction);
@@ -169,7 +169,7 @@ public class ConvergeMapper {
                 } else {
                     request = mapper.createSale(transaction);
                 }
-                //addCurrentOrder(request);
+                addCurrentOrder(request);
                 break;
             case VERIFY:
                 request = mapper.createVerify(transaction);
