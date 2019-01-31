@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Converge</string>
+    <string name="manual_entry_text">MANUAL ENTRY</string>
+    <string name="poweredBy">Powered by</string>
+</resources>

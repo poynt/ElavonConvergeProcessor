@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.elavon.converge.activities.MainActivity">
+
+    <!-- dummy layout to prevent the keyboard from popping out -->
+    <LinearLayout
+        android:layout_width="0px"
+        android:layout_height="0px"
+        android:focusable="true"
+        android:focusableInTouchMode="true" />
+
+    <TextView
+        android:id="@+id/setupTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="5dp"
+        android:text="Setup" />
+
+    <Button
+        android:id="@+id/setTrackFormats"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="SET TRACK FORMAT" />
+
+    <Button
+        android:id="@+id/balanceInquiry"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="BALANCE INQUIRY" />
+
+    <TextView
+        android:id="@+id/settleTitleTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="5dp"
+        android:text="Settlement" />
+
+    <TextView
+        android:id="@+id/settleStatusTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="    Status:" />
+
+    <EditText
+        android:id="@+id/settleTransactionIds"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text="" />
+
+    <Button
+        android:id="@+id/settleButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="SETTLE" />
+
+</LinearLayout>

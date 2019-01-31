@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.elavon.converge">
+
+    <uses-permission android:name="poynt.permission.SECURITY_SERVICE" />
+    <uses-permission android:name="poynt.permission.BUSINESS_SERVICE" />
+    <uses-permission android:name="poynt.permission.DOWNLOAD_MERCHANT_CREDENTIALS" />
+    <uses-permission android:name="poynt.permission.CONFIGURATION_SERVICE" />
+    <uses-permission android:name="poynt.permission.TRANSACTION_SERVICE" />
+    <uses-permission android:name="co.poynt.orders.ACCESS_ORDERS" />
+    <uses-permission android:name="co.poynt.business.ACCESS_BUSINESS" />
+    <uses-permission android:name="poynt.permission.SECOND_SCREEN_SERVICE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <!-- for sync -->
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
+
+    <application
+        android:name=".ElavonConvergeProcessorApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme">
+        <service
+            android:name=".TransactionService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="co.poynt.os.services.v1.IPoyntTransactionService" />
+            </intent-filter>
+
+            <meta-data
+                android:name="co.poynt.os.service.capability"
+                android:resource="@xml/transaction_capabilities" />
+        </service>
+
+        <activity
+            android:name=".activities.MainActivity"
+            android:label="@string/app_name"
+            android:noHistory="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+        </activity>
+
+
+        <service
+            android:name=".config.LoadBusinessIntentService"
+            android:exported="false" />
+
+        <receiver
+            android:name=".config.BusinessUpdatedReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="poynt.intent.action.BUSINESS_UPDATED" />
+            </intent-filter>
+        </receiver>
+        <service
+            android:name=".config.GetUserIntentService"
+            android:exported="false" />
+
+
+        <activity
+            android:name=".activities.ManualEntryActivity"
+            android:label="@string/app_name"
+            android:noHistory="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Transparent">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <action android:name="COLLECT_MANUAL_ENTRY" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <provider
+            android:name=".sync.StubProvider"
+            android:authorities="com.elavon.converge.datasync.provider"
+            android:exported="false"
+            android:syncable="true" />
+
+        <service
+            android:name=".sync.SyncService"
+            android:exported="true"
+            android:process=":sync">
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter" />
+            </intent-filter>
+            <meta-data
+                android:name="android.content.SyncAdapter"
+                android:resource="@xml/syncadapter" />
+        </service>
+    </application>
+
+</manifest>

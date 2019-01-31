@@ -1,0 +1,102 @@
+apply plugin: 'com.android.application'
+
+allprojects {
+    repositories {
+        mavenLocal()
+        maven {
+            url 'https://nexus.poynt.com/content/repositories/snapshots'
+        }
+        maven {
+            url 'https://nexus.poynt.com/content/repositories/releases'
+        }
+        mavenCentral()
+        jcenter()
+    }
+}
+
+def computeVersionCode() {
+    return 12
+}
+
+def computeVersionName() {
+    return System.env.BUILD_RELEASE_NAME ? System.env.BUILD_RELEASE_NAME : "1.0-DEV"
+}
+
+def gitSha = 'git rev-parse --short HEAD'.execute([], project.rootDir).text.trim()
+
+android {
+    compileSdkVersion 23
+    defaultConfig {
+        applicationId "com.elavon.converge"
+        minSdkVersion 19
+        targetSdkVersion 19
+        versionCode computeVersionCode()
+        versionName computeVersionName()
+        buildConfigField "String", "GIT_SHA", "\"${gitSha}\""
+    }
+    signingConfigs {
+        release {
+            storeFile file(System.env.HOME + "/.keys/converge/release.keystore")
+            keyAlias "release"
+            keyPassword "poynt123"
+            storePassword "poynt123"
+        }
+    }
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.release
+            versionNameSuffix "-d"
+        }
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    applicationVariants.all { variant ->
+        variant.outputs.each { output ->
+            def newAppName = output.outputFile.name
+            newAppName = newAppName.replace("app-", "ConvergeProcessor-")
+            newAppName = newAppName.replace(".apk", "-${variant.versionName}-${variant.versionCode}.apk")
+            output.outputFileName = newAppName
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+
+    implementation 'com.android.support:appcompat-v7:23.4.0'
+
+    // Poynt SDK and Model Dependencies
+    implementation 'co.poynt.api:android-api-model:1.2.118-SNAPSHOT@jar'
+    implementation 'co.poynt.android.sdk:poynt-sdk:1.2.32-SNAPSHOT@aar'
+    implementation 'com.google.code.gson:gson:2.8.0'
+    // bit byte manipulation
+    implementation 'com.github.devnied:bit-lib4j:1.4.10@jar'
+    implementation 'net.jcip:jcip-annotations:1.0@jar'
+    // JWT dependencies - if you want to parse JWTs
+    implementation 'com.nimbusds:nimbus-jose-jwt:2.26@jar'
+    implementation 'net.minidev:json-smart:1.2@jar'
+    implementation 'com.android.support:design:23.4.0'
+
+    //implementation 'com.squareup.okhttp3:okhttp:3.9.0'
+    implementation 'com.squareup.okhttp3:okhttp:3.4.1'
+    implementation 'com.squareup.okhttp3:okhttp-urlconnection:3.4.1'
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.4.1'
+    implementation 'com.squareup.okio:okio:1.9.0'
+    implementation('org.simpleframework:simple-xml:2.7.+') {
+        exclude module: 'stax'
+        exclude module: 'stax-api'
+        exclude module: 'xpp3'
+    }
+
+    implementation 'com.android.support:appcompat-v7:23.4.0'
+    implementation 'com.google.dagger:dagger:2.12'
+    implementation 'com.google.dagger:dagger-android:2.12'
+    annotationProcessor 'com.google.dagger:dagger-android-processor:2.12'
+    annotationProcessor 'com.google.dagger:dagger-compiler:2.12'
+
+    // Unit testing dependencies
+    testImplementation 'junit:junit:4.12'
+}
