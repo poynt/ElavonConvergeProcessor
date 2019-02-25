@@ -144,6 +144,7 @@ public class ConvergeMapper {
         Log.d(TAG, "Transaction Request:" + transaction);
         final InterfaceMapper mapper = getMapper(transaction.getFundingSource());
         final ElavonTransactionRequest request;
+        LineItemProducts lineItemProducts = null;
         TransactionAmounts amounts = transaction.getAmounts();
         switch (transaction.getAction()) {
             case AUTHORIZE:
@@ -155,7 +156,10 @@ public class ConvergeMapper {
                 } else {
                     request = mapper.createAuth(transaction);
                 }
-                addCurrentOrder(request);
+                lineItemProducts = getLineItemProducts();
+                if (lineItemProducts != null) {
+                    request.setLineItemProducts(lineItemProducts);
+                }
                 break;
             case REFUND:
                 request = mapper.createRefund(transaction);
@@ -169,7 +173,10 @@ public class ConvergeMapper {
                 } else {
                     request = mapper.createSale(transaction);
                 }
-                addCurrentOrder(request);
+                lineItemProducts = getLineItemProducts();
+                if (lineItemProducts != null) {
+                    request.setLineItemProducts(lineItemProducts);
+                }
                 break;
             case VERIFY:
                 request = mapper.createVerify(transaction);
@@ -187,26 +194,26 @@ public class ConvergeMapper {
         return request;
     }
 
-    public void addCurrentOrder(ElavonTransactionRequest request) {
-        Order order = ElavonConvergeProcessorApplication.getInstance().getCurrentOrder();
-        if (order != null && order.getItems() != null) {
-            List<Product> productList = new ArrayList<>();
-            Product product = new Product();
-            for (int i=0; i<order.getItems().size(); i++) {
-                OrderItem orderItem = order.getItems().get(i);
-                product.setProductItemCode(orderItem.getProductId());
-                product.setProductDescription(orderItem.getDetails());
-                product.setProductItemQuantity(orderItem.getQuantity());
-                product.setProductItemUom(orderItem.getUnitOfMeasure().unitOfMeasure());
-                product.setProductItemUnitCost(orderItem.getUnitPrice());
-                product.setProductItemDiscount(orderItem.getDiscount());
-                product.setProductItemTotal(orderItem.getFee());
-                productList.add(product);
+    public LineItemProducts getLineItemProducts() {
+            Order order = ElavonConvergeProcessorApplication.getInstance().getCurrentOrder();
+            if (order != null && order.getItems() != null) {
+                List<Product> productList = new ArrayList<>();
+                Product product = new Product();
+                for (int i = 0; i < order.getItems().size(); i++) {
+                    OrderItem orderItem = order.getItems().get(i);
+                    product.setProductItemCode(orderItem.getProductId());
+                    product.setProductDescription(orderItem.getDetails());
+                    product.setProductItemQuantity(orderItem.getQuantity());
+                    product.setProductItemUom(orderItem.getUnitOfMeasure().unitOfMeasure());
+                    product.setProductItemUnitCost(orderItem.getUnitPrice());
+                    product.setProductItemDiscount(orderItem.getDiscount());
+                    productList.add(product);
+                }
+                LineItemProducts lineItemProducts = new LineItemProducts();
+                lineItemProducts.setProduct(productList);
+                return lineItemProducts;
             }
-            LineItemProducts lineItemProducts = new LineItemProducts();
-            lineItemProducts.setProduct(productList);
-            request.setLineItemProducts(lineItemProducts);
-        }
+            return null;
     }
 
     private String getReference(final Transaction t, final String type) {
