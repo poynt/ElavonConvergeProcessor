@@ -271,7 +271,8 @@ public class TransactionService extends Service {
 
     public void fetchOrderParameters(final Transaction transaction, final String requestId, final IPoyntTransactionServiceListener listener) {
         try {
-            mSessionService.getCurrentOrder(new IPoyntSessionServiceCurrentOrderListener.Stub() {
+            Bundle bundle = null;
+            mSessionService.getCurrentOrder(bundle, new IPoyntSessionServiceCurrentOrderListener.Stub() {
                 @Override
                 public void onResponse(Order order, PoyntError poyntError) throws RemoteException {
                     ElavonConvergeProcessorApplication.getInstance().setCurrentOrderItem(order);
