@@ -162,6 +162,10 @@ public class EmvMapper extends InterfaceMapper {
             final String lHex = HexDump.toHexString((byte) (tag.getValue().length() / 2));
             Log.i(TAG, String.format("%s=%s", kHex, tag.getValue()));
 
+            if(tag.getKey().equals("1F8231")){
+                // skip card scheme tag
+                continue;
+            }
             //Adding the tags starting with DF to a list, to push all 3-byte tags to the end, based on Converge request
             if(kHex.startsWith("DF") && kHex.length() == 6) {
                 tlvList.add(tag);
