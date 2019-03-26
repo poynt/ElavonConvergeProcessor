@@ -70,7 +70,7 @@ dependencies {
 
     // Poynt SDK and Model Dependencies
     implementation 'co.poynt.api:android-api-model:1.2.118-SNAPSHOT@jar'
-    implementation 'co.poynt.android.sdk:poynt-sdk:1.2.32-SNAPSHOT@aar'
+    implementation 'co.poynt.android.sdk:poynt-sdk:1.2.34-SNAPSHOT@aar'
     implementation 'com.google.code.gson:gson:2.8.0'
     // bit byte manipulation
     implementation 'com.github.devnied:bit-lib4j:1.4.10@jar'

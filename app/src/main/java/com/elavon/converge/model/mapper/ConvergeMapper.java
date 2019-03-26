@@ -45,6 +45,8 @@ import co.poynt.api.model.FundingSource;
 import co.poynt.api.model.FundingSourceAccountType;
 import co.poynt.api.model.FundingSourceEntryDetails;
 import co.poynt.api.model.FundingSourceType;
+import co.poynt.api.model.Order;
+import co.poynt.api.model.OrderAmounts;
 import co.poynt.api.model.Processor;
 import co.poynt.api.model.ProcessorResponse;
 import co.poynt.api.model.ProcessorStatus;
@@ -175,6 +177,15 @@ public class ConvergeMapper {
             request.setMerchantTxnId(transaction.getId().toString());
         } else {
             request.setMerchantTxnId(UUID.randomUUID().toString());
+        }
+        Order order = ElavonConvergeProcessorApplication.getInstance().getCurrentOrder();
+        if (order != null) {
+            OrderAmounts orderAmounts = order.getAmounts();
+            if (orderAmounts != null) {
+                String currency = orderAmounts.getCurrency();
+                Long taxTotal = orderAmounts.getTaxTotal();
+                request.setSalesTax(CurrencyUtil.getAmount(taxTotal, currency));
+            }
         }
         return request;
     }
