@@ -181,7 +181,7 @@ public class EmvMapper extends InterfaceMapper {
             } else if (kHex.equals("1F8101")) {
                 // PIN KSN
                 builder.append("C1");
-            } else if (kHex.startsWith("1F81") || kHex.startsWith("8231")) {
+            } else if (kHex.startsWith("1F81") || kHex.startsWith("1F82")) {
                 // skip all other custom POYNT tags
                 continue;
             } else {
