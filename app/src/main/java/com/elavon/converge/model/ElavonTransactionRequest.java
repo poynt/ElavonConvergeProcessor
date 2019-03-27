@@ -198,6 +198,9 @@ public class ElavonTransactionRequest extends ElavonRequest {
     @Element(name = "ssl_original_time", required = false)
     private String originalTime;
 
+    @Element(name = "lineItemProducts", required = false)
+    private LineItemProducts lineItemProducts;
+
     // not part of xml
     private String cardLast4;
 
@@ -567,5 +570,13 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     public void setOriginalTime(String originalTime) {
         this.originalTime = originalTime;
+    }
+
+    public LineItemProducts getLineItemProducts() {
+        return lineItemProducts;
+    }
+
+    public void setLineItemProducts(LineItemProducts lineItemProducts) {
+        this.lineItemProducts = lineItemProducts;
     }
 }
