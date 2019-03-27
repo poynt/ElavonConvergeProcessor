@@ -213,7 +213,6 @@ public class ConvergeMapper {
                     Product product = new Product();
                     product.setProductItemDescription(orderItem.getName());
                     product.setProductItemCode(orderItem.getProductId());
-                    product.setProductItemCommodityCode(orderItem.getDetails());
                     product.setProductItemQuantity(orderItem.getQuantity());
                     product.setProductItemUom(orderItem.getUnitOfMeasure().unitOfMeasure());
                     product.setProductItemUnitCost(CurrencyUtil.getAmount(orderItem.getUnitPrice(), currency));
@@ -221,6 +220,11 @@ public class ConvergeMapper {
                     if (discountAmount != null && discountAmount > 0) {
                         product.setProductItemDiscount(CurrencyUtil.getAmount(discountAmount, currency));
                         product.setProductItemDiscountIndicator("Y");
+                    }
+                    Long taxAmount = orderItem.getTax();
+                    if (taxAmount != null && taxAmount > 0) {
+                        product.setProductItemTaxAmount(CurrencyUtil.getAmount(taxAmount, currency));
+                        product.setProductItemTaxIndicator("Y");
                     }
                     productList.add(product);
                 }
