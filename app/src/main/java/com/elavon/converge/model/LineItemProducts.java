@@ -6,7 +6,7 @@ import java.util.List;
 
 public class LineItemProducts {
 
-    @ElementList(name = "product", required = false)
+    @ElementList(entry = "product", required = false, inline = true)
     private List<Product> product;
 
     public List<Product> getProduct() {
