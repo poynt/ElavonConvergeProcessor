@@ -3,8 +3,6 @@ package com.elavon.converge.model.mapper;
 import android.util.Base64;
 import android.util.Log;
 
-import co.poynt.api.model.Business;
-import co.poynt.api.model.ClientContext;
 import com.elavon.converge.ElavonConvergeProcessorApplication;
 import com.elavon.converge.exception.ConvergeMapperException;
 import com.elavon.converge.model.ElavonResponse;
@@ -12,6 +10,8 @@ import com.elavon.converge.model.ElavonSettleRequest;
 import com.elavon.converge.model.ElavonTransactionRequest;
 import com.elavon.converge.model.ElavonTransactionResponse;
 import com.elavon.converge.model.ElavonTransactionSearchRequest;
+import com.elavon.converge.model.LineItemProducts;
+import com.elavon.converge.model.Product;
 import com.elavon.converge.model.type.AVSResponse;
 import com.elavon.converge.model.type.CVV2Response;
 import com.elavon.converge.model.type.ElavonTransactionType;
@@ -25,6 +25,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.AbstractList;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -37,7 +39,9 @@ import co.poynt.api.model.AVSResult;
 import co.poynt.api.model.AVSResultType;
 import co.poynt.api.model.AdjustTransactionRequest;
 import co.poynt.api.model.BalanceInquiry;
+import co.poynt.api.model.Business;
 import co.poynt.api.model.CVResult;
+import co.poynt.api.model.ClientContext;
 import co.poynt.api.model.EMVData;
 import co.poynt.api.model.EMVTag;
 import co.poynt.api.model.EntryMode;
@@ -45,6 +49,8 @@ import co.poynt.api.model.FundingSource;
 import co.poynt.api.model.FundingSourceAccountType;
 import co.poynt.api.model.FundingSourceEntryDetails;
 import co.poynt.api.model.FundingSourceType;
+import co.poynt.api.model.Order;
+import co.poynt.api.model.OrderItem;
 import co.poynt.api.model.Processor;
 import co.poynt.api.model.ProcessorResponse;
 import co.poynt.api.model.ProcessorStatus;
@@ -138,6 +144,7 @@ public class ConvergeMapper {
         Log.d(TAG, "Transaction Request:" + transaction);
         final InterfaceMapper mapper = getMapper(transaction.getFundingSource());
         final ElavonTransactionRequest request;
+        LineItemProducts lineItemProducts = null;
         TransactionAmounts amounts = transaction.getAmounts();
         switch (transaction.getAction()) {
             case AUTHORIZE:
@@ -148,6 +155,10 @@ public class ConvergeMapper {
                     request = mapper.createVerify(transaction);
                 } else {
                     request = mapper.createAuth(transaction);
+                }
+                lineItemProducts = getLineItemProducts();
+                if (lineItemProducts != null) {
+                    request.setLineItemProducts(lineItemProducts);
                 }
                 break;
             case REFUND:
@@ -161,6 +172,10 @@ public class ConvergeMapper {
                     request = mapper.createVerify(transaction);
                 } else {
                     request = mapper.createSale(transaction);
+                }
+                lineItemProducts = getLineItemProducts();
+                if (lineItemProducts != null) {
+                    request.setLineItemProducts(lineItemProducts);
                 }
                 break;
             case VERIFY:
@@ -177,6 +192,28 @@ public class ConvergeMapper {
             request.setMerchantTxnId(UUID.randomUUID().toString());
         }
         return request;
+    }
+
+    public LineItemProducts getLineItemProducts() {
+            Order order = ElavonConvergeProcessorApplication.getInstance().getCurrentOrder();
+            if (order != null && order.getItems() != null) {
+                List<Product> productList = new ArrayList<>();
+                Product product = new Product();
+                for (int i = 0; i < order.getItems().size(); i++) {
+                    OrderItem orderItem = order.getItems().get(i);
+                    product.setProductItemCode(orderItem.getProductId());
+                    product.setProductDescription(orderItem.getDetails());
+                    product.setProductItemQuantity(orderItem.getQuantity());
+                    product.setProductItemUom(orderItem.getUnitOfMeasure().unitOfMeasure());
+                    product.setProductItemUnitCost(orderItem.getUnitPrice());
+                    product.setProductItemDiscount(orderItem.getDiscount());
+                    productList.add(product);
+                }
+                LineItemProducts lineItemProducts = new LineItemProducts();
+                lineItemProducts.setProduct(productList);
+                return lineItemProducts;
+            }
+            return null;
     }
 
     private String getReference(final Transaction t, final String type) {

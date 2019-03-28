@@ -7,9 +7,11 @@ import com.elavon.converge.model.type.PartialAuthIndicator;
 import com.elavon.converge.model.type.SignatureImageType;
 
 import org.simpleframework.xml.Element;
+import org.simpleframework.xml.ElementList;
 import org.simpleframework.xml.Root;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * <txn>
@@ -32,6 +34,14 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     @Element(name = "ssl_txn_id", required = false)
     private String txnId;
+
+    public LineItemProducts getLineItemProducts() {
+        return lineItemProducts;
+    }
+
+    public void setLineItemProducts(LineItemProducts lineItemProducts) {
+        this.lineItemProducts = lineItemProducts;
+    }
 
     @Element(name = "ssl_merchant_txn_id", required = false)
     private String merchantTxnId;
@@ -197,6 +207,9 @@ public class ElavonTransactionRequest extends ElavonRequest {
 
     @Element(name = "ssl_original_time", required = false)
     private String originalTime;
+
+    @Element(name = "LineItemProducts", required = false)
+    private LineItemProducts lineItemProducts;
 
     // not part of xml
     private String cardLast4;

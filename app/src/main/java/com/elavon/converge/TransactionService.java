@@ -1,7 +1,9 @@
 package com.elavon.converge;
 
 import android.app.Service;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -19,10 +21,14 @@ import co.poynt.api.model.AdjustTransactionRequest;
 import co.poynt.api.model.BalanceInquiry;
 import co.poynt.api.model.CaptureAllRequest;
 import co.poynt.api.model.EMVData;
+import co.poynt.api.model.Order;
 import co.poynt.api.model.Transaction;
+import co.poynt.os.model.Intents;
 import co.poynt.os.model.Payment;
 import co.poynt.os.model.PoyntError;
 import co.poynt.os.services.v1.IPoyntCheckCardListener;
+import co.poynt.os.services.v1.IPoyntSessionService;
+import co.poynt.os.services.v1.IPoyntSessionServiceCurrentOrderListener;
 import co.poynt.os.services.v1.IPoyntTransactionBalanceInquiryListener;
 import co.poynt.os.services.v1.IPoyntTransactionCaptureAllListener;
 import co.poynt.os.services.v1.IPoyntTransactionService;
@@ -56,6 +62,21 @@ public class TransactionService extends Service {
     @Inject
     protected TransactionManager transactionManager;
 
+    private IPoyntSessionService mSessionService;
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            Log.d(TAG, "session services connected");
+            mSessionService = IPoyntSessionService.Stub.asInterface(service);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mSessionService = null;
+            Log.d(TAG, "session services disconnected");
+        }
+    };
+
     @Override
     public void onCreate() {
         if(!ElavonConvergeProcessorApplication.getInstance().isMerchantCredsAvailableInPref()) {
@@ -63,6 +84,8 @@ public class TransactionService extends Service {
             startService(new Intent(this, LoadBusinessIntentService.class));
         }
         ElavonConvergeProcessorApplication.getInstance().getAppComponent().inject(this);
+        bindService(Intents.getComponentIntent(Intents.COMPONENT_POYNT_SESSION_SERVICE), serviceConnection,
+                BIND_AUTO_CREATE);
     }
 
     @Override
@@ -81,7 +104,8 @@ public class TransactionService extends Service {
         public void processTransaction(final Transaction transaction, final String requestId, final IPoyntTransactionServiceListener listener) throws RemoteException {
             Log.d(TAG, "processTransaction: " + requestId);
             Log.d(TAG, "Transaction:" + transaction.toString());
-            transactionManager.processTransaction(transaction, requestId, listener);
+           // transactionManager.processTransaction(transaction, requestId, listener);
+            fetchOrderParameters(transaction, requestId, listener);
         }
 
         @Override
@@ -244,4 +268,19 @@ public class TransactionService extends Service {
             callback.onContinue();
         }
     };
+
+    public void fetchOrderParameters(final Transaction transaction, final String requestId, final IPoyntTransactionServiceListener listener) {
+        try {
+            Bundle bundle = null;
+            mSessionService.getCurrentOrder(bundle, new IPoyntSessionServiceCurrentOrderListener.Stub() {
+                @Override
+                public void onResponse(Order order, PoyntError poyntError) throws RemoteException {
+                    ElavonConvergeProcessorApplication.getInstance().setCurrentOrderItem(order);
+                    transactionManager.processTransaction(transaction, requestId, listener);
+                }
+            });
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
 }
