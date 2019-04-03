@@ -15,6 +15,8 @@ import com.elavon.converge.inject.AppComponent;
 import com.elavon.converge.inject.AppModule;
 import com.elavon.converge.inject.DaggerAppComponent;
 
+import java.util.List;
+
 import javax.inject.Inject;
 
 import co.poynt.api.model.AdjustTransactionRequest;
@@ -23,6 +25,8 @@ import co.poynt.api.model.CaptureAllRequest;
 import co.poynt.api.model.EMVData;
 import co.poynt.api.model.Order;
 import co.poynt.api.model.Transaction;
+import co.poynt.api.model.TransactionReference;
+import co.poynt.api.model.TransactionReferenceType;
 import co.poynt.os.model.Intents;
 import co.poynt.os.model.Payment;
 import co.poynt.os.model.PoyntError;
@@ -102,14 +106,27 @@ public class TransactionService extends Service {
         @Override
         public void createTransaction(Transaction transaction, String requestId, IPoyntTransactionServiceListener listener) throws RemoteException {
             Log.d(TAG, "createTransaction: " + requestId);
+            PoyntError poyntError = getCodeNotImplementedError();
+            listener.onResponse(transaction, requestId, poyntError);
         }
 
         @Override
         public void processTransaction(final Transaction transaction, final String requestId, final IPoyntTransactionServiceListener listener) throws RemoteException {
             Log.d(TAG, "processTransaction: " + requestId);
             Log.d(TAG, "Transaction:" + transaction.toString());
-            //transactionManager.processTransaction(transaction, requestId, listener);
-            fetchOrderParameters(transaction, requestId, listener);
+            boolean hasOrder = false;
+            List<TransactionReference> transactionReferences = transaction.getReferences();
+            for (TransactionReference transactionReference : transactionReferences) {
+                if (transactionReference.getType() == TransactionReferenceType.POYNT_ORDER) {
+                    hasOrder = true;
+                    break;
+                }
+            }
+            if (hasOrder) {
+                fetchOrderParameters(transaction, requestId, listener);
+            } else {
+                transactionManager.processTransaction(transaction, requestId, listener);
+            }
         }
 
         @Override
@@ -226,7 +243,9 @@ public class TransactionService extends Service {
                                                       CaptureAllRequest captureAllRequest,
                                                       IPoyntTransactionCaptureAllListener iPoyntTransactionCaptureAllListener)
                                                       throws RemoteException {
-
+            Log.d(TAG, "captureAllTransactionsWithOptions");
+            PoyntError poyntError = getCodeNotImplementedError();
+            iPoyntTransactionCaptureAllListener.onResponse(null, null, poyntError);
         }
 
         @Override
@@ -273,37 +292,48 @@ public class TransactionService extends Service {
         }
 
         @Override
-        public void getChildTransactions(String s, String s1, IPoyntGetTransactionsListener iPoyntGetTransactionsListener) throws RemoteException
+        public void getChildTransactions(String transactionId, String requestId, IPoyntGetTransactionsListener listener) throws RemoteException
         {
-
+            Log.d(TAG, "getChildTransactions");
+            PoyntError poyntError = getCodeNotImplementedError();
+            listener.onError(poyntError, null);
         }
 
         @Override
-        public void checkPayment(Bundle bundle, String s, IPoyntCheckPaymentListener iPoyntCheckPaymentListener) throws RemoteException
+        public void checkPayment(Bundle data, String requestId, IPoyntCheckPaymentListener listener) throws RemoteException
         {
-
+            Log.d(TAG, "checkPayment");
+            PoyntError poyntError = getCodeNotImplementedError();
+            listener.onFailure(poyntError, null);
         }
 
         @Override
-        public void getTotals(boolean b, IPoyntTerminalTotalsListener iPoyntTerminalTotalsListener) throws RemoteException
+        public void getTotals(boolean resetTotals, boolean printReceipt, IPoyntTerminalTotalsListener listener) throws RemoteException
         {
-
+            Log.d(TAG, "getTotals");
+            PoyntError poyntError = getCodeNotImplementedError();
+            listener.onResponse(0, 0, poyntError);
         }
 
         @Override
-        public void getTerminalStatus(IPoyntTerminalStatusListener iPoyntTerminalStatusListener) throws RemoteException
+        public void getTerminalStatus(IPoyntTerminalStatusListener listener) throws RemoteException
         {
-
+            Log.d(TAG, "getTerminalStatus");
+            PoyntError poyntError = getCodeNotImplementedError();
+            listener.onResponse(null, poyntError);
         }
 
         @Override
-        public void checkCardV2(Payment payment, Bundle bundle, IPoyntCheckCardListener iPoyntCheckCardListener) throws RemoteException
+        public void checkCardV2(Payment payment, Bundle options, IPoyntCheckCardListener listener) throws RemoteException
         {
-
+            Log.d(TAG, "checkCardV2");
+            //shouldn't be called - just continue
+            listener.onContinue();
         }
     };
 
     public void fetchOrderParameters(final Transaction transaction, final String requestId, final IPoyntTransactionServiceListener listener) {
+        Log.d(TAG, "fetchOrderParameters: " + transaction.toString());
         try {
             Bundle bundle = null;
             mSessionService.getCurrentOrder(bundle, new IPoyntSessionServiceCurrentOrderListener.Stub() {
@@ -316,5 +346,12 @@ public class TransactionService extends Service {
         } catch (RemoteException e) {
             e.printStackTrace();
         }
+    }
+
+    private PoyntError getCodeNotImplementedError() {
+        PoyntError poyntError = new PoyntError();
+        poyntError.setCode(PoyntError.CODE_NOT_IMPLEMENTED);
+        poyntError.setReason("Feature not implemented");
+        return poyntError;
     }
 }
