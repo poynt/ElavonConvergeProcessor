@@ -14,6 +14,7 @@ import com.elavon.converge.model.ElavonTransactionResponse;
 import com.elavon.converge.model.ElavonTransactionSearchRequest;
 import com.elavon.converge.model.type.AVSResponse;
 import com.elavon.converge.model.type.CVV2Response;
+import com.elavon.converge.model.type.CardType;
 import com.elavon.converge.model.type.ElavonTransactionType;
 import com.elavon.converge.model.type.ResponseCodes;
 import com.elavon.converge.model.type.SignatureImageType;
@@ -563,21 +564,24 @@ public class ConvergeMapper {
                 || etResponse.getResponseCode() == ResponseCodes.AP
                 || ElavonResponse.RESULT_MESSAGE.APPROVAL.equals(etResponse.getResultMessage())
                 || ElavonResponse.RESULT_MESSAGE.PARTIAL_APPROVAL.equals(etResponse.getResultMessage())) {
-            // update the transaction amount
-            TransactionAmounts amounts = transaction.getAmounts();
-            if (etResponse.getAmount() != null) {
-                amounts.setTransactionAmount(CurrencyUtil.getAmount(etResponse.getAmount(),
-                        transaction.getAmounts().getCurrency()));
-                if (etResponse.getCashbackAmount() != null) {
-                    amounts.setCashbackAmount(CurrencyUtil.getAmount(etResponse.getCashbackAmount(),
+            // don't set amounts for cash transaction types
+            if (etResponse.getCardType() != CardType.CASH) {
+                // update the transaction amount
+                TransactionAmounts amounts = transaction.getAmounts();
+                if (etResponse.getAmount() != null) {
+                    amounts.setTransactionAmount(CurrencyUtil.getAmount(etResponse.getAmount(),
                             transaction.getAmounts().getCurrency()));
-                }
-            } else if (etResponse.getBaseAmount() != null) {
-                amounts.setTransactionAmount(CurrencyUtil.getAmount(etResponse.getBaseAmount(),
-                        transaction.getAmounts().getCurrency()));
-                if (etResponse.getCashbackAmount() != null) {
-                    amounts.setCashbackAmount(CurrencyUtil.getAmount(etResponse.getCashbackAmount(),
+                    if (etResponse.getCashbackAmount() != null) {
+                        amounts.setCashbackAmount(CurrencyUtil.getAmount(etResponse.getCashbackAmount(),
+                                transaction.getAmounts().getCurrency()));
+                    }
+                } else if (etResponse.getBaseAmount() != null) {
+                    amounts.setTransactionAmount(CurrencyUtil.getAmount(etResponse.getBaseAmount(),
                             transaction.getAmounts().getCurrency()));
+                    if (etResponse.getCashbackAmount() != null) {
+                        amounts.setCashbackAmount(CurrencyUtil.getAmount(etResponse.getCashbackAmount(),
+                                transaction.getAmounts().getCurrency()));
+                    }
                 }
             }
         }
