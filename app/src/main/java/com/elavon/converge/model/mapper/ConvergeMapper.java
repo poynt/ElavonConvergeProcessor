@@ -12,6 +12,8 @@ import com.elavon.converge.model.ElavonSettleRequest;
 import com.elavon.converge.model.ElavonTransactionRequest;
 import com.elavon.converge.model.ElavonTransactionResponse;
 import com.elavon.converge.model.ElavonTransactionSearchRequest;
+import com.elavon.converge.model.LineItemProducts;
+import com.elavon.converge.model.Product;
 import com.elavon.converge.model.type.AVSResponse;
 import com.elavon.converge.model.type.CVV2Response;
 import com.elavon.converge.model.type.ElavonTransactionType;
@@ -25,6 +27,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -45,6 +48,9 @@ import co.poynt.api.model.FundingSource;
 import co.poynt.api.model.FundingSourceAccountType;
 import co.poynt.api.model.FundingSourceEntryDetails;
 import co.poynt.api.model.FundingSourceType;
+import co.poynt.api.model.Order;
+import co.poynt.api.model.OrderAmounts;
+import co.poynt.api.model.OrderItem;
 import co.poynt.api.model.Processor;
 import co.poynt.api.model.ProcessorResponse;
 import co.poynt.api.model.ProcessorStatus;
@@ -139,6 +145,7 @@ public class ConvergeMapper {
         final InterfaceMapper mapper = getMapper(transaction.getFundingSource());
         final ElavonTransactionRequest request;
         TransactionAmounts amounts = transaction.getAmounts();
+        String currency = amounts != null ? amounts.getCurrency() : null;
         switch (transaction.getAction()) {
             case AUTHORIZE:
                 // if amount is 0 - then it should be verification request
@@ -176,7 +183,57 @@ public class ConvergeMapper {
         } else {
             request.setMerchantTxnId(UUID.randomUUID().toString());
         }
+        Order order = ElavonConvergeProcessorApplication.getInstance().getCurrentOrder();
+        if (order != null) {
+            // Order Amounts
+            OrderAmounts orderAmounts = order.getAmounts();
+            if (orderAmounts != null) {
+                if (currency == null) {
+                    currency = orderAmounts.getCurrency();
+                }
+                Long taxTotal = orderAmounts.getTaxTotal();
+                request.setSalesTax(CurrencyUtil.getAmount(taxTotal, currency));
+            }
+            // Order Items
+            LineItemProducts lineItemProducts = getLineItemProducts(order, currency);
+            if (lineItemProducts != null) {
+                request.setLineItemProducts(lineItemProducts);
+            }
+        }
         return request;
+    }
+
+    public LineItemProducts getLineItemProducts(Order order, String currency) {
+        if (order != null) {
+            List<OrderItem> orderItems = order.getItems();
+            if (orderItems != null) {
+                List<Product> productList = new ArrayList<>();
+                for (int i = 0; i < orderItems.size(); i++) {
+                    OrderItem orderItem = orderItems.get(i);
+                    Product product = new Product();
+                    product.setProductItemDescription(orderItem.getName());
+                    product.setProductItemCode(orderItem.getProductId());
+                    product.setProductItemQuantity(orderItem.getQuantity());
+                    product.setProductItemUom(orderItem.getUnitOfMeasure().unitOfMeasure());
+                    product.setProductItemUnitCost(CurrencyUtil.getAmount(orderItem.getUnitPrice(), currency));
+                    Long discountAmount = orderItem.getDiscount();
+                    if (discountAmount != null && discountAmount > 0) {
+                        product.setProductItemDiscount(CurrencyUtil.getAmount(discountAmount, currency));
+                        product.setProductItemDiscountIndicator("Y");
+                    }
+                    Long taxAmount = orderItem.getTax();
+                    if (taxAmount != null && taxAmount > 0) {
+                        product.setProductItemTaxAmount(CurrencyUtil.getAmount(taxAmount, currency));
+                        product.setProductItemTaxIndicator("Y");
+                    }
+                    productList.add(product);
+                }
+                LineItemProducts lineItemProducts = new LineItemProducts();
+                lineItemProducts.setProduct(productList);
+                return lineItemProducts;
+            }
+        }
+        return null;
     }
 
     private String getReference(final Transaction t, final String type) {
