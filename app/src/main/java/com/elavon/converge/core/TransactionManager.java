@@ -138,7 +138,7 @@ public class TransactionManager {
                 @Override
                 public void onResponse(final ElavonTransactionResponse elavonResponse) {
                     try {
-                        convergeMapper.mapTransactionResponse(elavonResponse, transaction);
+                        convergeMapper.mapTransactionResponse(elavonResponse, transaction, request.getMerchantTxnId());
                         transactionCache.put(transaction.getId().toString(), transaction);
                         listener.onResponse(transaction, requestId, null);
                     } catch (final RemoteException e) {
@@ -253,7 +253,7 @@ public class TransactionManager {
                             if (elavonResponse.isSuccess()) {
                                 transaction.setAction(TransactionAction.CAPTURE);
                                 transaction.setAmounts(adjustTransactionRequest.getAmounts());
-                                convergeMapper.mapTransactionResponse(elavonResponse, transaction);
+                                convergeMapper.mapTransactionResponse(elavonResponse, transaction, request.getMerchantTxnId());
                                 listener.onResponse(transaction, requestId, null);
                             } else {
                                 listener.onResponse(transaction, requestId, new PoyntError(PoyntError.CODE_API_ERROR));
@@ -564,7 +564,7 @@ public class TransactionManager {
                                 if (elavonResponse.isSuccess() || elavonResponse.getErrorCode() == 5040) { // Because 5040 means txn is already voided. Typically happens when txn was voided from web and the sync hasn't happened yet. So we need to send a false success.
                                     Log.i(TAG, "voidTransaction: " + transaction.getId() + " SUCCESS");
                                     if (listener != null) {
-                                        convergeMapper.mapTransactionResponse(elavonResponse, transaction);
+                                        convergeMapper.mapTransactionResponse(elavonResponse, transaction, request.getMerchantTxnId());
                                         try {
                                             // update the transactionId w/ new void txn Id and set parent
                                             transaction.setAction(TransactionAction.REFUND);
@@ -733,7 +733,7 @@ public class TransactionManager {
             @Override
             public void onResponse(final ElavonTransactionResponse elavonResponse) {
                 try {
-                    convergeMapper.mapTransactionResponse(elavonResponse, transaction);
+                    convergeMapper.mapTransactionResponse(elavonResponse, transaction, request.getMerchantTxnId());
                     listener.onResponse(transaction, requestId, null);
                 } catch (final RemoteException e) {
                     Log.e(TAG, "Failed to respond", e);

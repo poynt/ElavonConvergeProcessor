@@ -396,7 +396,7 @@ public class ConvergeMapper {
      * </txn>
      * </code></pre>
      */
-    public void mapTransactionResponse(final ElavonTransactionResponse etResponse, final Transaction transaction) {
+    public void mapTransactionResponse(final ElavonTransactionResponse etResponse, final Transaction transaction, final String merchantTxnId) {
 
         Log.d(TAG, "Received response:" + etResponse);
 
@@ -645,8 +645,8 @@ public class ConvergeMapper {
         // make sure the transactionId in Poynt is same as merchant-txn-id
         if (StringUtil.notEmpty(etResponse.getMerchantTxnId())) {
             transaction.setId(UUID.fromString(etResponse.getMerchantTxnId()));
-        } else if (transaction.getId() == null) {
-            transaction.setId(UUID.randomUUID());
+        } else if (transaction.getId() == null && StringUtil.notEmpty(merchantTxnId)) {
+            transaction.setId(UUID.fromString(merchantTxnId));
         }
 
         if (transaction.isSignatureCaptured() == null) {
