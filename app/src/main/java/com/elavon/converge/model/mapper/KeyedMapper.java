@@ -111,6 +111,9 @@ public class KeyedMapper extends InterfaceMapper {
 
         request.setPoyntUserId(t.getContext().getEmployeeUserId().toString());
         request.setAmount(CurrencyUtil.getAmount(t.getAmounts().getTransactionAmount(), t.getAmounts().getCurrency()));
+        if(t.getAmounts().getTipAmount() != null){
+            request.setTipAmount(CurrencyUtil.getAmount(t.getAmounts().getTipAmount(), t.getAmounts().getCurrency()));
+        }
         // add card token if we have it
         // TODO - is this the right field ?
         if (StringUtil.notEmpty(t.getFundingSource().getCard().getNumberHashed())) {
